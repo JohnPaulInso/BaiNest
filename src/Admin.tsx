@@ -197,12 +197,8 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
       setCsrf(r.csrf || "");
       onLogin(r);
     } catch (err) {
-      // (2026-07-13) Clarify static host backend requirement. Prev: raw error
-      if (err instanceof Error && err.message.includes("405")) {
-        setError("GitHub Pages is static. Run dev.bat and open http://localhost:3000/admin");
-      } else {
-        setError(err instanceof Error ? err.message : "Unable to sign in.");
-      }
+      // (2026-07-13) Set error message from failed auth. Prev: static host check
+      setError(err instanceof Error ? err.message : "Unable to sign in.");
     } finally {
       setBusy(false);
     }
