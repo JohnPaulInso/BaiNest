@@ -206,7 +206,8 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
     <div className="admin-login-screen">
       <div className="login-card">
         <Link className="admin-login-brand" to="/">
-          <img src="/logo.svg" />{" "}
+          {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} />{" "}
           <span>
             BAINEST<small>STUDIO ADMIN</small>
           </span>
@@ -259,7 +260,8 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   return (
     <aside className="admin-sidebar">
       <Link to="/" className="admin-logo">
-        <img src="/logo.svg" />
+        {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
+        <img src={`${import.meta.env.BASE_URL}logo.svg`} />
         <span>
           BAINEST<small>STUDIO ADMIN</small>
         </span>

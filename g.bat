@@ -28,9 +28,10 @@ echo.
 echo  Commit: "%commitMsg%"
 echo.
 
-rem (2026-07-13) Build production assets before push. Prev: push only
+rem (2026-07-13) Build production assets and 404 for SPA. Prev: dist only
 echo [1/4] Building production assets for GitHub Pages...
 call npm run build
+copy dist\index.html dist\404.html >nul
 if exist docs rmdir /s /q docs
 xcopy /e /i /y dist docs >nul
 

@@ -94,7 +94,8 @@ function Brand({ footer = false }: { footer?: boolean }) {
       to="/"
       aria-label="BaiNest Studio home"
     >
-      <img src="/logo.svg" alt="" />
+      {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
+      <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" />
       <span>
         BAINEST<small>DIGITAL STUDIO</small>
       </span>
