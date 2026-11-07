@@ -336,16 +336,17 @@ function Overview({ posts }: { posts: Post[] }) {
             <FileText />
           </span>
           <span className="stat-label">Total stories</span>
-          <b>{counts.posts.total}</b>
-          <small>{counts.posts.published} published</small>
+          {/* (2026-07-13) Safe optional chaining for counts. Prev: counts.posts.total */}
+          <b>{counts.posts?.total ?? 0}</b>
+          <small>{counts.posts?.published ?? 0} published</small>
         </article>
         <article>
           <span className="stat-icon">
             <Inbox />
           </span>
           <span className="stat-label">Contact notes</span>
-          <b>{counts.messages.total}</b>
-          <small>{counts.messages.unread} unread</small>
+          <b>{counts.messages?.total ?? 0}</b>
+          <small>{counts.messages?.unread ?? 0} unread</small>
         </article>
         <article>
           <span className="stat-icon">

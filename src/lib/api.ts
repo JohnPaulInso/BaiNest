@@ -164,12 +164,14 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
   }
 
   if (url === "/api/admin/overview") {
+    // (2026-07-13) Return nested overview object. Prev: flat number counts
     const posts = getStoredPosts();
     return {
-      posts: posts.length,
-      drafts: posts.filter((p) => p.status === "draft").length,
-      domains: 0,
-      contacts: 0,
+      posts: {
+        total: posts.length,
+        published: posts.filter((p) => p.status === "published").length,
+      },
+      messages: { total: 0, unread: 0 },
     };
   }
 
