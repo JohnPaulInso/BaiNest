@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<!-- (2026-07-13) Set Blogger layouts v3 & responsive; previous: v2 default --><html b:css='false' b:defaultmarkups='true' b:layoutsVersion='3' b:responsive='true' b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+  <meta content='width=device-width, initial-scale=1' name='viewport'/>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'/>
+  <meta content='IE=edge' http-equiv='X-UA-Compatible'/>
+  <title><data:blog.pageTitle/></title>
+  <b:include data='blog' name='all-head-content'/>
+  <!-- (2026-07-13) Add Theme Designer vars & skin; previous: empty skin vars -->
+  <b:skin><![CDATA[
+/* Variable definitions
+   ====================
+   <Variable name="keycolor" description="Main Color" type="color" default="#159b9b" value="#159b9b"/>
+   <Group description="Theme Colors" selector="body">
+     <Variable name="body.bg" description="Background Color" type="color" default="#ffffff" value="#ffffff"/>
+     <Variable name="brand.navy" description="Primary Color" type="color" default="#102b46" value="#102b46"/>
+     <Variable name="brand.teal" description="Accent Color" type="color" default="#159b9b" value="#159b9b"/>
+   </Group>
+*/
+/* BaiNest Digital Marketing Services | Premium Corporate Blogger Theme */
+:root{--navy:#102b46;--navy-deep:#0a1e32;--teal:#159b9b;--teal-dark:#0d7f82;--ink:#172b3d;--muted:#667789;--paper:#ffffff;--mist:#f4f7fa;--line:#e3eaf0;--max:1200px;--radius:18px;--shadow:0 18px 50px rgba(16,43,70,.09)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}img{max-width:100%;height:auto}button{font:inherit}.wrap{width:min(var(--max),calc(100% - 48px));margin:0 auto}.site-header{height:82px;background:#fff;border-bottom:1px solid rgba(16,43,70,.08);display:flex;align-items:center;position:relative;z-index:20}.header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:11px;color:var(--navy);font-weight:800;letter-spacing:.08em;font-size:22px}.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--navy);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;letter-spacing:0}.brand small{display:block;font-size:9px;line-height:1.2;letter-spacing:.18em;color:var(--muted);font-weight:700;margin-top:3px}.nav-area{display:flex;align-items:center;gap:28px}.nav-links{display:flex;align-items:center;gap:27px;font-size:13px;font-weight:700;letter-spacing:.04em;color:#42566a}.nav-links a:hover{color:var(--teal)}.nav-cta,.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 21px;border-radius:7px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;transition:.2s ease;border:1px solid var(--teal)}.nav-cta:hover,.btn:hover{background:var(--teal-dark);transform:translateY(-1px)}.btn-outline{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}.btn-outline:hover{background:#fff;color:var(--navy);border-color:#fff}.menu-toggle{display:none;background:none;border:0;color:var(--navy);font-size:25px;padding:6px;cursor:pointer}.hero{background:radial-gradient(circle at 82% 20%,rgba(21,155,155,.19),transparent 28%),linear-gradient(120deg,var(--navy-deep),var(--navy) 65%,#153d59);color:#fff;position:relative;overflow:hidden;padding:112px 0 108px}.hero:after{content:"";position:absolute;width:500px;height:500px;border:1px solid rgba(255,255,255,.08);border-radius:50%;right:-130px;bottom:-340px;box-shadow:0 0 0 55px rgba(255,255,255,.025),0 0 0 110px rgba(255,255,255,.02)}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:70px;position:relative;z-index:1}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:11px}.eyebrow:before{content:"";width:28px;height:2px;background:var(--teal)}.hero .eyebrow{color:#76d4d0}.hero h1{font-size:clamp(42px,5.3vw,68px);line-height:1.08;letter-spacing:-.045em;margin:22px 0 22px;max-width:720px}.hero h1 span{color:#70d1cd}.hero-copy{font-size:18px;line-height:1.8;color:rgba(255,255,255,.76);max-width:610px;margin:0 0 32px}.hero-actions{display:flex;gap:13px;flex-wrap:wrap}.hero-note{margin-top:28px;color:rgba(255,255,255,.56);font-size:12px;letter-spacing:.04em}.hero-visual{min-height:350px;position:relative;display:flex;align-items:center;justify-content:center}.visual-panel{width:100%;max-width:430px;aspect-ratio:1.08;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:27px;box-shadow:0 30px 80px rgba(0,0,0,.18);backdrop-filter:blur(8px);transform:rotate(2deg)}.visual-top{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.72);font-size:10px;letter-spacing:.16em;text-transform:uppercase}.visual-dot{width:8px;height:8px;border-radius:50%;background:#73d4ce;box-shadow:0 0 0 6px rgba(115,212,206,.12)}.visual-headline{font-size:27px;line-height:1.18;font-weight:800;max-width:250px;margin:42px 0 28px}.visual-headline span{color:#76d4d0}.visual-bars{display:grid;gap:10px}.visual-bars i{display:block;height:8px;border-radius:20px;background:rgba(255,255,255,.15)}.visual-bars i:nth-child(1){width:88%;background:rgba(115,212,206,.8)}.visual-bars i:nth-child(2){width:68%}.visual-bars i:nth-child(3){width:78%}.visual-foot{display:flex;justify-content:space-between;margin-top:34px;padding-top:17px;border-top:1px solid rgba(255,255,255,.14);font-size:10px;color:rgba(255,255,255,.58);letter-spacing:.12em;text-transform:uppercase}.section{padding:94px 0}.section-soft{background:var(--mist)}.section-head{max-width:690px;margin-bottom:44px}.section-head.center{text-align:center;margin-left:auto;margin-right:auto}.section-head.center .eyebrow{justify-content:center}.section h2{font-size:clamp(31px,3.5vw,44px);line-height:1.16;letter-spacing:-.035em;color:var(--navy);margin:14px 0 16px}.section-intro{color:var(--muted);font-size:16px;max-width:680px;margin:0}.intro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:90px;align-items:start}.intro-aside{border-left:3px solid var(--teal);padding:7px 0 7px 25px;color:var(--navy);font-size:21px;line-height:1.5;font-weight:700}.intro-copy p{margin:0 0 18px;color:var(--muted)}.text-link{color:var(--teal-dark);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.text-link:hover{color:var(--navy)}.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.service-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 24px;min-height:245px;transition:.25s ease}.service-card:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:rgba(21,155,155,.35)}.service-no{font-size:11px;color:var(--teal);font-weight:800;letter-spacing:.15em}.service-card h3{font-size:19px;line-height:1.3;color:var(--navy);margin:25px 0 12px}.service-card p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}.projects-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}.project-card{min-height:260px;border-radius:var(--radius);overflow:hidden;background:var(--navy);color:#fff;position:relative;padding:32px;display:flex;flex-direction:column;justify-content:flex-end}.project-card:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(21,155,155,.25),transparent 50%),linear-gradient(0deg,rgba(5,18,31,.92),rgba(5,18,31,.1))}.project-card:nth-child(2){background:#294b63}.project-card:nth-child(3){background:#315b65}.project-card:nth-child(4){background:#1e3851}.project-content{position:relative;z-index:1}.project-type{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:#80d7d2;font-weight:800}.project-card h3{font-size:25px;line-height:1.2;margin:9px 0}.project-card p{font-size:13px;color:rgba(255,255,255,.72);margin:0;max-width:440px}.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}.why-list{display:grid;gap:22px}.why-item{display:grid;grid-template-columns:42px 1fr;gap:16px}.why-icon{width:40px;height:40px;border-radius:12px;background:#e5f5f4;color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:800}.why-item h3{font-size:16px;color:var(--navy);margin:0 0 5px}.why-item p{font-size:13px;color:var(--muted);margin:0}.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.process-step{border-top:1px solid #cbd7e0;padding-top:20px}.process-step strong{font-size:12px;color:var(--teal);letter-spacing:.12em}.process-step h3{font-size:18px;color:var(--navy);margin:14px 0 8px}.process-step p{font-size:13px;color:var(--muted);margin:0}.blog-section .blog-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.post-card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;transition:.2s}.post-card:hover{box-shadow:var(--shadow);transform:translateY(-3px)}.post-thumb{height:175px;background:linear-gradient(135deg,#d9e9ee,#edf3f6);overflow:hidden}.post-thumb img{width:100%;height:100%;object-fit:cover}.post-card-body{padding:22px}.post-meta{font-size:10px;color:var(--teal-dark);font-weight:800;letter-spacing:.1em;text-transform:uppercase}.post-card h3{font-size:18px;line-height:1.35;color:var(--navy);margin:10px 0}.post-card h3 a:hover{color:var(--teal-dark)}.post-excerpt{font-size:13px;color:var(--muted);margin:0}.cta-band{background:var(--navy);color:#fff;padding:74px 0}.cta-inner{display:flex;align-items:center;justify-content:space-between;gap:35px}.cta-band h2{font-size:clamp(30px,4vw,43px);line-height:1.15;margin:0 0 12px;letter-spacing:-.03em}.cta-band p{margin:0;color:rgba(255,255,255,.68);max-width:620px}.site-footer{background:#081a2b;color:#fff;padding:62px 0 24px}.footer-grid{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:65px;padding-bottom:45px}.footer-brand{font-size:22px;font-weight:800;letter-spacing:.08em}.footer-brand span{color:#75d3ce}.footer-copy{font-size:13px;color:rgba(255,255,255,.58);max-width:350px;margin:16px 0}.footer-col h4{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#75d3ce;margin:5px 0 18px}.footer-col a,.footer-col p{display:block;font-size:13px;color:rgba(255,255,255,.68);margin:8px 0}.footer-col a:hover{color:#fff}.footer-bottom{border-top:1px solid rgba(255,255,255,.12);padding-top:19px;display:flex;justify-content:space-between;gap:20px;color:rgba(255,255,255,.42);font-size:11px}.page-shell{padding:70px 0 90px;min-height:50vh}.page-title{font-size:38px;color:var(--navy);line-height:1.2;margin:0 0 14px}.blog-post{max-width:850px;margin:0 auto}.blog-post h1{font-size:clamp(34px,4vw,48px);line-height:1.15;color:var(--navy);letter-spacing:-.03em}.post-header-meta{color:var(--muted);font-size:12px;margin:12px 0 30px}.post-body{font-size:17px;line-height:1.85;color:#405365}.post-body h2,.post-body h3{color:var(--navy);line-height:1.25}.post-body img{border-radius:12px}.post-body a{color:var(--teal-dark);text-decoration:underline}.blog-list{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.blog-pager{display:flex;justify-content:space-between;margin-top:40px;color:var(--teal-dark);font-weight:700}.status-msg-wrap{margin:0 0 25px;color:var(--muted)}.widget{margin:0}.blog-feeds,.feed-links{display:none}
+@media(max-width:980px){.hero-grid{gap:35px}.services-grid{grid-template-columns:repeat(2,1fr)}.intro-grid{gap:45px}.process-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{gap:35px}}
+@media(max-width:700px){.wrap{width:min(var(--max),calc(100% - 34px))}.site-header{height:70px}.menu-toggle{display:block}.nav-area{display:none;position:absolute;left:0;right:0;top:70px;background:#fff;padding:20px 24px 25px;border-bottom:1px solid var(--line);box-shadow:0 15px 25px rgba(16,43,70,.08)}.nav-area.open{display:block}.nav-links{display:flex;flex-direction:column;align-items:flex-start;gap:15px;margin-bottom:18px}.nav-cta{width:100%}.hero{padding:78px 0 65px}.hero-grid{grid-template-columns:1fr;gap:28px}.hero h1{font-size:43px}.hero-copy{font-size:16px}.hero-visual{min-height:270px}.visual-panel{max-width:380px}.section{padding:68px 0}.intro-grid,.why-grid{grid-template-columns:1fr;gap:28px}.services-grid,.projects-grid,.blog-section .blog-posts,.blog-list{grid-template-columns:1fr}.service-card{min-height:0}.project-card{min-height:220px}.process-grid{grid-template-columns:1fr 1fr;gap:25px 18px}.cta-inner{align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr 1fr;gap:28px}.footer-grid>div:first-child{grid-column:1/-1}.footer-bottom{flex-direction:column}.page-shell{padding:48px 0 65px}}
+@media(max-width:420px){.hero h1{font-size:37px}.hero-actions .btn{width:100%}.process-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.footer-grid>div:first-child{grid-column:auto}}
+body#layout .site-header,body#layout .hero,body#layout #about,body#layout #services,body#layout #work,body#layout .why-grid,body#layout .process-grid,body#layout .cta-band,body#layout .site-footer{display:none!important}
+  ]]></b:skin>
+  <b:template-skin>
+<![CDATA[
+body#layout .section{margin:10px 0}
+]]>
+  </b:template-skin>
+  <style>
+/*<![CDATA[*/
+/* BaiNest Digital Marketing Services | Premium Corporate Blogger Theme */
+:root{--navy:#102b46;--navy-deep:#0a1e32;--teal:#159b9b;--teal-dark:#0d7f82;--ink:#172b3d;--muted:#667789;--paper:#ffffff;--mist:#f4f7fa;--line:#e3eaf0;--max:1200px;--radius:18px;--shadow:0 18px 50px rgba(16,43,70,.09)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}img{max-width:100%;height:auto}button{font:inherit}.wrap{width:min(var(--max),calc(100% - 48px));margin:0 auto}.site-header{height:82px;background:#fff;border-bottom:1px solid rgba(16,43,70,.08);display:flex;align-items:center;position:relative;z-index:20}.header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:11px;color:var(--navy);font-weight:800;letter-spacing:.08em;font-size:22px}.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--navy);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;letter-spacing:0}.brand small{display:block;font-size:9px;line-height:1.2;letter-spacing:.18em;color:var(--muted);font-weight:700;margin-top:3px}.nav-area{display:flex;align-items:center;gap:28px}.nav-links{display:flex;align-items:center;gap:27px;font-size:13px;font-weight:700;letter-spacing:.04em;color:#42566a}.nav-links a:hover{color:var(--teal)}.nav-cta,.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 21px;border-radius:7px;background:var(--teal);color:#fff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;transition:.2s ease;border:1px solid var(--teal)}.nav-cta:hover,.btn:hover{background:var(--teal-dark);transform:translateY(-1px)}.btn-outline{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}.btn-outline:hover{background:#fff;color:var(--navy);border-color:#fff}.menu-toggle{display:none;background:none;border:0;color:var(--navy);font-size:25px;padding:6px;cursor:pointer}.hero{background:radial-gradient(circle at 82% 20%,rgba(21,155,155,.19),transparent 28%),linear-gradient(120deg,var(--navy-deep),var(--navy) 65%,#153d59);color:#fff;position:relative;overflow:hidden;padding:112px 0 108px}.hero:after{content:"";position:absolute;width:500px;height:500px;border:1px solid rgba(255,255,255,.08);border-radius:50%;right:-130px;bottom:-340px;box-shadow:0 0 0 55px rgba(255,255,255,.025),0 0 0 110px rgba(255,255,255,.02)}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:70px;position:relative;z-index:1}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:11px}.eyebrow:before{content:"";width:28px;height:2px;background:var(--teal)}.hero .eyebrow{color:#76d4d0}.hero h1{font-size:clamp(42px,5.3vw,68px);line-height:1.08;letter-spacing:-.045em;margin:22px 0 22px;max-width:720px}.hero h1 span{color:#70d1cd}.hero-copy{font-size:18px;line-height:1.8;color:rgba(255,255,255,.76);max-width:610px;margin:0 0 32px}.hero-actions{display:flex;gap:13px;flex-wrap:wrap}.hero-note{margin-top:28px;color:rgba(255,255,255,.56);font-size:12px;letter-spacing:.04em}.hero-visual{min-height:350px;position:relative;display:flex;align-items:center;justify-content:center}.visual-panel{width:100%;max-width:430px;aspect-ratio:1.08;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:27px;box-shadow:0 30px 80px rgba(0,0,0,.18);backdrop-filter:blur(8px);transform:rotate(2deg)}.visual-top{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.72);font-size:10px;letter-spacing:.16em;text-transform:uppercase}.visual-dot{width:8px;height:8px;border-radius:50%;background:#73d4ce;box-shadow:0 0 0 6px rgba(115,212,206,.12)}.visual-headline{font-size:27px;line-height:1.18;font-weight:800;max-width:250px;margin:42px 0 28px}.visual-headline span{color:#76d4d0}.visual-bars{display:grid;gap:10px}.visual-bars i{display:block;height:8px;border-radius:20px;background:rgba(255,255,255,.15)}.visual-bars i:nth-child(1){width:88%;background:rgba(115,212,206,.8)}.visual-bars i:nth-child(2){width:68%}.visual-bars i:nth-child(3){width:78%}.visual-foot{display:flex;justify-content:space-between;margin-top:34px;padding-top:17px;border-top:1px solid rgba(255,255,255,.14);font-size:10px;color:rgba(255,255,255,.58);letter-spacing:.12em;text-transform:uppercase}.section{padding:94px 0}.section-soft{background:var(--mist)}.section-head{max-width:690px;margin-bottom:44px}.section-head.center{text-align:center;margin-left:auto;margin-right:auto}.section-head.center .eyebrow{justify-content:center}.section h2{font-size:clamp(31px,3.5vw,44px);line-height:1.16;letter-spacing:-.035em;color:var(--navy);margin:14px 0 16px}.section-intro{color:var(--muted);font-size:16px;max-width:680px;margin:0}.intro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:90px;align-items:start}.intro-aside{border-left:3px solid var(--teal);padding:7px 0 7px 25px;color:var(--navy);font-size:21px;line-height:1.5;font-weight:700}.intro-copy p{margin:0 0 18px;color:var(--muted)}.text-link{color:var(--teal-dark);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.text-link:hover{color:var(--navy)}.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.service-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 24px;min-height:245px;transition:.25s ease}.service-card:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:rgba(21,155,155,.35)}.service-no{font-size:11px;color:var(--teal);font-weight:800;letter-spacing:.15em}.service-card h3{font-size:19px;line-height:1.3;color:var(--navy);margin:25px 0 12px}.service-card p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}.projects-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}.project-card{min-height:260px;border-radius:var(--radius);overflow:hidden;background:var(--navy);color:#fff;position:relative;padding:32px;display:flex;flex-direction:column;justify-content:flex-end}.project-card:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(21,155,155,.25),transparent 50%),linear-gradient(0deg,rgba(5,18,31,.92),rgba(5,18,31,.1))}.project-card:nth-child(2){background:#294b63}.project-card:nth-child(3){background:#315b65}.project-card:nth-child(4){background:#1e3851}.project-content{position:relative;z-index:1}.project-type{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:#80d7d2;font-weight:800}.project-card h3{font-size:25px;line-height:1.2;margin:9px 0}.project-card p{font-size:13px;color:rgba(255,255,255,.72);margin:0;max-width:440px}.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}.why-list{display:grid;gap:22px}.why-item{display:grid;grid-template-columns:42px 1fr;gap:16px}.why-icon{width:40px;height:40px;border-radius:12px;background:#e5f5f4;color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:800}.why-item h3{font-size:16px;color:var(--navy);margin:0 0 5px}.why-item p{font-size:13px;color:var(--muted);margin:0}.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.process-step{border-top:1px solid #cbd7e0;padding-top:20px}.process-step strong{font-size:12px;color:var(--teal);letter-spacing:.12em}.process-step h3{font-size:18px;color:var(--navy);margin:14px 0 8px}.process-step p{font-size:13px;color:var(--muted);margin:0}.blog-section .blog-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.post-card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;transition:.2s}.post-card:hover{box-shadow:var(--shadow);transform:translateY(-3px)}.post-thumb{height:175px;background:linear-gradient(135deg,#d9e9ee,#edf3f6);overflow:hidden}.post-thumb img{width:100%;height:100%;object-fit:cover}.post-card-body{padding:22px}.post-meta{font-size:10px;color:var(--teal-dark);font-weight:800;letter-spacing:.1em;text-transform:uppercase}.post-card h3{font-size:18px;line-height:1.35;color:var(--navy);margin:10px 0}.post-card h3 a:hover{color:var(--teal-dark)}.post-excerpt{font-size:13px;color:var(--muted);margin:0}.cta-band{background:var(--navy);color:#fff;padding:74px 0}.cta-inner{display:flex;align-items:center;justify-content:space-between;gap:35px}.cta-band h2{font-size:clamp(30px,4vw,43px);line-height:1.15;margin:0 0 12px;letter-spacing:-.03em}.cta-band p{margin:0;color:rgba(255,255,255,.68);max-width:620px}.site-footer{background:#081a2b;color:#fff;padding:62px 0 24px}.footer-grid{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:65px;padding-bottom:45px}.footer-brand{font-size:22px;font-weight:800;letter-spacing:.08em}.footer-brand span{color:#75d3ce}.footer-copy{font-size:13px;color:rgba(255,255,255,.58);max-width:350px;margin:16px 0}.footer-col h4{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#75d3ce;margin:5px 0 18px}.footer-col a,.footer-col p{display:block;font-size:13px;color:rgba(255,255,255,.68);margin:8px 0}.footer-col a:hover{color:#fff}.footer-bottom{border-top:1px solid rgba(255,255,255,.12);padding-top:19px;display:flex;justify-content:space-between;gap:20px;color:rgba(255,255,255,.42);font-size:11px}.page-shell{padding:70px 0 90px;min-height:50vh}.page-title{font-size:38px;color:var(--navy);line-height:1.2;margin:0 0 14px}.blog-post{max-width:850px;margin:0 auto}.blog-post h1{font-size:clamp(34px,4vw,48px);line-height:1.15;color:var(--navy);letter-spacing:-.03em}.post-header-meta{color:var(--muted);font-size:12px;margin:12px 0 30px}.post-body{font-size:17px;line-height:1.85;color:#405365}.post-body h2,.post-body h3{color:var(--navy);line-height:1.25}.post-body img{border-radius:12px}.post-body a{color:var(--teal-dark);text-decoration:underline}.blog-list{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.blog-pager{display:flex;justify-content:space-between;margin-top:40px;color:var(--teal-dark);font-weight:700}.status-msg-wrap{margin:0 0 25px;color:var(--muted)}.widget{margin:0}.blog-feeds,.feed-links{display:none}
+@media(max-width:980px){.hero-grid{gap:35px}.services-grid{grid-template-columns:repeat(2,1fr)}.intro-grid{gap:45px}.process-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{gap:35px}}
+@media(max-width:700px){.wrap{width:min(var(--max),calc(100% - 34px))}.site-header{height:70px}.menu-toggle{display:block}.nav-area{display:none;position:absolute;left:0;right:0;top:70px;background:#fff;padding:20px 24px 25px;border-bottom:1px solid var(--line);box-shadow:0 15px 25px rgba(16,43,70,.08)}.nav-area.open{display:block}.nav-links{display:flex;flex-direction:column;align-items:flex-start;gap:15px;margin-bottom:18px}.nav-cta{width:100%}.hero{padding:78px 0 65px}.hero-grid{grid-template-columns:1fr;gap:28px}.hero h1{font-size:43px}.hero-copy{font-size:16px}.hero-visual{min-height:270px}.visual-panel{max-width:380px}.section{padding:68px 0}.intro-grid,.why-grid{grid-template-columns:1fr;gap:28px}.services-grid,.projects-grid,.blog-section .blog-posts,.blog-list{grid-template-columns:1fr}.service-card{min-height:0}.project-card{min-height:220px}.process-grid{grid-template-columns:1fr 1fr;gap:25px 18px}.cta-inner{align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr 1fr;gap:28px}.footer-grid>div:first-child{grid-column:1/-1}.footer-bottom{flex-direction:column}.page-shell{padding:48px 0 65px}}
+@media(max-width:420px){.hero h1{font-size:37px}.hero-actions .btn{width:100%}.process-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.footer-grid>div:first-child{grid-column:auto}}
+/*]]>*/
+  </style>
+</head>
+<body>
+  <!-- (2026-07-13) Add Header layout section; previous: no header section -->
+  <b:section class='header' id='header' maxwidgets='1' name='Header' showaddelement='yes'/>
+  <header class='site-header'>
+    <div class='wrap header-inner'>
+      <a aria-label='BaiNest home' class='brand' expr:href='data:blog.homepageUrl'>
+        <span class='brand-mark'>B</span><span>BAINEST<small>DIGITAL MARKETING SERVICES</small></span>
+      </a>
+      <button aria-label='Open navigation' class='menu-toggle' onclick='document.querySelector(&quot;.nav-area&quot;).classList.toggle(&quot;open&quot;)' type='button'>&#9776;</button>
+      <div class='nav-area'>
+        <nav aria-label='Main navigation' class='nav-links'>
+          <a expr:href='data:blog.homepageUrl'>HOME</a>
+          <a expr:href='data:blog.homepageUrl + &quot;#about&quot;'>ABOUT</a>
+          <a expr:href='data:blog.homepageUrl + &quot;#services&quot;'>SERVICES</a>
+          <a expr:href='data:blog.homepageUrl + &quot;#work&quot;'>OUR WORK</a>
+          <a expr:href='data:blog.homepageUrl + &quot;#insights&quot;'>INSIGHTS</a>
+        </nav>
+        <a class='nav-cta' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>LET&#39;S TALK</a>
+      </div>
+    </div>
+  </header>
+
+  <b:if cond='data:blog.pageType == &quot;index&quot;'>
+    <main>
+      <section class='hero'>
+        <div class='wrap hero-grid'>
+          <div>
+            <div class='eyebrow'>A DIGITAL PARTNER FOR YOUR NEXT CHAPTER</div>
+            <h1>We Build Brands.<br/>We Create <span>Digital Experiences.</span></h1>
+            <p class='hero-copy'>Your business deserves more than just an online presence. We help brands build their identity, connect with their audience, and grow with purpose.</p>
+            <div class='hero-actions'><a class='btn' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>LET&#39;S BUILD SOMETHING</a><a class='btn btn-outline' expr:href='data:blog.homepageUrl + &quot;#services&quot;'>EXPLORE SERVICES</a></div>
+            <div class='hero-note'>INNOVATE. ELEVATE. CONNECT.</div>
+          </div>
+          <div aria-hidden='true' class='hero-visual'><div class='visual-panel'><div class='visual-top'><span>BAINEST / DIGITAL</span><i class='visual-dot'/></div><div class='visual-headline'>Ideas into impact.<br/><span>Presence into progress.</span></div><div class='visual-bars'><i/><i/><i/></div><div class='visual-foot'><span>Strategy</span><span>Creativity</span><span>Growth</span></div></div></div>
+        </div>
+      </section>
+
+      <section class='section' id='about'><div class='wrap intro-grid'><div><div class='eyebrow'>WHO WE ARE</div><h2>Thoughtful digital solutions for businesses ready to grow.</h2></div><div class='intro-copy'><div class='intro-aside'>We bring strategy, creativity, and technology together to help businesses show up with confidence.</div><p>BaiNest Digital Marketing Services partners with businesses to build meaningful brands and stronger digital experiences. From the way your brand looks to the way it connects with customers, we help bring the pieces together.</p><p>Whether you&#39;re starting from the ground up or ready to take your online presence further, we focus on practical solutions that support your goals.</p><a class='text-link' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>GET TO KNOW BAINEST &#8594;</a></div></div></section>
+
+      <section class='section section-soft' id='services'><div class='wrap'><div class='section-head center'><div class='eyebrow'>WHAT WE DO</div><h2>Digital services designed around your business.</h2><p class='section-intro'>A connected set of services to help your business build its identity, reach the right audience, and create a stronger online presence.</p></div><div class='services-grid'>
+        <article class='service-card'><div class='service-no'>01 / BRAND</div><h3>Brand Identity &amp; Development</h3><p>Build a clear, consistent brand identity that communicates who you are and what makes your business different.</p></article>
+        <article class='service-card'><div class='service-no'>02 / SOCIAL</div><h3>Social Media Management</h3><p>Plan, create, and manage purposeful content that keeps your business visible and connected with its audience.</p></article>
+        <article class='service-card'><div class='service-no'>03 / WEB</div><h3>Website Development</h3><p>Create a professional digital home for your business with a website designed to inform, engage, and convert.</p></article>
+        <article class='service-card'><div class='service-no'>04 / DIGITAL</div><h3>Digital Marketing</h3><p>Strengthen your online presence through thoughtful campaigns, content strategy, and digital support.</p></article>
+      </div></div></section>
+
+      <section class='section' id='work'><div class='wrap'><div class='section-head'><div class='eyebrow'>SELECTED WORK</div><h2>Different industries. One thoughtful approach.</h2><p class='section-intro'>A snapshot of the kinds of businesses and communities we help bring to life online. Replace these sample categories with approved client projects and case studies.</p></div><div class='projects-grid'>
+        <article class='project-card'><div class='project-content'><div class='project-type'>AUTOMOTIVE / E-COMMERCE</div><h3>TESPEX</h3><p>Digital content and marketing support for an automotive accessories business.</p></div></article>
+        <article class='project-card'><div class='project-content'><div class='project-type'>PROFESSIONAL SERVICES</div><h3>Business &amp; Legal Brands</h3><p>Brand communication and digital presence for professional service providers.</p></div></article>
+        <article class='project-card'><div class='project-content'><div class='project-type'>HEALTHCARE</div><h3>Healthcare Communications</h3><p>Clear, approachable digital communication for healthcare professionals and organizations.</p></div></article>
+        <article class='project-card'><div class='project-content'><div class='project-type'>COMMUNITY / LIFESTYLE</div><h3>Community Stories</h3><p>Content and online storytelling that help local communities and businesses connect.</p></div></article>
+      </div></div></section>
+
+      <section class='section section-soft'><div class='wrap why-grid'><div><div class='eyebrow'>THE BAINEST APPROACH</div><h2>More than content. A partner in your digital growth.</h2><p class='section-intro'>Good digital work starts with understanding the business behind the brand. We combine clear communication, thoughtful execution, and a practical understanding of your goals.</p></div><div class='why-list'>
+        <div class='why-item'><div class='why-icon'>01</div><div><h3>Strategy before execution</h3><p>We start by understanding your business, audience, and objectives.</p></div></div>
+        <div class='why-item'><div class='why-icon'>02</div><div><h3>Consistent brand experience</h3><p>We help align your message and visual identity across digital touchpoints.</p></div></div>
+        <div class='why-item'><div class='why-icon'>03</div><div><h3>Practical, purposeful work</h3><p>We focus on work that supports real business needs, not just trends.</p></div></div>
+        <div class='why-item'><div class='why-icon'>04</div><div><h3>Built around collaboration</h3><p>Your insight matters. We work with you to move ideas forward.</p></div></div>
+      </div></div></section>
+
+      <section class='section'><div class='wrap'><div class='section-head center'><div class='eyebrow'>HOW WE WORK</div><h2>A clear process. A stronger digital presence.</h2><p class='section-intro'>A collaborative process that keeps every project focused, organized, and moving forward.</p></div><div class='process-grid'>
+        <div class='process-step'><strong>STEP 01</strong><h3>Discover</h3><p>We learn about your business, audience, needs, and goals.</p></div>
+        <div class='process-step'><strong>STEP 02</strong><h3>Plan</h3><p>We shape the direction, priorities, and deliverables for the project.</p></div>
+        <div class='process-step'><strong>STEP 03</strong><h3>Create</h3><p>We develop the content, brand assets, or digital experience.</p></div>
+        <div class='process-step'><strong>STEP 04</strong><h3>Refine &amp; Launch</h3><p>We review the work together, make refinements, and prepare it to go live.</p></div>
+      </div></div></section>
+
+    </main>
+  <b:else/>
+    <main/>
+  </b:if>
+
+  <b:if cond='data:blog.pageType == &quot;index&quot;'>
+    <section class='section section-soft blog-section' id='insights'><div class='wrap'><div class='section-head'><div class='eyebrow'>THE BAINEST JOURNAL</div><h2>Ideas for building a better digital presence.</h2><p class='section-intro'>Practical insights on branding, social media, websites, and digital growth.</p></div></div></section>
+  </b:if>
+  <!-- (2026-07-13) Set section class main & allow add; previous: unclassed -->
+  <b:section class='main' id='main' name='Main Content' showaddelement='yes'>
+    <b:widget id='Blog1' locked='false' title='Blog Posts' type='Blog' version='2' visible='true'>
+      <b:widget-settings>
+        <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+        <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+        <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+        <b:widget-setting name='showAuthor'>false</b:widget-setting>
+        <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+        <b:widget-setting name='timestampLabel'/>
+        <b:widget-setting name='reactionsLabel'/>
+        <b:widget-setting name='showAuthorProfile'>false</b:widget-setting>
+        <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+        <b:widget-setting name='showLabels'>true</b:widget-setting>
+        <b:widget-setting name='showLocation'>true</b:widget-setting>
+        <b:widget-setting name='postLabelsLabel'/>
+        <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+        <b:widget-setting name='postsPerAd'>3</b:widget-setting>
+        <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+        <b:widget-setting name='showInlineAds'>true</b:widget-setting>
+        <b:widget-setting name='showReactions'>false</b:widget-setting>
+      </b:widget-settings>
+      <b:includable id='main' var='top'>
+        <b:if cond='data:blog.pageType == &quot;index&quot;'>
+          <div class='wrap blog-posts'>
+            <b:loop values='data:posts' var='post'>
+              <article class='post-card'><a class='post-thumb' expr:href='data:post.url'><b:if cond='data:post.thumbnailUrl'><img expr:alt='data:post.title' expr:src='data:post.thumbnailUrl'/></b:if></a><div class='post-card-body'><div class='post-meta'>BAINEST INSIGHTS</div><h3><a expr:href='data:post.url'><data:post.title/></a></h3><p class='post-excerpt'><data:post.snippet/></p><a class='text-link' expr:href='data:post.url'>READ ARTICLE &#8594;</a></div></article>
+            </b:loop>
+          </div>
+          <div style='text-align:center;margin:0 auto 65px'><a class='text-link' expr:href='data:blog.homepageUrl + &quot;search&quot;'>VIEW ALL ARTICLES &#8594;</a></div>
+        <b:else/>
+          <div class='page-shell'><b:if cond='data:blog.pageType == &quot;item&quot;'><b:loop values='data:posts' var='post'><article class='blog-post'><h1><data:post.title/></h1><div class='post-header-meta'><data:post.timestamp/></div><div class='post-body'><data:post.body/></div></article></b:loop><b:else/><div class='wrap'><h1 class='page-title'><data:blog.pageName/></h1><div class='blog-list'><b:loop values='data:posts' var='post'><article class='post-card'><a class='post-thumb' expr:href='data:post.url'><b:if cond='data:post.thumbnailUrl'><img expr:alt='data:post.title' expr:src='data:post.thumbnailUrl'/></b:if></a><div class='post-card-body'><div class='post-meta'>BAINEST INSIGHTS</div><h3><a expr:href='data:post.url'><data:post.title/></a></h3><p class='post-excerpt'><data:post.snippet/></p></div></article></b:loop></div></div></b:if></div>
+        </b:if>
+      </b:includable>
+      <b:includable id='aboutPostAuthor'>
+  <div class='author-name'>
+    <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <span>
+        <data:post.author.name/>
+      </span>
+    </a>
+  </div>
+  <div>
+    <span class='author-desc'>
+      <data:post.author.aboutMe/>
+    </span>
+  </div>
+</b:includable>
+      <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+      <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container'>
+    <img class='author-avatar' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+      <b:includable id='commentDeleteIcon' var='comment'>
+  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+        <img src='https://resources.blogblog.com/img/icon_delete13.gif'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+      <b:includable id='commentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+      <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+      <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+      <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+      <b:includable id='commentPicker' var='post'>
+  <b:if cond='data:post.showThreadedComments'>
+    <b:include data='post' name='threadedComments'/>
+  <b:else/>
+    <b:include data='post' name='comments'/>
+  </b:if>
+</b:includable>
+      <b:includable id='comments' var='post'>
+  <section expr:class='&quot;comments&quot; + (data:post.embedCommentForm ? &quot; embed&quot; : &quot;&quot;)' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+    <b:if cond='data:post.allowComments'>
+
+      <b:include name='commentsTitle'/>
+
+      <div expr:id='data:widget.instanceId + &quot;_comments-block-wrapper&quot;'>
+        <b:include cond='data:post.comments' data='post.comments' name='commentList'/>
+      </div>
+
+      <b:if cond='data:post.commentPagingRequired'>
+        <div class='paging-control-container'>
+          <b:if cond='data:post.hasOlderLinks'>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.oldestLinkUrl'>
+              <data:messages.oldest/>
+            </a>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.olderLinkUrl'>
+              <data:messages.older/>
+            </a>
+          </b:if>
+
+          <span class='comment-range-text'>
+            <data:post.commentRangeText/>
+          </span>
+
+          <b:if cond='data:post.hasNewerLinks'>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newerLinkUrl'>
+              <data:messages.newer/>
+            </a>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newestLinkUrl'>
+              <data:messages.newest/>
+            </a>
+          </b:if>
+        </div>
+      </b:if>
+
+      <div class='footer'>
+        <b:if cond='data:post.embedCommentForm'>
+          <b:if cond='data:post.allowNewComments'>
+            <b:include data='post' name='commentForm'/>
+          <b:else/>
+            <data:post.noNewCommentsText/>
+          </b:if>
+        <b:else/>
+          <b:if cond='data:post.allowComments'>
+            <b:include data='post' name='addComments'/>
+          </b:if>
+        </b:if>
+      </div>
+    </b:if>
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+      <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+      <b:includable id='feedLinks'>
+  <b:if cond='!data:view.isPost'> <!-- Blog feed links -->
+    <b:if cond='data:feedLinks'>
+      <div class='blog-feeds'>
+        <b:include data='feedLinks' name='feedLinksBody'/>
+      </div>
+    </b:if>
+  <b:else/> <!--Post feed links -->
+    <div class='post-feeds'>
+      <b:loop values='data:posts' var='post'>
+        <b:if cond='data:post.allowComments and data:post.feedLinks'>
+          <b:include data='post.feedLinks' name='feedLinksBody'/>
+        </b:if>
+      </b:loop>
+    </div>
+  </b:if>
+</b:includable>
+      <b:includable id='feedLinksBody' var='links'>
+  <div class='feed-links'>
+  <data:messages.subscribeTo/>
+  <b:loop values='data:links' var='f'>
+     <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+  </b:loop>
+  </div>
+</b:includable>
+      <b:includable id='homePageLink'>
+  <a class='home-link' expr:href='data:blog.homepageUrl'>
+    <data:messages.home/>
+  </a>
+</b:includable>
+      <b:includable id='iframeComments' var='post'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+      <b:includable id='inlineAd' var='post'>
+  <b:if cond='!data:view.isPreview'>
+    <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+      <!-- Ad -->
+      <div class='inline-ad'>
+        <b:if cond='data:this.adCode != &quot;&quot;'>
+          <data:this.adCode/>
+        <b:else/>
+          <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+        </b:if>
+      </div>
+    </b:if>
+  <b:else/>
+    <div class='inline-ad'>
+      <div class='inline-ad-placeholder'>
+        <span><b:message name='messages.adsGoHere'/></span>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+      <b:includable id='nextPageLink'>
+  <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+    <data:messages.olderPosts/>
+  </a>
+</b:includable>
+      <b:includable id='post' var='post'>
+  <div class='post'>
+    <b:include data='post' name='postMeta'/>
+    <b:include data='post' name='postTitle'/>
+    <b:include name='headerByline'/>
+    <b:if cond='data:view.isSingleItem'>
+      <b:include data='post' name='postBody'/>
+    <b:else/>
+      <b:include data='post' name='postBodySnippet'/>
+      <b:include data='post' name='postJumpLink'/>
+    </b:if>
+    <b:include data='post' name='postFooter'/>
+  </div>
+</b:includable>
+      <b:includable id='postBody' var='post'>
+  <!-- If metaDescription is empty, use the post body as the schema.org description too, for G+/FB snippeting. -->
+  <div class='post-body entry-content float-container' expr:id='&quot;post-body-&quot; + data:post.id'>
+    <data:post.body/>
+  </div>
+</b:includable>
+      <b:includable id='postBodySnippet' var='post'>
+  <b:include data='post' name='postBody'/>
+</b:includable>
+      <b:includable id='postCommentsAndAd' var='post'>
+  <article class='post-outer-container'>
+    <!-- Post title and body -->
+    <div class='post-outer'>
+      <b:include data='post' name='post'/>
+    </div>
+
+    <!-- Comments -->
+    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+    <!-- Show ad inside post container, after comments, if single item. -->
+    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+  </article>
+
+  <!-- Show ad outside post container (between posts) for feed pages. -->
+  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+</b:includable>
+      <b:includable id='postCommentsLink'>
+  <b:if cond='data:view.isMultipleItems'>
+    <span class='byline post-comment-link container'>
+      <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+    </span>
+  </b:if>
+</b:includable>
+      <b:includable id='postFooter' var='post'>
+  <div class='post-footer'>
+    <b:include name='footerBylines'/>
+    <b:include data='post' name='postFooterAuthorProfile'/>
+  </div>
+</b:includable>
+      <b:includable id='postFooterAuthorProfile' var='post'>
+  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+    <div class='author-profile'>
+      <b:if cond='data:post.author.authorPhoto.url'>
+        <img class='author-image' expr:src='data:post.author.authorPhoto.url' width='50px'/>
+        <div class='author-about'>
+          <b:include data='post' name='aboutPostAuthor'/>
+        </div>
+      <b:else/>
+        <b:include data='post' name='aboutPostAuthor'/>
+      </b:if>
+    </div>
+  </b:if>
+</b:includable>
+      <b:includable id='postHeader' var='post'>
+  <b:include name='headerByline'/>
+</b:includable>
+      <b:includable id='postMeta' var='post'>
+  <b:include data='post' name='postMetadataJSON'/>
+</b:includable>
+      <b:includable id='postPagination'>
+  <div class='blog-pager container' id='blog-pager'>
+    <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+    <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+    <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+  </div>
+</b:includable>
+      <b:includable id='postTitle' var='post'>
+  <a expr:name='data:post.id'/>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title entry-title'>
+      <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+        <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+      <b:else/>
+        <data:post.title/>
+      </b:if>
+    </h3>
+  </b:if>
+</b:includable>
+      <b:includable id='previousPageLink'>
+  <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+    <data:messages.newerPosts/>
+  </a>
+</b:includable>
+      <b:includable id='threadedCommentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+      <b:includable id='threadedCommentJs' var='post'>
+  <script async='async' expr:src='data:post.commentSrc' type='text/javascript'/>
+  <b:template-script inline='true' name='threaded_comments'/>
+  <script type='text/javascript'>
+    blogger.widgets.blog.initThreadedComments(
+        <data:post.commentJso/>,
+        <data:post.commentMsgs/>,
+        <data:post.commentConfig/>);
+  </script>
+</b:includable>
+      <b:includable id='threadedComments' var='post'>
+  <section class='comments threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+
+    <b:include name='commentsTitle'/>
+
+    <div class='comments-content'>
+      <b:if cond='data:post.embedCommentForm'>
+        <b:include data='post' name='threadedCommentJs'/>
+      </b:if>
+      <div id='comment-holder'>
+         <data:post.commentHtml/>
+      </div>
+    </div>
+
+    <p class='comment-footer'>
+      <b:if cond='data:post.allowNewComments'>
+        <b:include data='post' name='threadedCommentForm'/>
+      <b:else/>
+        <data:post.noNewCommentsText/>
+      </b:if>
+      <b:if cond='data:post.showManageComments'>
+        <b:include data='post' name='manageComments'/>
+      </b:if>
+    </p>
+
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+      <b:includable id='tooltipCss'>
+  <!-- LINT.IfChange -->
+  <style>
+    .post-body a.b-tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip {
+      display: block !important;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-20%, 1px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip iframe {
+      width: 200px;
+      height: 198px;
+      max-width: none;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (hover: hover) {
+      .post-body a.b-tooltip-container:hover .b-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
+</b:includable>
+    </b:widget>
+  </b:section>
+  <!-- (2026-07-13) Add Sidebar & Footer sections; previous: missing sections -->
+  <b:section class='sidebar' id='sidebar' name='Sidebar' showaddelement='yes'/>
+  <b:section class='footer' id='footer' name='Footer' showaddelement='yes'/>
+
+  <section class='cta-band' id='contact'><div class='wrap cta-inner'><div><h2>Ready to build a stronger digital presence?</h2><p>Tell us about your business and what you want to achieve. Let&#39;s explore how BaiNest can help.</p></div><a class='btn' href='mailto:YOUR-EMAIL@example.com'>START A CONVERSATION</a></div></section>
+  <footer class='site-footer'><div class='wrap'><div class='footer-grid'><div><div class='footer-brand'>BAINEST<span>.</span></div><p class='footer-copy'>Digital marketing, creative solutions, and thoughtful digital experiences for businesses ready to grow.</p><p class='footer-copy'>Innovate. Elevate. Connect.</p></div><div class='footer-col'><h4>Explore</h4><a expr:href='data:blog.homepageUrl'>Home</a><a expr:href='data:blog.homepageUrl + &quot;#about&quot;'>About</a><a expr:href='data:blog.homepageUrl + &quot;#services&quot;'>Services</a><a expr:href='data:blog.homepageUrl + &quot;#work&quot;'>Our Work</a><a expr:href='data:blog.homepageUrl + &quot;#insights&quot;'>Insights</a></div><div class='footer-col'><h4>Connect</h4><p>Let&#39;s talk about your next project.</p><a href='mailto:YOUR-EMAIL@example.com'>YOUR-EMAIL@example.com</a><a href='https://www.facebook.com/' rel='noopener' target='_blank'>Facebook</a></div></div><div class='footer-bottom'><span>&#169; <data:blog.title/>. All rights reserved.</span><span>Innovate. Elevate. Connect.</span></div></div></footer>
+</body>
+</html>

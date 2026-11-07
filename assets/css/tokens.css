@@ -1,0 +1,17 @@
+/* Design tokens read from BuzzSpot v1.1.0. Change values here only. */
+:root {
+  --font: 'Montserrat', Arial, sans-serif;
+  --main: #f12f3f;
+  --grad: linear-gradient(90deg, #f8491b, #f12f3f, #dc1860);
+  --bg: #f4f4f4; --card: #ffffff; --border: #f5f5f5;
+  --title: #222222; --text: #626262; --meta: #97979d;
+  --header-bg: #ffffff; --menu-bg: #ffffff;
+  --footer-bg: #16161a; --footer-text: #aaaaaa; --footerbar-bg: #09090a;
+  --radius: 5px; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  --container: 1073px; --sidebar: 320px; --header-h: 62px;
+}
+[data-theme="dark"] {
+  --bg: #27272b; --card: #252529; --border: #2b2b2f;
+  --title: #f8f8fb; --text: #c5c5c8; --meta: #aaaaaa;
+  --header-bg: #202024; --menu-bg: #252529;
+}
