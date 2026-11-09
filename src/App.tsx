@@ -9,22 +9,40 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+// (2026-07-13) Add social, navigation, and settings imports. Prev: basic icons
 import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
   BarChart3,
   Check,
+  ChevronDown,
   ChevronRight,
   Code2,
+  Copy,
+  Facebook,
+  Instagram,
   Layers3,
+  Mail,
   Menu,
+  MessageCircle,
   PenTool,
+  Share2,
   ShieldCheck,
+  Twitter,
   X,
+  Youtube,
 } from "lucide-react";
 import { AdminApp } from "./Admin";
-import { api, subscribeToPosts, type Block, type Post } from "./lib/api";
+import {
+  api,
+  subscribeToPosts,
+  subscribeToSettings,
+  defaultSettings,
+  type Block,
+  type Post,
+  type SiteSettings,
+} from "./lib/api";
 
 const nav = [
   ["Home", "/"],
@@ -60,32 +78,8 @@ const services = [
     text: "Clear stories, memorable visuals, and creative that works hard across channels.",
   },
 ];
-const projects = [
-  {
-    type: "Brand strategy · Digital",
-    title: "Northline",
-    text: "A sharper story for a new generation of independent makers.",
-    initials: "N",
-  },
-  {
-    type: "Digital experience · Growth",
-    title: "Aster House",
-    text: "A calmer booking experience for a hospitality brand on the move.",
-    initials: "A",
-  },
-  {
-    type: "Creative · Content",
-    title: "Goodwell",
-    text: "A confident launch system for everyday wellness.",
-    initials: "G",
-  },
-  {
-    type: "Strategy · Campaign",
-    title: "Fieldwork",
-    text: "Bringing a modern food collective closer to its community.",
-    initials: "F",
-  },
-];
+// (2026-07-13) Purge sample projects for real client showcase. Prev: dummy data
+const projects: { type: string; title: string; text: string; initials: string }[] = [];
 
 // (2026-07-13) Auto-detect asset base path. Prev: static BASE_URL
 const assetBase =
@@ -142,10 +136,23 @@ function LocalDomainNotice() {
   );
 }
 
+// (2026-07-13) Sticky header with Recent Posts dropdown and dynamic pages. Prev: static nav
 function Header() {
   const [open, setOpen] = useState(false);
+  const [recentOpen, setRecentOpen] = useState(false);
+  const { posts } = usePosts();
   const loc = useLocation();
-  useEffect(() => setOpen(false), [loc.pathname]);
+  useEffect(() => {
+    setOpen(false);
+    setRecentOpen(false);
+  }, [loc.pathname]);
+
+  const customNavPosts = useMemo(
+    () => posts.filter((p) => p.include_in_nav && p.status === "published"),
+    [posts]
+  );
+  const recentPosts = useMemo(() => posts.slice(0, 5), [posts]);
+
   return (
     <header className="site-header">
       <div className="brand-row">
@@ -181,6 +188,66 @@ function Header() {
                 {label.toUpperCase()}
               </NavLink>
             ))}
+
+            {/* (2026-07-13) Recent posts mega dropdown on header navigation. Prev: none */}
+            <div
+              className={`recent-posts-dropdown ${recentOpen ? "open" : ""}`}
+              onMouseEnter={() => setRecentOpen(true)}
+              onMouseLeave={() => setRecentOpen(false)}
+            >
+              <button
+                type="button"
+                className="recent-posts-trigger"
+                onClick={() => setRecentOpen((v) => !v)}
+              >
+                RECENT POSTS <ChevronDown size={13} />
+              </button>
+              {recentOpen && recentPosts.length > 0 && (
+                <div className="recent-posts-mega">
+                  <div className="recent-posts-grid">
+                    {recentPosts.map((rp) => (
+                      <Link
+                        key={rp.id}
+                        to={`/blog/${rp.slug}`}
+                        className="recent-mega-card"
+                        onClick={() => setRecentOpen(false)}
+                      >
+                        <div className="recent-mega-thumb">
+                          {rp.cover_image ? (
+                            <img src={rp.cover_image} alt={rp.title} />
+                          ) : (
+                            <div className="recent-mega-ph">
+                              <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="recent-mega-title">{rp.title}</h4>
+                        <span className="recent-mega-date">
+                          {rp.published_at
+                            ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Recent"}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Custom pages toggled to include in header */}
+            {customNavPosts.map((cp) => (
+              <NavLink
+                key={cp.id}
+                to={`/blog/${cp.slug}`}
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                {cp.title.toUpperCase()}
+              </NavLink>
+            ))}
           </nav>
           <Link className="nav-cta" to="/contact">
             Start a project <ArrowUpRight size={14} />
@@ -190,7 +257,9 @@ function Header() {
     </header>
   );
 }
+// (2026-07-13) Footer with dynamic social profiles and contact info. Prev: static links
 function Footer() {
+  const settings = useSettings();
   return (
     <footer className="site-footer">
       <div className="wrap">
@@ -202,6 +271,34 @@ function Footer() {
               for businesses ready to grow.
             </p>
             <span className="footer-tagline">Innovate. Elevate. Connect.</span>
+            {/* Social media profile links */}
+            <div className="footer-social-row">
+              {settings.facebook && (
+                <a href={settings.facebook} target="_blank" rel="noreferrer" aria-label="Facebook">
+                  <Facebook size={18} />
+                </a>
+              )}
+              {settings.twitter && (
+                <a href={settings.twitter} target="_blank" rel="noreferrer" aria-label="Twitter">
+                  <Twitter size={18} />
+                </a>
+              )}
+              {settings.instagram && (
+                <a href={settings.instagram} target="_blank" rel="noreferrer" aria-label="Instagram">
+                  <Instagram size={18} />
+                </a>
+              )}
+              {settings.youtube && (
+                <a href={settings.youtube} target="_blank" rel="noreferrer" aria-label="YouTube">
+                  <Youtube size={18} />
+                </a>
+              )}
+              {settings.email && (
+                <a href={`mailto:${settings.email}`} aria-label="Email">
+                  <Mail size={18} />
+                </a>
+              )}
+            </div>
           </div>
           <div className="footer-links">
             <h4>Explore</h4>
@@ -213,7 +310,8 @@ function Footer() {
           </div>
           <div className="footer-links">
             <h4>Connect</h4>
-            <p>Have a good idea? Let’s find its next step.</p>
+            <p>{settings.email || "Have a good idea? Let’s find its next step."}</p>
+            {settings.phone && <p className="footer-phone">{settings.phone}</p>}
             <Link to="/contact">
               Start a conversation <ArrowUpRight size={13} />
             </Link>
@@ -221,7 +319,7 @@ function Footer() {
         </div>
         <div className="footer-bottom">
           <span>
-            © {new Date().getFullYear()} BaiNest Studio. All rights reserved.
+            © {new Date().getFullYear()} {settings.siteName || "BaiNest Studio"}. All rights reserved.
           </span>
           <span>Thoughtful strategy. Work that moves you forward.</span>
           <Link
@@ -334,6 +432,15 @@ function usePosts() {
     return () => unsub();
   }, []);
   return { posts, loading };
+}
+// (2026-07-13) Real-time settings hook via onSnapshot. Prev: none
+function useSettings() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  useEffect(() => {
+    const unsub = subscribeToSettings(setSettings);
+    return () => unsub();
+  }, []);
+  return settings;
 }
 function Home() {
   const { posts } = usePosts();
@@ -492,26 +599,38 @@ function Home() {
               View all work <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="projects-grid">
-            {projects.slice(0, 2).map((p, i) => (
-              <Link
-                className={`project-card project-${i}`}
-                key={p.title}
-                to="/portfolio"
-              >
-                <div className="project-art">
-                  <span>{p.initials}</span>
-                  <div className="project-orbit" />
-                </div>
-                <div className="project-content">
-                  <span className="project-type">{p.type}</span>
-                  <h3>{p.title}</h3>
-                  <p>{p.text}</p>
-                  <ArrowUpRight className="project-arrow" size={20} />
-                </div>
+          {/* (2026-07-13) Show clean teaser when projects is empty. Prev: empty map */}
+          {projects.length > 0 ? (
+            <div className="projects-grid">
+              {projects.slice(0, 2).map((p, i) => (
+                <Link
+                  className={`project-card project-${i}`}
+                  key={p.title}
+                  to="/portfolio"
+                >
+                  <div className="project-art">
+                    <span>{p.initials}</span>
+                    <div className="project-orbit" />
+                  </div>
+                  <div className="project-content">
+                    <span className="project-type">{p.type}</span>
+                    <h3>{p.title}</h3>
+                    <p>{p.text}</p>
+                    <ArrowUpRight className="project-arrow" size={20} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="portfolio-teaser-box">
+              <p>
+                Our real client portfolio and case studies are being published here shortly.
+              </p>
+              <Link className="text-link" to="/portfolio">
+                Learn more about our showcase <ArrowRight size={14} />
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
       <section className="section section-soft why-section">
@@ -742,61 +861,88 @@ function Services() {
     </PageFrame>
   );
 }
+// (2026-07-13) Clean showcase ready for client portfolio posts. Prev: mock projects
 function Portfolio() {
   return (
     <PageFrame>
       <PageHeading
         label="Portfolio"
         title="Work that moves good ideas forward."
-        copy="A selection of strategic, creative, and digital work made in close partnership with ambitious teams."
+        copy="A curated showcase of strategic, creative, and digital builds made in close partnership with ambitious brands."
       />
       <section className="section">
-        <div className="wrap portfolio-grid">
-          {projects.map((p, i) => (
-            <article className={`portfolio-card portfolio-${i}`} key={p.title}>
-              <div className="portfolio-art">
-                <span>{p.initials}</span>
-                <div className="portfolio-shape" />
-              </div>
-              <div className="portfolio-copy">
-                <span className="project-type">{p.type}</span>
-                <h2>{p.title}</h2>
-                <p>{p.text}</p>
-                <span className="text-link">Strategy · Design · Digital</span>
-              </div>
-            </article>
-          ))}
+        <div className="wrap">
+          <div className="portfolio-empty-state">
+            <span className="empty-badge">Curated Showcase</span>
+            <h2>Client Case Studies Coming Soon</h2>
+            <p>
+              We are currently curating and uploading our real client case studies and digital project launches directly to this gallery. Check back shortly or reach out to explore our private deck.
+            </p>
+            <Link className="btn" to="/contact">
+              Talk with our team <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
-        <p className="portfolio-note wrap">
-          Selected project names are illustrative placeholders. Replace them
-          with approved client work before launch.
-        </p>
       </section>
       <CtaBand />
     </PageFrame>
   );
 }
+// (2026-07-13) Blogs page with category chips and card images. Prev: The journal
 function Blog() {
   const { posts, loading } = usePosts();
   const [query, setQuery] = useState("");
-  const filtered = useMemo(
-    () =>
-      posts.filter((p) =>
-        `${p.title} ${p.excerpt} ${p.category} ${p.tags.join(" ")}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-      ),
-    [posts, query],
-  );
+  const [selectedTag, setSelectedTag] = useState("All");
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    posts.forEach((p) => {
+      if (p.category) set.add(p.category.trim());
+      if (Array.isArray(p.tags)) {
+        p.tags.forEach((t) => t && set.add(t.trim()));
+      }
+    });
+    return ["All", ...Array.from(set)];
+  }, [posts]);
+
+  const filtered = useMemo(() => {
+    return posts.filter((p) => {
+      const matchesQuery = `${p.title} ${p.excerpt} ${p.category} ${(p.tags || []).join(" ")}`
+        .toLowerCase()
+        .includes(query.toLowerCase());
+      const matchesTag =
+        selectedTag === "All" ||
+        p.category?.toLowerCase() === selectedTag.toLowerCase() ||
+        (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase());
+      return matchesQuery && matchesTag;
+    });
+  }, [posts, query, selectedTag]);
+
   return (
     <PageFrame>
       <PageHeading
-        label="The journal"
+        label="Blogs"
         title="Ideas to help good work move."
-        copy="Notes on brand, digital, and creative work—written to be useful long after the tab is closed."
+        copy="Notes on brand, digital, and creative strategy—written to be useful long after the tab is closed."
       />
       <section className="section">
         <div className="wrap">
+          {/* Category Chips Bar */}
+          {allTags.length > 1 && (
+            <div className="category-chips-bar">
+              {allTags.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`category-chip ${selectedTag === t ? "active" : ""}`}
+                  onClick={() => setSelectedTag(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="blog-toolbar">
             <span>
               {filtered.length} {filtered.length === 1 ? "story" : "stories"}
@@ -806,12 +952,12 @@ function Blog() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search the journal…"
+                placeholder="Search blogs…"
               />
             </label>
           </div>
           {loading ? (
-            <div className="empty-state">Loading the journal…</div>
+            <div className="empty-state">Loading blogs…</div>
           ) : filtered.length ? (
             <div className="blog-list">
               {filtered.map((p, i) => (
@@ -821,8 +967,8 @@ function Blog() {
           ) : (
             <div className="empty-state">
               {posts.length
-                ? "No stories match that search yet."
-                : "Your first story is taking shape."}
+                ? "No stories match that category or search."
+                : "No blogs published yet. Add your first story from the admin dashboard."}
             </div>
           )}
         </div>
@@ -880,6 +1026,7 @@ function BlockRenderer({ blocks }: { blocks: Block[] }) {
     </div>
   );
 }
+// (2026-07-13) Blog post detail with widgets, social bar, and sidebar. Prev: basic article
 function PostDetail() {
   const { slug = "" } = useParams();
   const [search] = useSearchParams();
@@ -887,6 +1034,16 @@ function PostDetail() {
   const previewId = search.get("id");
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [subEmail, setSubEmail] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [commentName, setCommentName] = useState("");
+  const [commentDone, setCommentDone] = useState(false);
+
+  const { posts: allPosts } = usePosts();
+  const settings = useSettings();
+
   useEffect(() => {
     setLoading(true);
     const endpoint =
@@ -898,70 +1055,430 @@ function PostDetail() {
       .catch(() => setPost(null))
       .finally(() => setLoading(false));
   }, [slug, preview, previewId]);
+
+  const relatedPosts = useMemo(() => {
+    if (!post) return [];
+    return allPosts
+      .filter((p) => p.id !== post.id && p.status === "published")
+      .slice(0, 3);
+  }, [allPosts, post]);
+
+  const latestPosts = useMemo(() => {
+    return allPosts.filter((p) => p.status === "published").slice(0, 4);
+  }, [allPosts]);
+
+  const mainTags = useMemo(() => {
+    const set = new Set<string>();
+    allPosts.forEach((p) => {
+      if (p.category) set.add(p.category.trim());
+      if (Array.isArray(p.tags)) {
+        p.tags.forEach((t) => t && set.add(t.trim()));
+      }
+    });
+    return Array.from(set);
+  }, [allPosts]);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  function copyShareLink() {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2400);
+    }
+  }
+
   if (loading)
     return (
       <PageFrame>
         <div className="wrap article-not-found">Loading story…</div>
       </PageFrame>
     );
+
   if (!post)
     return (
       <PageFrame>
         <div className="wrap article-not-found">
-          <Eyebrow>The journal</Eyebrow>
+          <Eyebrow>Blogs</Eyebrow>
           <h1>We couldn’t find that story.</h1>
           <Link className="btn" to="/blog">
-            Back to the journal
+            Back to blogs
           </Link>
         </div>
       </PageFrame>
     );
+
   return (
     <PageFrame>
-      <article className="article-page">
-        <div className="wrap article-wrap">
+      <div className="article-layout-wrap wrap">
+        {/* Main Article Content */}
+        <article className="article-main-col">
           {preview && (
             <div className="private-preview-label">
               PRIVATE DRAFT PREVIEW · Only visible while signed in
             </div>
           )}
-          <Link className="back-link" to="/blog">
-            ← Back to the journal
-          </Link>
-          <div className="post-meta">
-            <span>{post.category}</span>
-            <i />
-            <time>
-              {post.published_at
-                ? new Date(post.published_at).toLocaleDateString("en", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : ""}
-            </time>
-            <i />
-            {post.author}
+
+          {/* Breadcrumb */}
+          <div className="post-breadcrumbs">
+            <Link to="/">Home</Link>
+            <ChevronRight size={13} />
+            <Link to="/blog">Blogs</Link>
+            <ChevronRight size={13} />
+            <span>{post.title}</span>
           </div>
-          <h1>{post.title}</h1>
-          <p className="article-excerpt">{post.excerpt}</p>
-          <div className="article-rule" />
-          <BlockRenderer blocks={post.blocks} />
-          <div className="article-end">
-            <span>Filed under {post.category}</span>
-            <Link className="text-link" to="/contact">
-              Talk with BaiNest <ArrowRight size={14} />
-            </Link>
+
+          <header className="post-detail-header">
+            <h1>{post.title}</h1>
+            <div className="post-meta-row">
+              <span className="post-meta-author">
+                By <b>{post.author || "BaiNest"}</b>
+              </span>
+              <span className="meta-sep">·</span>
+              <time className="post-meta-date">
+                {post.published_at
+                  ? new Date(post.published_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Draft"}
+              </time>
+              {post.category && (
+                <>
+                  <span className="meta-sep">·</span>
+                  <span className="post-meta-cat">{post.category}</span>
+                </>
+              )}
+            </div>
+          </header>
+
+          {post.cover_image && (
+            <div className="post-featured-hero">
+              <img src={post.cover_image} alt={post.title} />
+            </div>
+          )}
+
+          {post.excerpt && <p className="post-lead-excerpt">{post.excerpt}</p>}
+
+          <div className="post-content-blocks">
+            <BlockRenderer blocks={post.blocks || []} />
           </div>
-        </div>
-      </article>
+
+          {/* Social Share Bar */}
+          <div className="post-share-bar">
+            <span className="share-bar-label">
+              <Share2 size={16} />
+            </span>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="share-btn share-fb"
+              title="Share on Facebook"
+            >
+              <Facebook size={15} /> Facebook
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="share-btn share-tw"
+              title="Share on Twitter"
+            >
+              <Twitter size={15} /> Twitter
+            </a>
+            <a
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + shareUrl)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="share-btn share-wa"
+              title="Share on WhatsApp"
+            >
+              <MessageCircle size={15} />
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(shareUrl)}`}
+              className="share-btn share-em"
+              title="Share via Email"
+            >
+              <Mail size={15} />
+            </a>
+            <button
+              type="button"
+              className="share-btn share-cp"
+              onClick={copyShareLink}
+              title="Copy page link"
+            >
+              <Copy size={15} /> {copied ? "Copied!" : ""}
+            </button>
+          </div>
+
+          {/* You Might Like Section */}
+          {relatedPosts.length > 0 && (
+            <div className="related-section">
+              <div className="related-header">
+                <h3>You might like &gt;</h3>
+                <Link to="/blog" className="related-view-all">
+                  View all
+                </Link>
+              </div>
+              <div className="related-grid">
+                {relatedPosts.map((rp) => (
+                  <Link
+                    key={rp.id}
+                    to={`/blog/${rp.slug}`}
+                    className="related-post-card"
+                  >
+                    <div className="related-card-thumb">
+                      {rp.cover_image ? (
+                        <img src={rp.cover_image} alt={rp.title} />
+                      ) : (
+                        <div className="related-thumb-ph">
+                          <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
+                        </div>
+                      )}
+                    </div>
+                    <h4>{rp.title}</h4>
+                    <time>
+                      {rp.published_at
+                        ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "Recent"}
+                    </time>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Post a Comment Section */}
+          <div className="comment-section-card">
+            <h3>Post a Comment &gt;</h3>
+            {commentDone ? (
+              <div className="comment-success-notice">
+                <Check size={16} /> Thank you! Your response has been submitted for review.
+              </div>
+            ) : (
+              <form
+                className="comment-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (commentText.trim()) setCommentDone(true);
+                }}
+              >
+                <textarea
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Share your thoughts on this story…"
+                  required
+                />
+                <div className="comment-form-row">
+                  <input
+                    type="text"
+                    value={commentName}
+                    onChange={(e) => setCommentName(e.target.value)}
+                    placeholder="Your Name (optional)"
+                  />
+                  <button type="submit" className="comment-submit-btn">
+                    Submit Comment
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </article>
+
+        {/* Right Sidebar Widgets */}
+        <aside className="article-sidebar">
+          {/* Follow Us Widget */}
+          <div className="sidebar-widget-card">
+            <h3 className="widget-title">Follow Us</h3>
+            <div className="follow-us-grid">
+              <a
+                href={settings.facebook || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="follow-btn follow-fb"
+              >
+                <Facebook size={18} />
+                <span className="follow-count">7k</span>
+              </a>
+              <a
+                href={settings.twitter || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="follow-btn follow-tw"
+              >
+                <Twitter size={18} />
+                <span className="follow-count">1k</span>
+              </a>
+              <a
+                href={settings.youtube || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="follow-btn follow-yt"
+              >
+                <Youtube size={18} />
+                <span className="follow-count">6</span>
+              </a>
+              <a
+                href={settings.instagram || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="follow-btn follow-ig"
+              >
+                <Instagram size={18} />
+                <span className="follow-count">702</span>
+              </a>
+            </div>
+          </div>
+
+          {/* MailChimp Form Widget */}
+          <div className="sidebar-widget-card mailchimp-widget">
+            <div className="mailchimp-icon-header">
+              <div className="mailchimp-icon-circle">
+                <Mail size={18} />
+              </div>
+            </div>
+            <h4>MailChimp Form</h4>
+            <p>Subscribe to our mailing list to get the new updates.</p>
+            {subscribed ? (
+              <div className="subscribe-success">
+                <Check size={15} /> You’re on the list!
+              </div>
+            ) : (
+              <form
+                className="mailchimp-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (subEmail.trim()) setSubscribed(true);
+                }}
+              >
+                <input
+                  type="email"
+                  value={subEmail}
+                  onChange={(e) => setSubEmail(e.target.value)}
+                  placeholder="Email Address"
+                  required
+                />
+                <button type="submit" className="subscribe-submit-btn">
+                  Subscribe
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Latest Posts Widget */}
+          {latestPosts.length > 0 && (
+            <div className="sidebar-widget-card">
+              <h3 className="widget-title">Latest Posts</h3>
+              <div className="latest-posts-list">
+                {latestPosts.map((lp) => (
+                  <Link
+                    key={lp.id}
+                    to={`/blog/${lp.slug}`}
+                    className="latest-post-row"
+                  >
+                    <div className="latest-post-thumb">
+                      {lp.cover_image ? (
+                        <img src={lp.cover_image} alt={lp.title} />
+                      ) : (
+                        <div className="latest-post-ph">
+                          <span>{lp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="latest-post-info">
+                      <h5>{lp.title}</h5>
+                      <time>
+                        {lp.published_at
+                          ? new Date(lp.published_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "Recent"}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Popular Posts Widget */}
+          {latestPosts.length > 0 && (
+            <div className="sidebar-widget-card">
+              <h3 className="widget-title">Popular Posts</h3>
+              <div className="popular-posts-list">
+                {latestPosts.map((pp, idx) => (
+                  <Link
+                    key={pp.id}
+                    to={`/blog/${pp.slug}`}
+                    className="popular-post-row"
+                  >
+                    <div className="popular-post-thumb-wrap">
+                      {pp.cover_image ? (
+                        <img src={pp.cover_image} alt={pp.title} />
+                      ) : (
+                        <div className="popular-post-ph">
+                          <span>{pp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
+                        </div>
+                      )}
+                      <span className="popular-badge">{idx + 1}</span>
+                    </div>
+                    <div className="popular-post-info">
+                      <h5>{pp.title}</h5>
+                      <time>
+                        {pp.published_at
+                          ? new Date(pp.published_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "Popular"}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Main Tags Widget */}
+          {mainTags.length > 0 && (
+            <div className="sidebar-widget-card">
+              <h3 className="widget-title">Main Tags</h3>
+              <div className="tags-cloud-wrap">
+                {mainTags.map((tg) => (
+                  <Link
+                    key={tg}
+                    to="/blog"
+                    className="tag-cloud-chip"
+                  >
+                    {tg}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
     </PageFrame>
   );
 }
+// (2026-07-13) Contact page with requested pillars and improved cards. Prev: basic form
 function Contact() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const settings = useSettings();
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formElement = e.currentTarget;
@@ -1006,19 +1523,35 @@ function Contact() {
               Use the form to tell us a bit about your goals, timing, or the
               question you’re trying to answer.
             </p>
-            <div className="contact-note">
-              <span>01</span>
-              <p>
-                Your message is saved to the local inbox in this development
-                version.
-              </p>
+
+            {/* Requested Pillars */}
+            <div className="contact-pillar-card">
+              <span className="pillar-num">01</span>
+              <div className="pillar-body">
+                <h4>Built around your goals.</h4>
+                <p>
+                  We take time to understand your brand, audience, and business
+                  objectives.
+                </p>
+              </div>
             </div>
-            <div className="contact-note">
-              <span>02</span>
-              <p>
-                Real contact details can be added in site settings before
-                launch.
-              </p>
+
+            <div className="contact-pillar-card">
+              <span className="pillar-num">02</span>
+              <div className="pillar-body">
+                <h4>Strategy starts with a conversation.</h4>
+                <p>
+                  Tell us what you need. We'll help you explore the right
+                  solutions for your business.
+                </p>
+              </div>
+            </div>
+
+            {/* Direct Connect Information */}
+            <div className="contact-direct-card">
+              <h5>Direct Inquiries</h5>
+              <p className="direct-email">{settings.email}</p>
+              {settings.phone && <p className="direct-phone">{settings.phone}</p>}
             </div>
           </div>
           <form className="contact-form" onSubmit={submit}>

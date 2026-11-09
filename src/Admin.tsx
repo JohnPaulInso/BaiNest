@@ -25,18 +25,22 @@ import {
   Eye,
   Check,
   LockKeyhole,
+  PenTool,
 } from "lucide-react";
-// (2026-07-13) Import real-time subscription helpers. Prev: api only
+// (2026-07-13) Import SiteSettings and defaultSettings. Prev: Post only
 import {
   api,
   setCsrf,
   subscribeToPosts,
   subscribeToContacts,
+  defaultSettings,
   type AdminState,
   type Block,
   type Post,
+  type SiteSettings,
 } from "./lib/api";
 
+// (2026-07-13) Add include_in_nav flag to emptyPost. Prev: no include_in_nav
 const emptyPost: Omit<Post, "id" | "created_at" | "updated_at"> = {
   title: "",
   slug: "",
@@ -50,6 +54,7 @@ const emptyPost: Omit<Post, "id" | "created_at" | "updated_at"> = {
   seo_title: "",
   seo_description: "",
   published_at: null,
+  include_in_nav: false,
 };
 function slugify(text: string) {
   return text
@@ -975,6 +980,16 @@ function PostEditor({
               />
               <small>Separate tags with commas.</small>
             </label>
+            {/* (2026-07-13) Add include_in_nav toggle option. Prev: none */}
+            <label className="nav-toggle-check" style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", cursor: "pointer", fontSize: "0.86rem", fontWeight: 600 }}>
+              <input
+                type="checkbox"
+                checked={Boolean(form.include_in_nav)}
+                onChange={(e) => patch("include_in_nav", e.target.checked)}
+                style={{ width: "auto", margin: 0 }}
+              />
+              Include in header navigation
+            </label>
           </div>
           <div className="editor-side-card">
             <h3>URL & discovery</h3>
@@ -1029,19 +1044,20 @@ function PostEditor({
     </>
   );
 }
+// (2026-07-13) Manage live global social and contact settings. Prev: siteName only
 function DomainSettings() {
   const [domains, setDomains] = useState<any[]>([]);
-  const [settings, setSettings] = useState({ siteName: "BaiNest" });
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [host, setHost] = useState("");
   const [blog, setBlog] = useState("BaiNest");
   const [notice, setNotice] = useState("");
   async function refresh() {
     const [d, s] = await Promise.all([
       api<any[]>("/api/admin/domains"),
-      api<any>("/api/admin/settings"),
+      api<SiteSettings>("/api/admin/settings"),
     ]);
     setDomains(d);
-    setSettings({ siteName: s.siteName || "BaiNest" });
+    setSettings(s || defaultSettings);
   }
   useEffect(() => {
     refresh().catch(() => {});
@@ -1071,7 +1087,7 @@ function DomainSettings() {
         method: "PUT",
         body: JSON.stringify(settings),
       });
-      setNotice("Site settings saved.");
+      setNotice("Site and social settings saved to Firestore.");
     } catch (err) {
       setNotice(
         err instanceof Error ? err.message : "Could not save settings.",
@@ -1084,22 +1100,76 @@ function DomainSettings() {
         <div>
           <span className="admin-kicker">Configuration</span>
           <h1>Make this space yours.</h1>
-          <p>Set your site identity and map blog domains for local preview.</p>
+          <p>Configure site branding, contact information, and global social media profiles.</p>
         </div>
       </div>
+      {notice && (
+        <div className={`editor-notice ${notice.includes("Could") ? "error" : ""}`} style={{ marginBottom: 16 }}>
+          {notice}
+        </div>
+      )}
       <div className="settings-grid">
         <form className="admin-panel settings-panel" onSubmit={saveSettings}>
           <div className="panel-head">
             <div>
-              <h2>Site identity</h2>
-              <p>These settings are stored in your local database.</p>
+              <h2>Global Site & Socials</h2>
+              <p>Stored in cloud Firestore and applied across all public pages and sidebars.</p>
             </div>
           </div>
           <label>
             Site name
             <input
               value={settings.siteName}
-              onChange={(e) => setSettings({ siteName: e.target.value })}
+              onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+            />
+          </label>
+          <label>
+            Contact Email
+            <input
+              type="email"
+              value={settings.email}
+              onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+              placeholder="contact@bainestdigital.com"
+            />
+          </label>
+          <label>
+            Phone / WhatsApp
+            <input
+              value={settings.phone}
+              onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+              placeholder="+63 900 000 0000"
+            />
+          </label>
+          <label>
+            Facebook URL
+            <input
+              value={settings.facebook}
+              onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
+              placeholder="https://facebook.com/yourpage"
+            />
+          </label>
+          <label>
+            Twitter / X URL
+            <input
+              value={settings.twitter}
+              onChange={(e) => setSettings({ ...settings, twitter: e.target.value })}
+              placeholder="https://x.com/yourhandle"
+            />
+          </label>
+          <label>
+            Instagram URL
+            <input
+              value={settings.instagram}
+              onChange={(e) => setSettings({ ...settings, instagram: e.target.value })}
+              placeholder="https://instagram.com/yourhandle"
+            />
+          </label>
+          <label>
+            YouTube Channel URL
+            <input
+              value={settings.youtube}
+              onChange={(e) => setSettings({ ...settings, youtube: e.target.value })}
+              placeholder="https://youtube.com/@yourchannel"
             />
           </label>
           <button className="admin-primary">

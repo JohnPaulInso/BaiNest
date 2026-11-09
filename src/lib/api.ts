@@ -1,8 +1,9 @@
-// (2026-07-13) Real-time onSnapshot listeners and Firestore CRUD. Prev: fetch only
+// (2026-07-13) Add getDoc for settings query. Prev: getDocs only
 import {
   collection,
   doc,
   getDocs,
+  getDoc,
   setDoc,
   deleteDoc,
   query,
@@ -49,6 +50,25 @@ export type Post = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  include_in_nav?: boolean;
+};
+export type SiteSettings = {
+  siteName: string;
+  email: string;
+  phone: string;
+  facebook: string;
+  twitter: string;
+  instagram: string;
+  youtube: string;
+};
+export const defaultSettings: SiteSettings = {
+  siteName: "BaiNest",
+  email: "contact@bainestdigital.com",
+  phone: "+63 900 000 0000",
+  facebook: "https://facebook.com/bainestdigital",
+  twitter: "https://twitter.com/bainestdigital",
+  instagram: "https://instagram.com/bainestdigital",
+  youtube: "https://youtube.com/@bainestdigital",
 };
 export type AdminState = {
   authenticated: boolean;
@@ -59,87 +79,14 @@ let csrfToken = "";
 export function setCsrf(token: string) {
   csrfToken = token;
 }
-// (2026-07-13) Client storage fallback for static GitHub Pages. Prev: fetch only
-const defaultPosts: Post[] = [
-  {
-    id: 1,
-    title: "The clarity advantage: making your brand easier to choose",
-    slug: "clarity-advantage-brand",
-    excerpt: "A practical look at how sharper positioning turns a good business into the obvious choice.",
-    cover_image: "",
-    author: "BaiNest Studio",
-    category: "Brand strategy",
-    tags: ["Brand", "Strategy"],
-    blocks: [
-      { type: "paragraph", text: "Strong brands do not simply say more. They make the right things easier to understand, remember, and act on." },
-      { type: "heading", text: "Clarity is a growth tool" },
-      { type: "paragraph", text: "When your promise is consistent across your website, content, and customer experience, people spend less time guessing and more time moving forward." },
-      { type: "quote", text: "The best positioning is a clear invitation to the right people." },
-      { type: "paragraph", text: "Start by naming the problem you solve, the people you solve it for, and the meaningful difference in how you work." }
-    ],
-    status: "published",
-    seo_title: "",
-    seo_description: "",
-    published_at: "2026-01-14T09:00:00.000Z",
-    created_at: "2026-11-07 17:16:47",
-    updated_at: "2026-11-07 17:16:47"
-  },
-  {
-    id: 2,
-    title: "A better brief makes better creative",
-    slug: "better-brief-better-creative",
-    excerpt: "Four useful questions to bring your next campaign, website, or launch into focus.",
-    cover_image: "",
-    author: "BaiNest Studio",
-    category: "Creative",
-    tags: ["Creative", "Process"],
-    blocks: [
-      { type: "paragraph", text: "Great creative work starts before the first sketch. A thoughtful brief gives a team the context to make confident choices." },
-      { type: "heading", text: "Begin with the outcome" },
-      { type: "paragraph", text: "Be clear about what should change for your audience after they see or use the work. Then share the constraints, proof points, and tone that will make the idea feel true." },
-      { type: "list", items: ["Who is this for?", "What do they need to understand or do?", "What makes this offer distinct?", "How will we know the work helped?"] }
-    ],
-    status: "published",
-    seo_title: "",
-    seo_description: "",
-    published_at: "2026-01-08T09:00:00.000Z",
-    created_at: "2026-11-07 17:16:47",
-    updated_at: "2026-11-07 17:16:47"
-  },
-  {
-    id: 3,
-    title: "Small website improvements with outsized impact",
-    slug: "small-site-improvements",
-    excerpt: "A focused checklist for making your digital storefront more useful, credible, and clear.",
-    cover_image: "",
-    author: "BaiNest Studio",
-    category: "Digital",
-    tags: ["Website", "Growth"],
-    blocks: [
-      { type: "paragraph", text: "Your website is a living part of your business. Small improvements to clarity and navigation can remove friction at the exact moment a visitor is deciding what to do next." },
-      { type: "heading", text: "Make the next step obvious" },
-      { type: "paragraph", text: "Use one primary action, describe what happens after a click, and keep important information close to the decision it supports." },
-      { type: "cta", text: "Ready to improve your site?", label: "Talk with BaiNest", href: "/contact" }
-    ],
-    status: "published",
-    seo_title: "",
-    seo_description: "",
-    published_at: "2026-01-02T09:00:00.000Z",
-    created_at: "2026-11-07 17:16:47",
-    updated_at: "2026-11-07 17:16:47"
-  }
-];
-
+// (2026-07-13) Clean storage fallback without mock seed. Prev: mock data
 function getStoredPosts(): Post[] {
   try {
     const raw = localStorage.getItem("bainenest_posts");
-    if (!raw) {
-      localStorage.setItem("bainenest_posts", JSON.stringify(defaultPosts));
-      return defaultPosts;
-    }
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch {
-    return defaultPosts;
+    return [];
   }
 }
 
@@ -149,18 +96,68 @@ function saveStoredPosts(posts: Post[]) {
   } catch {}
 }
 
-// (2026-07-13) Connect Firestore for cloud post sync. Prev: localStorage only
+export async function getFirestoreSettings(): Promise<SiteSettings> {
+  try {
+    const snap = await getDoc(doc(firestore, "settings", "global"));
+    if (snap.exists()) {
+      return { ...defaultSettings, ...(snap.data() as Partial<SiteSettings>) };
+    }
+    await setDoc(doc(firestore, "settings", "global"), defaultSettings);
+    return defaultSettings;
+  } catch {
+    const raw = localStorage.getItem("bainenest_settings");
+    if (raw) {
+      try {
+        return { ...defaultSettings, ...JSON.parse(raw) };
+      } catch {}
+    }
+    return defaultSettings;
+  }
+}
+
+export async function saveFirestoreSettings(data: Partial<SiteSettings>): Promise<void> {
+  try {
+    await setDoc(doc(firestore, "settings", "global"), data, { merge: true });
+  } catch {}
+  try {
+    const cur = await getFirestoreSettings();
+    localStorage.setItem(
+      "bainenest_settings",
+      JSON.stringify({ ...cur, ...data })
+    );
+  } catch {}
+}
+
+export function subscribeToSettings(
+  callback: (s: SiteSettings) => void
+): () => void {
+  try {
+    return onSnapshot(
+      doc(firestore, "settings", "global"),
+      (snap) => {
+        if (snap.exists()) {
+          callback({
+            ...defaultSettings,
+            ...(snap.data() as Partial<SiteSettings>),
+          });
+        } else {
+          callback(defaultSettings);
+        }
+      },
+      () => callback(defaultSettings)
+    );
+  } catch {
+    callback(defaultSettings);
+    return () => {};
+  }
+}
+
+// (2026-07-13) Connect Firestore for clean live posts. Prev: mock auto-seed
 async function getFirestorePosts(): Promise<Post[]> {
   try {
     const col = collection(firestore, "posts");
     const q = query(col, orderBy("created_at", "desc"));
     const snap = await getDocs(q);
-    if (snap.empty) {
-      for (const p of defaultPosts) {
-        await setDoc(doc(firestore, "posts", String(p.id)), p);
-      }
-      return defaultPosts;
-    }
     const posts: Post[] = [];
     snap.forEach((d) => posts.push(d.data() as Post));
     saveStoredPosts(posts);
@@ -203,11 +200,7 @@ export function subscribeToPosts(
       q,
       (snapshot) => {
         if (snapshot.empty) {
-          callback(
-            onlyPublished
-              ? defaultPosts.filter((p) => p.status === "published")
-              : defaultPosts
-          );
+          callback([]);
           return;
         }
         const posts: Post[] = [];
@@ -343,6 +336,7 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         published_at: body.published_at || new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        include_in_nav: Boolean(body.include_in_nav),
       };
       posts.unshift(newPost);
       saveStoredPosts(posts);
@@ -416,8 +410,10 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   }
 
   if (url === "/api/admin/settings") {
-    if (method === "GET") return { siteName: "BaiNest" };
-    return { siteName: body.siteName || "BaiNest" };
+    // (2026-07-13) Manage global social & site settings in Firestore. Prev: siteName only
+    if (method === "GET") return await getFirestoreSettings();
+    await saveFirestoreSettings(body);
+    return await getFirestoreSettings();
   }
 
   if (url === "/api/admin/contacts") {
