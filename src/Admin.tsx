@@ -467,9 +467,10 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
 }
 function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   const loc = useLocation();
+  // (2026-07-13) Rename Posts to Blogs in admin nav. Prev: Posts
   const items = [
     ["Overview", "/admin", LayoutDashboard],
-    ["Posts", "/admin/posts", FileText],
+    ["Blogs", "/admin/posts", FileText],
     ["Inbox", "/admin/inbox", Inbox],
     ["Domains & settings", "/admin/settings", Settings],
   ] as const;
@@ -496,7 +497,7 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
             to={to}
             className={
               loc.pathname === to ||
-              (label === "Posts" && loc.pathname.startsWith("/admin/posts"))
+              (label === "Blogs" && loc.pathname.startsWith("/admin/posts"))
                 ? "selected"
                 : ""
             }
@@ -596,8 +597,9 @@ function Overview({ posts }: { posts: Post[] }) {
             <h2>Recent stories</h2>
             <p>What you’ve been working on lately.</p>
           </div>
+          {/* (2026-07-13) Rename All posts to All blogs. Prev: All posts */}
           <Link to="/admin/posts">
-            All posts <ArrowUpRight size={14} />
+            All blogs <ArrowUpRight size={14} />
           </Link>
         </div>
         {posts.slice(0, 5).map((p) => (
