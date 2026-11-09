@@ -1,3 +1,16 @@
+// (2026-07-13) Import Firestore for live cloud posts. Prev: localStorage only
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  addDoc,
+} from "firebase/firestore";
+import { firestore } from "./firebase";
+
 export type Block = {
   id: string;
   type:
@@ -135,7 +148,49 @@ function saveStoredPosts(posts: Post[]) {
   } catch {}
 }
 
-function handleStaticApi(path: string, init: RequestInit): unknown {
+// (2026-07-13) Connect Firestore for cloud post sync. Prev: localStorage only
+async function getFirestorePosts(): Promise<Post[]> {
+  try {
+    const col = collection(firestore, "posts");
+    const q = query(col, orderBy("created_at", "desc"));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      for (const p of defaultPosts) {
+        await setDoc(doc(firestore, "posts", String(p.id)), p);
+      }
+      return defaultPosts;
+    }
+    const posts: Post[] = [];
+    snap.forEach((d) => posts.push(d.data() as Post));
+    saveStoredPosts(posts);
+    return posts;
+  } catch {
+    return getStoredPosts();
+  }
+}
+
+async function saveFirestorePost(post: Post): Promise<void> {
+  try {
+    await setDoc(doc(firestore, "posts", String(post.id)), post);
+  } catch {}
+}
+
+async function deleteFirestorePost(id: number): Promise<void> {
+  try {
+    await deleteDoc(doc(firestore, "posts", String(id)));
+  } catch {}
+}
+
+async function saveFirestoreContact(body: Record<string, unknown>): Promise<void> {
+  try {
+    await addDoc(collection(firestore, "contacts"), {
+      ...body,
+      created_at: new Date().toISOString(),
+    });
+  } catch {}
+}
+
+async function handleStaticApi(path: string, init: RequestInit): Promise<unknown> {
   const method = (init.method || "GET").toUpperCase();
   const url = path.split("?")[0];
   const body = init.body ? JSON.parse(init.body as string) : {};
@@ -164,8 +219,7 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
   }
 
   if (url === "/api/admin/overview") {
-    // (2026-07-13) Return nested overview object. Prev: flat number counts
-    const posts = getStoredPosts();
+    const posts = await getFirestorePosts();
     return {
       posts: {
         total: posts.length,
@@ -176,7 +230,7 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
   }
 
   if (url === "/api/admin/posts") {
-    const posts = getStoredPosts();
+    const posts = await getFirestorePosts();
     if (method === "GET") return posts;
     if (method === "POST") {
       const newPost: Post = {
@@ -198,6 +252,7 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
       };
       posts.unshift(newPost);
       saveStoredPosts(posts);
+      await saveFirestorePost(newPost);
       return newPost;
     }
   }
@@ -205,7 +260,7 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
   const postMatch = url.match(/^\/api\/admin\/posts\/(\d+)/);
   if (postMatch) {
     const id = Number(postMatch[1]);
-    const posts = getStoredPosts();
+    const posts = await getFirestorePosts();
     if (url.endsWith("/preview")) {
       const p = posts.find((item) => item.id === id);
       if (!p) throw new Error("Post not found.");
@@ -221,23 +276,27 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
       };
       posts[idx] = updated;
       saveStoredPosts(posts);
+      await saveFirestorePost(updated);
       return updated;
     }
     if (method === "DELETE") {
       const filtered = posts.filter((item) => item.id !== id);
       saveStoredPosts(filtered);
+      await deleteFirestorePost(id);
       return { ok: true };
     }
   }
 
   if (url === "/api/posts") {
-    return getStoredPosts().filter((p) => p.status === "published");
+    const posts = await getFirestorePosts();
+    return posts.filter((p) => p.status === "published");
   }
 
   const publicPostMatch = url.match(/^\/api\/posts\/([a-z0-9-]+)$/);
   if (publicPostMatch) {
     const slug = publicPostMatch[1];
-    const post = getStoredPosts().find((p) => p.slug === slug);
+    const posts = await getFirestorePosts();
+    const post = posts.find((p) => p.slug === slug);
     if (!post) throw new Error("That article could not be found.");
     return post;
   }
@@ -247,6 +306,7 @@ function handleStaticApi(path: string, init: RequestInit): unknown {
   }
 
   if (url === "/api/contact") {
+    await saveFirestoreContact(body);
     return { ok: true, message: "Thanks — your note is saved. We’ll be in touch." };
   }
 
@@ -279,7 +339,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     window.location.hostname !== "127.0.0.1";
 
   if (isStaticHost) {
-    return handleStaticApi(path, init) as T;
+    return (await handleStaticApi(path, init)) as T;
   }
 
   const headers = new Headers(init.headers);
@@ -302,6 +362,6 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       throw new Error(payload.error || `Request failed (${response.status})`);
     return payload as T;
   } catch (err) {
-    return handleStaticApi(path, init) as T;
+    return (await handleStaticApi(path, init)) as T;
   }
 }
