@@ -71,6 +71,8 @@ app.post('/api/admin/login', async (req, res) => {
 });
 app.post('/api/admin/logout', requireAdmin, requireCsrf, (req, res) => { destroySession(req, res); res.json({ ok: true }); });
 app.get('/api/admin/posts', requireAdmin, (_req, res) => res.json(contentRepository.listAll()));
+// (2026-07-13) Add GET /api/admin/posts/:id route in server. Prev: preview only
+app.get('/api/admin/posts/:id', requireAdmin, (req, res) => { const post = contentRepository.getById(Number(req.params.id)); return post ? res.json(post) : res.status(404).json({ error: 'Post not found.' }); });
 app.get('/api/admin/posts/:id/preview', requireAdmin, (req, res) => { const post = contentRepository.getById(Number(req.params.id)); return post ? res.json(post) : res.status(404).json({ error: 'Post not found.' }); });
 app.post('/api/admin/posts', requireAdmin, requireCsrf, (req, res) => {
   const parsed = postSchema.safeParse(req.body);

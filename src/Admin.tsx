@@ -836,11 +836,37 @@ function PostEditor({
         (p) => String(p.id) === String(id) || String(p.slug) === String(id),
       )
     : undefined;
-  const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>({
-    ...emptyPost,
-    published_at: new Date().toISOString(),
+  // (2026-07-13) Synchronous init & safe payload parse for editing. Prev: blank
+  const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>(() => {
+    if (existing) {
+      return {
+        title: existing.title || "",
+        slug: existing.slug || "",
+        author: existing.author || "BaiNest Studio",
+        category: existing.category || "Insights",
+        status: existing.status || "draft",
+        excerpt: existing.excerpt || "",
+        cover_image: existing.cover_image || "",
+        seo_title: existing.seo_title || "",
+        seo_description: existing.seo_description || "",
+        published_at: existing.published_at || new Date().toISOString(),
+        include_in_nav: Boolean(existing.include_in_nav),
+        blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
+        tags: Array.isArray(existing.tags) ? existing.tags : [],
+      };
+    }
+    return {
+      ...emptyPost,
+      published_at: new Date().toISOString(),
+    };
   });
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState(() =>
+    existing?.tags
+      ? Array.isArray(existing.tags)
+        ? existing.tags.join(", ")
+        : String(existing.tags)
+      : ""
+  );
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
@@ -877,14 +903,30 @@ function PostEditor({
         seo_description: existing.seo_description || "",
         published_at: existing.published_at || new Date().toISOString(),
         include_in_nav: Boolean(existing.include_in_nav),
-        blocks: existing.blocks || [],
-        tags: existing.tags || [],
+        blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
+        tags: Array.isArray(existing.tags) ? existing.tags : [],
       });
-      setTags(existing.tags ? existing.tags.join(", ") : "");
+      setTags(
+        existing.tags
+          ? Array.isArray(existing.tags)
+            ? existing.tags.join(", ")
+            : String(existing.tags)
+          : ""
+      );
     } else if (id && id !== "new") {
       api<Post>(`/api/admin/posts/${id}`)
         .then((p) => {
-          if (p) {
+          if (p && (p.title !== undefined || p.slug !== undefined || p.id !== undefined)) {
+            const parsedBlocks = Array.isArray(p.blocks)
+              ? p.blocks
+              : typeof p.blocks === "string"
+              ? JSON.parse(p.blocks || "[]")
+              : [];
+            const parsedTags = Array.isArray(p.tags)
+              ? p.tags
+              : typeof p.tags === "string"
+              ? JSON.parse(p.tags || "[]")
+              : [];
             setForm({
               title: p.title || "",
               slug: p.slug || "",
@@ -897,10 +939,10 @@ function PostEditor({
               seo_description: p.seo_description || "",
               published_at: p.published_at || new Date().toISOString(),
               include_in_nav: Boolean(p.include_in_nav),
-              blocks: p.blocks || [],
-              tags: p.tags || [],
+              blocks: parsedBlocks,
+              tags: parsedTags,
             });
-            setTags(p.tags ? p.tags.join(", ") : "");
+            setTags(parsedTags.length ? parsedTags.join(", ") : "");
           }
         })
         .catch(() => {});
@@ -1939,16 +1981,19 @@ export function AdminApp() {
         <div className="admin-content">
           {path === "/admin" || path === "/admin/" ? (
             <Overview posts={posts} />
-          ) : path === "/admin/posts" ? (
+          ) : path === "/admin/posts" || path === "/admin/posts/" ? (
             <PostList posts={posts} refresh={() => refresh().catch(() => {})} />
           ) : path === "/admin/posts/new" ||
-            /^\/admin\/posts\/[^/]+$/.test(path) ? (
+            /^\/admin\/posts\/[^/]+(?:\/)?$/.test(path) ? (
+            // (2026-07-13) Key PostEditor by normalized path for clean state. Prev: no key
             <PostEditor
+              key={path.replace(/\/+$/, "")}
               posts={posts}
               refresh={() => refresh().catch(() => {})}
               postId={
-                path !== "/admin/posts/new" && path.startsWith("/admin/posts/")
-                  ? decodeURIComponent(path.replace("/admin/posts/", ""))
+                path.replace(/\/+$/, "") !== "/admin/posts/new" &&
+                path.startsWith("/admin/posts/")
+                  ? decodeURIComponent(path.replace(/\/+$/, "").replace("/admin/posts/", ""))
                   : undefined
               }
             />

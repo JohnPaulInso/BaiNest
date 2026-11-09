@@ -1,4 +1,4 @@
-// (2026-07-13) Add getDoc for settings query. Prev: getDocs only
+// (2026-07-13) Add where to firestore imports for slug query. Prev: no where
 import {
   collection,
   doc,
@@ -8,6 +8,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
   addDoc,
   onSnapshot,
 } from "firebase/firestore";
@@ -206,18 +207,38 @@ export function subscribeToSettings(
   }
 }
 
-// (2026-07-13) Connect Firestore for clean live posts. Prev: mock auto-seed
+// (2026-07-13) Ensure doc ID fallback & query resiliency. Prev: data.id only
 async function getFirestorePosts(): Promise<Post[]> {
   try {
     const col = collection(firestore, "posts");
     const q = query(col, orderBy("created_at", "desc"));
     const snap = await getDocs(q);
     const posts: Post[] = [];
-    snap.forEach((d) => posts.push(d.data() as Post));
+    snap.forEach((d) => {
+      const data = d.data() as Post;
+      posts.push({ ...data, id: data.id ?? d.id });
+    });
     saveStoredPosts(posts);
     return posts;
   } catch {
-    return getStoredPosts();
+    try {
+      const col = collection(firestore, "posts");
+      const snap = await getDocs(col);
+      const posts: Post[] = [];
+      snap.forEach((d) => {
+        const data = d.data() as Post;
+        posts.push({ ...data, id: data.id ?? d.id });
+      });
+      posts.sort(
+        (a, b) =>
+          new Date(b.created_at || 0).getTime() -
+          new Date(a.created_at || 0).getTime()
+      );
+      saveStoredPosts(posts);
+      return posts;
+    } catch {
+      return getStoredPosts();
+    }
   }
 }
 
@@ -257,8 +278,12 @@ export function subscribeToPosts(
           callback([]);
           return;
         }
+        // (2026-07-13) Set fallback doc id for real-time posts. Prev: data.id only
         const posts: Post[] = [];
-        snapshot.forEach((d) => posts.push(d.data() as Post));
+        snapshot.forEach((d) => {
+          const data = d.data() as Post;
+          posts.push({ ...data, id: data.id ?? d.id });
+        });
         saveStoredPosts(posts);
         callback(
           onlyPublished ? posts.filter((p) => p.status === "published") : posts
@@ -399,30 +424,50 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     }
   }
 
-  {/* (2026-07-13) Match string/numeric IDs and add GET for story edit. Prev: \d+ only */}
+  // (2026-07-13) Direct doc & slug Firestore fallback for edit. Prev: list only
   const postMatch = url.match(/^\/api\/admin\/posts\/([^/?]+)(?:\/preview)?$/);
   if (postMatch) {
     const rawId = decodeURIComponent(postMatch[1]);
     const posts = await getFirestorePosts();
-    const p = posts.find(
+    let p = posts.find(
       (item) => String(item.id) === String(rawId) || String(item.slug) === String(rawId)
     );
+    if (!p) {
+      try {
+        const docSnap = await getDoc(doc(firestore, "posts", String(rawId)));
+        if (docSnap.exists()) {
+          const d = docSnap.data() as Post;
+          p = { ...d, id: d.id ?? docSnap.id };
+        }
+      } catch {}
+    }
+    if (!p) {
+      try {
+        const qSlug = query(collection(firestore, "posts"), where("slug", "==", rawId));
+        const slugSnap = await getDocs(qSlug);
+        if (!slugSnap.empty) {
+          const d = slugSnap.docs[0];
+          const data = d.data() as Post;
+          p = { ...data, id: data.id ?? d.id };
+        }
+      } catch {}
+    }
     if (url.endsWith("/preview") || method === "GET") {
       if (!p) throw new Error("Post not found.");
       return p;
     }
     if (method === "PUT") {
-      const idx = posts.findIndex(
-        (item) => String(item.id) === String(rawId) || String(item.slug) === String(rawId)
-      );
-      if (idx === -1) throw new Error("Post not found.");
       const updated: Post = {
-        ...posts[idx],
+        ...(p || {}),
         ...body,
+        id: p?.id ?? rawId,
         updated_at: new Date().toISOString(),
       };
-      posts[idx] = updated;
-      saveStoredPosts(posts);
+      const filtered = posts.filter(
+        (item) => String(item.id) !== String(rawId) && String(item.slug) !== String(rawId)
+      );
+      filtered.unshift(updated);
+      saveStoredPosts(filtered);
       await saveFirestorePost(updated);
       return updated;
     }
@@ -515,10 +560,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       headers,
       credentials: "same-origin",
     });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok)
-      throw new Error(payload.error || `Request failed (${response.status})`);
-    return payload as T;
+    // (2026-07-13) Fallback non-JSON responses to static API. Prev: raw json fail
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("application/json")) {
+      return (await handleStaticApi(path, init)) as T;
+    }
+    return (await response.json()) as T;
   } catch (err) {
     return (await handleStaticApi(path, init)) as T;
   }
