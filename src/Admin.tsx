@@ -1395,6 +1395,45 @@ function PostEditor({
           </div>
         </div>
         <aside className="editor-side">
+          {/* (2026-07-13) Move URL & discovery card above Publishing card. Prev: bottom */}
+          <div className="editor-side-card">
+            <h3>URL & discovery</h3>
+            <label>
+              <span>Post URL</span>
+              <input
+                value={form.slug}
+                onChange={(e) => patch("slug", slugify(e.target.value))}
+                className={isDuplicateSlug ? "input-duplicate-error" : ""}
+                placeholder="custom-story-url"
+              />
+              <small>/{targetSlug || "your-story"}</small>
+              {isDuplicateSlug && (
+                <div className="slug-duplicate-warn">
+                  ⚠️ URL already taken by &ldquo;{duplicatePost?.title}&rdquo;. Please choose a unique URL.
+                </div>
+              )}
+            </label>
+            <label>
+              SEO title
+              <input
+                maxLength={180}
+                value={form.seo_title}
+                onChange={(e) => patch("seo_title", e.target.value)}
+                placeholder={form.title || "Search title"}
+              />
+            </label>
+            <label>
+              SEO description
+              <textarea
+                rows={3}
+                maxLength={320}
+                value={form.seo_description}
+                onChange={(e) => patch("seo_description", e.target.value)}
+                placeholder="A useful search summary"
+              />
+            </label>
+          </div>
+
           <div className="editor-side-card">
             <h3>Publishing</h3>
             <label>
@@ -1539,45 +1578,6 @@ function PostEditor({
                 style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
               />
               Include in header navigation
-            </label>
-          </div>
-
-          <div className="editor-side-card">
-            <h3>URL & discovery</h3>
-            {/* (2026-07-13) Editable custom URL with duplicate check. Prev: basic slug */}
-            <label>
-              <span>Post URL</span>
-              <input
-                value={form.slug}
-                onChange={(e) => patch("slug", slugify(e.target.value))}
-                className={isDuplicateSlug ? "input-duplicate-error" : ""}
-                placeholder="custom-story-url"
-              />
-              <small>/{targetSlug || "your-story"}</small>
-              {isDuplicateSlug && (
-                <div className="slug-duplicate-warn">
-                  ⚠️ URL already taken by &ldquo;{duplicatePost?.title}&rdquo;. Please choose a unique URL.
-                </div>
-              )}
-            </label>
-            <label>
-              SEO title
-              <input
-                maxLength={180}
-                value={form.seo_title}
-                onChange={(e) => patch("seo_title", e.target.value)}
-                placeholder={form.title || "Search title"}
-              />
-            </label>
-            <label>
-              SEO description
-              <textarea
-                rows={3}
-                maxLength={320}
-                value={form.seo_description}
-                onChange={(e) => patch("seo_description", e.target.value)}
-                placeholder="A useful search summary"
-              />
             </label>
           </div>
           {notice && (
