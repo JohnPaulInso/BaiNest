@@ -3013,6 +3013,7 @@ img {
   font-size: 11px;
   color: #64748b;
 }
+/* (2026-07-13) Template cards with icon wraps and upgraded typography. Prev: plain text */
 .template-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3023,27 +3024,43 @@ img {
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: #ffffff;
   border: 1px solid #d6e2e9;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 .template-card-btn:hover {
   border-color: var(--teal);
-  box-shadow: 0 4px 12px rgba(16, 43, 70, 0.06);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 43, 70, 0.08);
+  transform: translateY(-2px);
+}
+.template-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #0d9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  transition: all 0.16s ease;
+}
+.template-card-btn:hover .template-icon-wrap {
+  background: #0d9488;
+  color: #ffffff;
 }
 .template-card-btn b {
-  font-size: 12px;
+  font-size: 13.5px;
   color: #102b46;
   margin-bottom: 4px;
 }
 .template-card-btn small {
-  font-size: 10px;
+  font-size: 11.5px;
   color: #64748b;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .small-btn {
   display: inline-flex;
@@ -3823,12 +3840,12 @@ img {
   margin-top: 4px;
 }
 
-/* (2026-07-13) Main cover uploader, block palette, and taxonomy dropdowns. Prev: none */
+/* (2026-07-13) Simplified unified cover uploader. Prev: stacked messy inputs */
 .main-cover-section {
   background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px;
+  padding: 18px;
   margin-bottom: 24px;
 }
 .main-cover-header {
@@ -3840,20 +3857,23 @@ img {
 .cover-section-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #334155;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 .cover-remove-action {
   background: none;
   border: none;
   color: #dc2626;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .cover-remove-action:hover {
   text-decoration: underline;
@@ -3861,9 +3881,8 @@ img {
 .main-cover-preview {
   width: 100%;
   max-height: 280px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 12px;
   background: #e2e8f0;
 }
 .main-cover-preview img {
@@ -3872,26 +3891,68 @@ img {
   object-fit: cover;
   display: block;
 }
-.main-cover-placeholder {
+.cover-uploader-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cover-dropzone-click {
+  cursor: pointer;
+  border: 2px dashed #cbd5e1;
+  background: #ffffff;
+  padding: 32px 20px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 32px 16px;
-  background: #ffffff;
-  border-radius: 8px;
-  color: #94a3b8;
-  font-size: 13px;
-  margin-bottom: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
 }
-.main-cover-input {
+.cover-dropzone-click:hover {
+  border-color: #0d9488;
+  background: #f0fdfa;
+}
+.cover-upload-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f0fdfa;
+  color: #0d9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  transition: all 0.18s ease;
+}
+.cover-dropzone-click:hover .cover-upload-icon-circle {
+  background: #0d9488;
+  color: #ffffff;
+}
+.cover-dropzone-click b {
+  font-size: 15px;
+  color: #0f172a;
+}
+.cover-dropzone-click span {
+  font-size: 13px;
+  color: #64748b;
+}
+.cover-url-input-wrap {
   width: 100%;
-  padding: 10px 14px;
+}
+.cover-url-field {
+  width: 100%;
+  padding: 12px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   background: #ffffff;
+  outline: none;
+  transition: border-color 0.16s ease;
+}
+.cover-url-field:focus {
+  border-color: #0d9488;
 }
 
 /* Quick Palette Above Block List */

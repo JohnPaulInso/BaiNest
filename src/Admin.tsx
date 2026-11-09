@@ -35,6 +35,11 @@ import {
   Quote,
   List as ListIcon,
   Minus,
+  Briefcase,
+  Lightbulb,
+  Rocket,
+  BookOpen,
+  PlusCircle,
 } from "lucide-react";
 // (2026-07-13) Import client compression uploader and storage. Prev: none
 import { uploadBlogImage } from "./lib/imageCompressor";
@@ -732,10 +737,11 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
     </>
   );
 }
-// (2026-07-13) High-converting story templates and editor enhancements. Prev: none
+// (2026-07-13) Add icon property to each story template. Prev: text only
 const postTemplates = [
   {
     name: "Case Study",
+    icon: Briefcase,
     desc: "Problem, strategic execution, quantitative results & quote",
     title: "How We Accelerated Digital Growth for [Client Name]",
     category: "Case study",
@@ -755,6 +761,7 @@ const postTemplates = [
   },
   {
     name: "Thought Leadership",
+    icon: Lightbulb,
     desc: "Industry perspective, contrarian insights & strategic advice",
     title: "Why Modern Brands Win on Clarity, Not Noise",
     category: "Strategy",
@@ -772,6 +779,7 @@ const postTemplates = [
   },
   {
     name: "Service Launch",
+    icon: Rocket,
     desc: "Announce new studio offerings, packages, or capabilities",
     title: "Introducing [New Capability]: Built for Modern Growth",
     category: "Announcement",
@@ -789,6 +797,7 @@ const postTemplates = [
   },
   {
     name: "How-To Guide",
+    icon: BookOpen,
     desc: "Actionable blueprint with structured steps and best practices",
     title: "The Step-by-Step Blueprint to [Achieve Goal]",
     category: "Guides",
@@ -1139,18 +1148,25 @@ function PostEditor({
               Click any template to auto-populate layout, or write from scratch
             </span>
           </div>
+          {/* (2026-07-13) Template cards with distinct icons. Prev: text only */}
           <div className="template-cards-grid">
-            {postTemplates.map((tpl) => (
-              <button
-                key={tpl.name}
-                type="button"
-                className="template-card-btn"
-                onClick={() => applyTemplate(tpl)}
-              >
-                <b>{tpl.name}</b>
-                <small>{tpl.desc}</small>
-              </button>
-            ))}
+            {postTemplates.map((tpl) => {
+              const IconComponent = tpl.icon;
+              return (
+                <button
+                  key={tpl.name}
+                  type="button"
+                  className="template-card-btn"
+                  onClick={() => applyTemplate(tpl)}
+                >
+                  <div className="template-icon-wrap">
+                    <IconComponent size={18} />
+                  </div>
+                  <b>{tpl.name}</b>
+                  <small>{tpl.desc}</small>
+                </button>
+              );
+            })}
             <button
               type="button"
               className="template-card-btn"
@@ -1160,6 +1176,9 @@ function PostEditor({
                 setNotice("Reset to blank story.");
               }}
             >
+              <div className="template-icon-wrap">
+                <PlusCircle size={18} />
+              </div>
               <b>Blank Canvas</b>
               <small>Start with a clean title and empty block editor</small>
             </button>
@@ -1169,7 +1188,7 @@ function PostEditor({
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">
-            {/* (2026-07-13) Interactive cover photo dropzone with auto-compression. Prev: basic box */}
+            {/* (2026-07-13) Simplified unified cover photo uploader. Prev: stacked messy controls */}
             <div className="main-cover-section">
               <div className="main-cover-header">
                 <span className="cover-section-title">
@@ -1181,7 +1200,7 @@ function PostEditor({
                     className="cover-remove-action"
                     onClick={() => patch("cover_image", "")}
                   >
-                    Remove cover
+                    <Trash2 size={13} /> Remove cover
                   </button>
                 )}
               </div>
@@ -1190,41 +1209,31 @@ function PostEditor({
                   <img src={form.cover_image} alt="Story cover" />
                 </div>
               ) : (
-                <label className="main-cover-placeholder interactive">
-                  <ImageIcon size={38} />
-                  <b>Click to upload cover photo or drag image here</b>
-                  <span>Supports JPG, PNG, WEBP · Auto-compressed to lightweight mobile format</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    disabled={coverUploading}
-                    onChange={handleCoverUpload}
-                  />
-                </label>
+                <div className="cover-uploader-box">
+                  <label className="cover-dropzone-click">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      disabled={coverUploading}
+                      onChange={handleCoverUpload}
+                    />
+                    <div className="cover-upload-icon-circle">
+                      <Upload size={22} />
+                    </div>
+                    <b>{coverUploading ? "Compressing & uploading photo…" : "Upload Cover Photo"}</b>
+                    <span>Click to browse from device or drag image here · Auto-compressed</span>
+                  </label>
+                  <div className="cover-url-input-wrap">
+                    <input
+                      value={form.cover_image}
+                      onChange={(e) => patch("cover_image", e.target.value)}
+                      placeholder="Or paste image URL (e.g. https://... or /images/cover.jpg)"
+                      className="cover-url-field"
+                    />
+                  </div>
+                </div>
               )}
-              <div className="cover-upload-strip">
-                <label className="cover-upload-label">
-                  <Upload size={15} />
-                  <span>
-                    {coverUploading ? "Compressing & uploading photo…" : "Upload Cover Photo from Device"}
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    disabled={coverUploading}
-                    onChange={handleCoverUpload}
-                  />
-                </label>
-                <span className="cover-or-text">or paste image URL:</span>
-              </div>
-              <input
-                value={form.cover_image}
-                onChange={(e) => patch("cover_image", e.target.value)}
-                placeholder="https://... or /images/cover.jpg"
-                className="main-cover-input"
-              />
             </div>
 
             <label className="title-input">
