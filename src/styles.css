@@ -1396,27 +1396,101 @@ img {
   opacity: 0.6;
   cursor: wait;
 }
+/* (2026-07-13) Upgrade form-success state with modern card layout. Prev: basic box */
 .form-success {
-  padding: 30px 0;
+  padding: 40px 24px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.form-success > span {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 16px;
+.success-icon-wrap {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
   border-radius: 50%;
-  background: #e4f5f3;
-  color: var(--teal-dark);
+  background: #f0fdfa;
+  border: 2px solid #5eead4;
+  color: #0d9488;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.15);
+  animation: pulseSuccess 2s infinite;
+}
+@keyframes pulseSuccess {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(13, 148, 136, 0.15); }
+  50% { transform: scale(1.04); box-shadow: 0 10px 28px rgba(13, 148, 136, 0.25); }
 }
 .form-success h3 {
-  color: var(--navy);
-  font: 700 23px "Manrope";
+  color: #0f172a;
+  font: 800 28px/1.25 "Manrope", sans-serif;
+  margin: 0 0 12px;
 }
-.form-success p {
-  color: var(--muted);
-  font-size: 12px;
+.success-copy {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 440px;
+  margin: 0 auto 24px;
+}
+.success-steps-box {
+  width: 100%;
+  max-width: 440px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: left;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.success-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0d9488;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.success-step-item b {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.success-step-item small {
+  display: block;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.45;
+}
+.success-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+}
+.success-reset-btn:hover {
+  background: #0d9488;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.25);
 }
 /* Admin application */
 .admin-shell {
@@ -3766,49 +3840,76 @@ img {
 }
 
 /* Contact Pillars & Direct Card */
+/* (2026-07-13) Upgrade contact pillar and direct info cards. Prev: basic text */
 .contact-pillar-card {
   display: flex;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 20px;
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   margin-top: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.contact-pillar-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
 }
 .pillar-num {
   font-size: 13px;
   font-weight: 800;
   color: #0d9488;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  padding: 4px 10px;
+  border-radius: 6px;
   letter-spacing: 0.05em;
   line-height: 1.4;
+  flex-shrink: 0;
 }
 .pillar-body h4 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
 }
 .pillar-body p {
-  font-size: 13px;
-  line-height: 1.5;
-  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
   margin: 0;
 }
 .contact-direct-card {
   margin-top: 20px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   background: #f8fafc;
-  border-radius: 10px;
-  border-left: 3px solid #0f172a;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #0d9488;
 }
 .contact-direct-card h5 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-weight: 700;
+  font-weight: 800;
   color: #64748b;
-  margin: 0 0 6px 0;
+  margin: 0 0 10px 0;
+}
+.direct-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  text-decoration: none;
+  margin-top: 6px;
+  transition: color 0.15s ease;
+}
+.direct-link:hover {
+  color: #0d9488;
 }
 .direct-email {
   font-size: 14px;

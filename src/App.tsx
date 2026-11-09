@@ -27,6 +27,8 @@ import {
   Menu,
   MessageCircle,
   PenTool,
+  Phone,
+  RotateCcw,
   Share2,
   ShieldCheck,
   Twitter,
@@ -1556,27 +1558,52 @@ function Contact() {
               </div>
             </div>
 
-            {/* Direct Connect Information */}
+            {/* (2026-07-13) Upgrade direct contact links with icons. Prev: plain text */}
             <div className="contact-direct-card">
               <h5>Direct Inquiries</h5>
-              <p className="direct-email">{settings.email}</p>
-              {settings.phone && <p className="direct-phone">{settings.phone}</p>}
+              <a href={`mailto:${settings.email}`} className="direct-link">
+                <Mail size={16} /> <span>{settings.email}</span>
+              </a>
+              {settings.phone && (
+                <a href={`tel:${settings.phone}`} className="direct-link">
+                  <Phone size={16} /> <span>{settings.phone}</span>
+                </a>
+              )}
             </div>
           </div>
           <form className="contact-form" onSubmit={submit}>
+            {/* (2026-07-13) Polished success card with roadmap and styled reset. Prev: plain box */}
             {sent ? (
               <div className="form-success">
-                <span>
-                  <Check />
-                </span>
-                <h3>Thanks for reaching out.</h3>
-                <p>Your note is in the local inbox. We’ll be in touch.</p>
+                <div className="success-icon-wrap">
+                  <Check size={32} />
+                </div>
+                <h3>Message Sent Successfully!</h3>
+                <p className="success-copy">
+                  Thank you for reaching out. We have received your note and our team will get back to you with next steps within 24 hours.
+                </p>
+                <div className="success-steps-box">
+                  <div className="success-step-item">
+                    <span className="step-dot" />
+                    <div>
+                      <b>Prompt Response</b>
+                      <small>We'll review your goals and reply directly via email.</small>
+                    </div>
+                  </div>
+                  <div className="success-step-item">
+                    <span className="step-dot" />
+                    <div>
+                      <b>Discovery Alignment</b>
+                      <small>If aligned, we'll set up a short strategy call to explore solutions.</small>
+                    </div>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  className="text-link"
+                  className="success-reset-btn"
                   onClick={() => setSent(false)}
                 >
-                  Send another message
+                  <RotateCcw size={15} /> Send another message
                 </button>
               </div>
             ) : (
