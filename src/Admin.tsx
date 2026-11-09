@@ -28,6 +28,7 @@ import {
   Check,
   LockKeyhole,
   PenTool,
+  Upload,
   Image as ImageIcon,
   Heading as HeadingIcon,
   Type,
@@ -35,7 +36,9 @@ import {
   List as ListIcon,
   Minus,
 } from "lucide-react";
-// (2026-07-13) Import SiteSettings and defaultSettings. Prev: Post only
+// (2026-07-13) Import client compression uploader and storage. Prev: none
+import { uploadBlogImage } from "./lib/imageCompressor";
+import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
 import {
   api,
   setCsrf,
@@ -72,7 +75,7 @@ function slugify(text: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
-// (2026-07-13) Enhanced block editor with image preview and insert buttons. Prev: basic block
+// (2026-07-13) Block editor with auto-compression upload and preview. Prev: basic block
 function SortableBlock({
   block,
   index,
@@ -93,9 +96,29 @@ function SortableBlock({
   onInsertAfter?: (id: string, type: Block["type"]) => void;
 }) {
   const [showInserter, setShowInserter] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+
+  async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadBlogImage(file, storage, {
+        ref: storageRef,
+        uploadBytes,
+        getDownloadURL,
+      });
+      onChange(block.id, "src", url);
+    } catch (err) {
+      alert("Could not upload image: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const field = (
     key: string,
     label: string,
@@ -181,7 +204,23 @@ function SortableBlock({
                   <img src={block.src} alt={block.alt || "Preview"} />
                 </div>
               )}
-              {field("src", "Image URL", block.src || "", "Paste image URL (https://... or /image.png)")}
+              {/* (2026-07-13) Device image upload button with auto-compression. Prev: text URL only */}
+              <div className="block-upload-strip">
+                <label className="block-upload-label">
+                  <Upload size={13} />
+                  <span>
+                    {uploading ? "Compressing & uploading..." : "Upload from Device (Auto-compressed)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    disabled={uploading}
+                    onChange={handleBlockImageUpload}
+                  />
+                </label>
+              </div>
+              {field("src", "Or image URL", block.src || "", "Paste image URL (https://... or /image.png)")}
               {field("alt", "Alt text", block.alt || "", "Describe the image for accessibility")}
               {field(
                 "caption",
@@ -779,6 +818,25 @@ function PostEditor({
   const [tags, setTags] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverUploading(true);
+    try {
+      const url = await uploadBlogImage(file, storage, {
+        ref: storageRef,
+        uploadBytes,
+        getDownloadURL,
+      });
+      patch("cover_image", url);
+    } catch (err) {
+      alert("Could not upload cover: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setCoverUploading(false);
+    }
+  }
 
   useEffect(() => {
     if (existing) {
@@ -1128,10 +1186,27 @@ function PostEditor({
                   <span>Add a high-impact cover photo for your story</span>
                 </div>
               )}
+              {/* (2026-07-13) Client compressed cover photo uploader. Prev: text URL only */}
+              <div className="cover-upload-strip">
+                <label className="cover-upload-label">
+                  <Upload size={14} />
+                  <span>
+                    {coverUploading ? "Compressing & uploading photo..." : "Upload Cover Photo (Auto-compressed)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    disabled={coverUploading}
+                    onChange={handleCoverUpload}
+                  />
+                </label>
+                <span className="cover-or-text">or paste image URL:</span>
+              </div>
               <input
                 value={form.cover_image}
                 onChange={(e) => patch("cover_image", e.target.value)}
-                placeholder="Paste or enter cover photo URL (e.g. https://... or /images/cover.jpg)"
+                placeholder="https://... or /images/cover.jpg"
                 className="main-cover-input"
               />
             </div>

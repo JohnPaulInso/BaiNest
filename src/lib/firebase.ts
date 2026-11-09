@@ -1,6 +1,7 @@
-// (2026-07-13) Initialize Firebase and Firestore. Prev: missing firebase
+// (2026-07-13) Initialize Firestore and Storage with helpers. Prev: firestore only
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAN4f7W8vU8te3bf9s123IsdrZq6yfu4wU",
@@ -14,4 +15,6 @@ const firebaseConfig = {
 
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const firestore = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
+export { storageRef, uploadBytes, getDownloadURL };
 
