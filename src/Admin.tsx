@@ -26,9 +26,12 @@ import {
   Check,
   LockKeyhole,
 } from "lucide-react";
+// (2026-07-13) Import real-time subscription helpers. Prev: api only
 import {
   api,
   setCsrf,
+  subscribeToPosts,
+  subscribeToContacts,
   type AdminState,
   type Block,
   type Post,
@@ -316,10 +319,28 @@ function Overview({ posts }: { posts: Post[] }) {
     messages: { total: 0, unread: 0 },
   });
   useEffect(() => {
+    // (2026-07-13) Update overview counts reactively from props. Prev: static initial
+    setCounts((c) => ({
+      ...c,
+      posts: {
+        total: posts.length,
+        published: posts.filter((p) => p.status === "published").length,
+      },
+    }));
     api<typeof counts>("/api/admin/overview")
       .then(setCounts)
       .catch(() => {});
-  }, []);
+    const unsub = subscribeToContacts((msgs) => {
+      setCounts((c) => ({
+        ...c,
+        messages: {
+          total: msgs.length,
+          unread: msgs.filter((m) => !m.read).length,
+        },
+      }));
+    });
+    return () => unsub();
+  }, [posts]);
   return (
     <>
       <div className="admin-page-title">
@@ -975,14 +996,19 @@ function DomainSettings() {
     </>
   );
 }
+// (2026-07-13) Subscribe to live contacts via onSnapshot. Prev: static fetch
 function InboxPage() {
   const [messages, setMessages] = useState<any[]>([]);
   useEffect(() => {
+    const unsub = subscribeToContacts((liveContacts) => {
+      setMessages(liveContacts);
+    });
     api<any[]>("/api/admin/contacts")
       .then(setMessages)
       .catch(() => {});
+    return () => unsub();
   }, []);
-  async function mark(id: number) {
+  async function mark(id: number | string) {
     await api(`/api/admin/contacts/${id}/read`, {
       method: "PUT",
       body: JSON.stringify({}),
@@ -1050,6 +1076,15 @@ export function AdminApp() {
       .catch(() => setSession({ authenticated: false }))
       .finally(() => setLoading(false));
   }, []);
+  // (2026-07-13) Real-time admin stories sync via onSnapshot. Prev: manual refresh
+  useEffect(() => {
+    if (session?.authenticated) {
+      const unsub = subscribeToPosts((livePosts) => {
+        setPosts(livePosts);
+      }, false);
+      return () => unsub();
+    }
+  }, [session?.authenticated]);
   async function logout() {
     try {
       await api("/api/admin/logout", {

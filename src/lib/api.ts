@@ -1,4 +1,4 @@
-// (2026-07-13) Import Firestore for live cloud posts. Prev: localStorage only
+// (2026-07-13) Real-time onSnapshot listeners and Firestore CRUD. Prev: fetch only
 import {
   collection,
   doc,
@@ -8,6 +8,7 @@ import {
   query,
   orderBy,
   addDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { firestore } from "./firebase";
 
@@ -190,6 +191,94 @@ async function saveFirestoreContact(body: Record<string, unknown>): Promise<void
   } catch {}
 }
 
+// (2026-07-13) Add onSnapshot real-time subscriptions. Prev: static fetch only
+export function subscribeToPosts(
+  callback: (posts: Post[]) => void,
+  onlyPublished = false
+): () => void {
+  try {
+    const col = collection(firestore, "posts");
+    const q = query(col, orderBy("created_at", "desc"));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (snapshot.empty) {
+          callback(
+            onlyPublished
+              ? defaultPosts.filter((p) => p.status === "published")
+              : defaultPosts
+          );
+          return;
+        }
+        const posts: Post[] = [];
+        snapshot.forEach((d) => posts.push(d.data() as Post));
+        saveStoredPosts(posts);
+        callback(
+          onlyPublished ? posts.filter((p) => p.status === "published") : posts
+        );
+      },
+      () => {
+        const stored = getStoredPosts();
+        callback(
+          onlyPublished
+            ? stored.filter((p) => p.status === "published")
+            : stored
+        );
+      }
+    );
+  } catch {
+    const stored = getStoredPosts();
+    callback(
+      onlyPublished ? stored.filter((p) => p.status === "published") : stored
+    );
+    return () => {};
+  }
+}
+
+export function subscribeToContacts(
+  callback: (contacts: any[]) => void
+): () => void {
+  try {
+    const col = collection(firestore, "contacts");
+    const q = query(col, orderBy("created_at", "desc"));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const contacts: any[] = [];
+        snapshot.forEach((d) => contacts.push({ id: d.id, ...d.data() }));
+        callback(contacts);
+      },
+      () => callback([])
+    );
+  } catch {
+    callback([]);
+    return () => {};
+  }
+}
+
+async function getFirestoreContacts(): Promise<any[]> {
+  try {
+    const col = collection(firestore, "contacts");
+    const q = query(col, orderBy("created_at", "desc"));
+    const snap = await getDocs(q);
+    const contacts: any[] = [];
+    snap.forEach((d) => contacts.push({ id: d.id, ...d.data() }));
+    return contacts;
+  } catch {
+    return [];
+  }
+}
+
+async function markFirestoreContactRead(id: string | number): Promise<void> {
+  try {
+    await setDoc(
+      doc(firestore, "contacts", String(id)),
+      { read: 1 },
+      { merge: true }
+    );
+  } catch {}
+}
+
 async function handleStaticApi(path: string, init: RequestInit): Promise<unknown> {
   const method = (init.method || "GET").toUpperCase();
   const url = path.split("?")[0];
@@ -219,13 +308,18 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   }
 
   if (url === "/api/admin/overview") {
+    // (2026-07-13) Query live overview counts from Firestore. Prev: static zero
     const posts = await getFirestorePosts();
+    const contacts = await getFirestoreContacts();
     return {
       posts: {
         total: posts.length,
         published: posts.filter((p) => p.status === "published").length,
       },
-      messages: { total: 0, unread: 0 },
+      messages: {
+        total: contacts.length,
+        unread: contacts.filter((c) => !c.read).length,
+      },
     };
   }
 
@@ -306,7 +400,8 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   }
 
   if (url === "/api/contact") {
-    await saveFirestoreContact(body);
+    // (2026-07-13) Store contact message in Firestore with read: 0. Prev: empty
+    await saveFirestoreContact({ ...body, read: 0 });
     return { ok: true, message: "Thanks — your note is saved. We’ll be in touch." };
   }
 
@@ -325,8 +420,14 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     return { siteName: body.siteName || "BaiNest" };
   }
 
-  if (url === "/api/admin/contacts" || url.startsWith("/api/admin/contacts/")) {
-    return [];
+  if (url === "/api/admin/contacts") {
+    return await getFirestoreContacts();
+  }
+
+  const contactReadMatch = url.match(/^\/api\/admin\/contacts\/([^/]+)\/read$/);
+  if (contactReadMatch) {
+    await markFirestoreContactRead(contactReadMatch[1]);
+    return { ok: true };
   }
 
   return {};

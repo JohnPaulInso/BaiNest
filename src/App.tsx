@@ -24,7 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { AdminApp } from "./Admin";
-import { api, type Block, type Post } from "./lib/api";
+import { api, subscribeToPosts, type Block, type Post } from "./lib/api";
 
 const nav = [
   ["Home", "/"],
@@ -322,14 +322,16 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
     </motion.article>
   );
 }
+// (2026-07-13) Real-time live posts via onSnapshot. Prev: one-time fetch
 function usePosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    api<Post[]>("/api/posts")
-      .then(setPosts)
-      .catch(() => setPosts([]))
-      .finally(() => setLoading(false));
+    const unsub = subscribeToPosts((livePosts) => {
+      setPosts(livePosts);
+      setLoading(false);
+    }, true);
+    return () => unsub();
   }, []);
   return { posts, loading };
 }
