@@ -60,7 +60,60 @@ export type SiteSettings = {
   twitter: string;
   instagram: string;
   youtube: string;
+  tags?: string[];
 };
+/* (2026-07-13) Master tags imported from database reference. Prev: none */
+export const defaultTags: string[] = [
+  "Affiliate Marketing",
+  "alert",
+  "Applepay",
+  "Bogo Cebu",
+  "Bogo City",
+  "Bogo Lifestyle",
+  "Bogo Photo Feature",
+  "Bogo Places",
+  "Bogo Spots",
+  "BOGOHANON CHECK-IN",
+  "Bogophoria",
+  "Bogophoria list",
+  "Business Buzz",
+  "Capitancillo",
+  "Community",
+  "Content Creation",
+  "Culture & Community",
+  "Cycling Apparel",
+  "Facebook Tips",
+  "Fact Check",
+  "Family & Kids",
+  "Food & Drinks",
+  "forthesoul",
+  "Free Diving",
+  "Fun Activities",
+  "greetings",
+  "Hometown Heroes",
+  "Hot Topic",
+  "Hotspot",
+  "In Focus",
+  "Local Businesses",
+  "Local Heroes",
+  "News & Updates",
+  "People",
+  "Places",
+  "Politics",
+  "Prince Express Inn",
+  "Public Safety",
+  "Red Goose",
+  "Red Goose Bogo City",
+  "Social Media",
+  "Sports",
+  "Stories",
+  "The Bogohanon Spirit",
+  "Things to Do",
+  "tips",
+  "Top 10 things to experience in Bogo City",
+  "Unfiltered",
+  "Wakal-Wakal"
+];
 export const defaultSettings: SiteSettings = {
   siteName: "BaiNest",
   email: "contact@bainestdigital.com",
@@ -69,6 +122,7 @@ export const defaultSettings: SiteSettings = {
   twitter: "https://twitter.com/bainestdigital",
   instagram: "https://instagram.com/bainestdigital",
   youtube: "https://youtube.com/@bainestdigital",
+  tags: defaultTags,
 };
 export type AdminState = {
   authenticated: boolean;

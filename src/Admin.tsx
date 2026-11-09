@@ -45,6 +45,7 @@ import {
   subscribeToPosts,
   subscribeToContacts,
   defaultSettings,
+  defaultTags,
   type AdminState,
   type Block,
   type Post,
@@ -891,9 +892,9 @@ function PostEditor({
     return Array.from(set);
   }, [posts]);
 
-  // Existing tags from published / existing posts
+  {/* (2026-07-13) Include imported database tags in suggestion list. Prev: post tags only */}
   const existingTags = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(defaultTags);
     posts.forEach((p) => {
       if (Array.isArray(p.tags)) {
         p.tags.forEach((t) => {
@@ -901,7 +902,7 @@ function PostEditor({
         });
       }
     });
-    return Array.from(set);
+    return Array.from(set).sort();
   }, [posts]);
 
   // Check for duplicate slug across all stories

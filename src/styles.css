@@ -4288,3 +4288,138 @@ img {
   height: 18px !important;
   cursor: pointer;
 }
+
+/* (2026-07-13) Client-compressed upload buttons and labels. Prev: none */
+.cover-upload-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cover-upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d9488;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.cover-upload-label:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.cover-or-text {
+  font-size: 12px;
+  color: #94a3b8;
+}
+.block-upload-strip {
+  margin-bottom: 8px;
+}
+.block-upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  color: #0f766e;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.block-upload-label:hover {
+  background: #0d9488;
+  color: #ffffff;
+  border-style: solid;
+}
+
+/* (2026-07-13) Interactive cover dropzone and taxonomy quick pick chips. Prev: none */
+/* (2026-07-13) Scaled interactive dropzone, chips and cover inputs. Prev: 12px-14px */
+.main-cover-placeholder.interactive {
+  cursor: pointer;
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  padding: 44px 24px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.main-cover-placeholder.interactive:hover {
+  border-color: #0d9488;
+  background: #f0fdfa;
+}
+.main-cover-placeholder.interactive b {
+  font-size: 16px;
+  color: #0f172a;
+}
+.main-cover-placeholder.interactive span {
+  font-size: 14px;
+  color: #64748b;
+}
+.taxonomy-quick-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.tax-chip {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tax-chip:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+.tax-chip.active {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0d9488;
+}
+.cover-section-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.cover-upload-label {
+  padding: 11px 20px;
+  font-size: 13.5px;
+  border-radius: 8px;
+}
+.cover-or-text {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.main-cover-input {
+  font-size: 15px;
+  padding: 12px 14px;
+}
+.nav-toggle-check {
+  font-size: 15px !important;
+  color: #0f172a !important;
+}
+.nav-toggle-check input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+}

@@ -39,6 +39,7 @@ import {
   subscribeToPosts,
   subscribeToSettings,
   defaultSettings,
+  defaultTags,
   type Block,
   type Post,
   type SiteSettings,
@@ -1067,8 +1068,9 @@ function PostDetail() {
     return allPosts.filter((p) => p.status === "published").slice(0, 4);
   }, [allPosts]);
 
+  {/* (2026-07-13) Seed main tags from imported database tag set. Prev: posts only */}
   const mainTags = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(defaultTags);
     allPosts.forEach((p) => {
       if (p.category) set.add(p.category.trim());
       if (Array.isArray(p.tags)) {
