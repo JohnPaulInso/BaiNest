@@ -1160,11 +1160,11 @@ function PostEditor({
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">
-            {/* (2026-07-13) Move cover photo to top of blogger surface. Prev: in sidebar */}
+            {/* (2026-07-13) Interactive cover photo dropzone with auto-compression. Prev: basic box */}
             <div className="main-cover-section">
               <div className="main-cover-header">
                 <span className="cover-section-title">
-                  <ImageIcon size={16} /> Cover Photo
+                  <ImageIcon size={18} /> Featured Cover Photo
                 </span>
                 {form.cover_image && (
                   <button
@@ -1181,17 +1181,24 @@ function PostEditor({
                   <img src={form.cover_image} alt="Story cover" />
                 </div>
               ) : (
-                <div className="main-cover-placeholder">
-                  <ImageIcon size={30} />
-                  <span>Add a high-impact cover photo for your story</span>
-                </div>
+                <label className="main-cover-placeholder interactive">
+                  <ImageIcon size={38} />
+                  <b>Click to upload cover photo or drag image here</b>
+                  <span>Supports JPG, PNG, WEBP · Auto-compressed to lightweight mobile format</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    disabled={coverUploading}
+                    onChange={handleCoverUpload}
+                  />
+                </label>
               )}
-              {/* (2026-07-13) Client compressed cover photo uploader. Prev: text URL only */}
               <div className="cover-upload-strip">
                 <label className="cover-upload-label">
-                  <Upload size={14} />
+                  <Upload size={15} />
                   <span>
-                    {coverUploading ? "Compressing & uploading photo..." : "Upload Cover Photo (Auto-compressed)"}
+                    {coverUploading ? "Compressing & uploading photo…" : "Upload Cover Photo from Device"}
                   </span>
                   <input
                     type="file"
@@ -1368,68 +1375,64 @@ function PostEditor({
               <small>Automatically set to today.</small>
             </label>
 
-            {/* (2026-07-13) Author with autofill and dropdown. Prev: text only */}
+            {/* (2026-07-13) Full-width author with autocomplete and quick chips. Prev: squished select */}
             <label>
               <span>Author</span>
-              <div className="input-with-dropdown">
-                <input
-                  list="authors-datalist"
-                  value={form.author}
-                  onChange={(e) => patch("author", e.target.value)}
-                  placeholder="Select or enter author"
-                />
-                <select
-                  value={existingAuthors.includes(form.author) ? form.author : ""}
-                  onChange={(e) => {
-                    if (e.target.value) patch("author", e.target.value);
-                  }}
-                  className="select-helper"
-                >
-                  <option value="">Existing authors...</option>
-                  {existingAuthors.map((a: string) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <input
+                list="authors-datalist"
+                value={form.author}
+                onChange={(e) => patch("author", e.target.value)}
+                placeholder="BaiNest Studio"
+              />
               <datalist id="authors-datalist">
                 {existingAuthors.map((a: string) => (
                   <option key={a} value={a} />
                 ))}
               </datalist>
+              {existingAuthors.length > 0 && (
+                <div className="taxonomy-quick-pick">
+                  {existingAuthors.map((a: string) => (
+                    <button
+                      key={a}
+                      type="button"
+                      className={`tax-chip ${form.author === a ? "active" : ""}`}
+                      onClick={() => patch("author", a)}
+                    >
+                      {form.author === a ? "✓ " : ""}{a}
+                    </button>
+                  ))}
+                </div>
+              )}
             </label>
 
-            {/* (2026-07-13) Category with autofill and dropdown. Prev: text only */}
+            {/* (2026-07-13) Full-width category with autocomplete and chips. Prev: squished select */}
             <label>
               <span>Category</span>
-              <div className="input-with-dropdown">
-                <input
-                  list="categories-datalist"
-                  value={form.category}
-                  onChange={(e) => patch("category", e.target.value)}
-                  placeholder="Select or enter category"
-                />
-                <select
-                  value={existingCategories.includes(form.category) ? form.category : ""}
-                  onChange={(e) => {
-                    if (e.target.value) patch("category", e.target.value);
-                  }}
-                  className="select-helper"
-                >
-                  <option value="">Existing categories...</option>
-                  {existingCategories.map((c: string) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <input
+                list="categories-datalist"
+                value={form.category}
+                onChange={(e) => patch("category", e.target.value)}
+                placeholder="e.g. Insights, Strategy, Digital"
+              />
               <datalist id="categories-datalist">
                 {existingCategories.map((c: string) => (
                   <option key={c} value={c} />
                 ))}
               </datalist>
+              {existingCategories.length > 0 && (
+                <div className="taxonomy-quick-pick">
+                  {existingCategories.map((c: string) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`tax-chip ${form.category === c ? "active" : ""}`}
+                      onClick={() => patch("category", c)}
+                    >
+                      {form.category === c ? "✓ " : ""}{c}
+                    </button>
+                  ))}
+                </div>
+              )}
             </label>
 
             {/* (2026-07-13) Tags with autofill chips. Prev: text only */}
