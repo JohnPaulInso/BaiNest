@@ -87,6 +87,12 @@ const projects = [
   },
 ];
 
+// (2026-07-13) Auto-detect asset base path. Prev: static BASE_URL
+const assetBase =
+  typeof window !== "undefined" && window.location.pathname.startsWith("/BaiNest")
+    ? "/BaiNest/"
+    : "/";
+
 function Brand({ footer = false }: { footer?: boolean }) {
   return (
     <Link
@@ -94,8 +100,7 @@ function Brand({ footer = false }: { footer?: boolean }) {
       to="/"
       aria-label="BaiNest Studio home"
     >
-      {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
-      <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" />
+      <img src={`${assetBase}logo.svg`} alt="" />
       <span>
         BAINEST<small>DIGITAL STUDIO</small>
       </span>
@@ -1096,11 +1101,21 @@ function NotFound() {
     </PageFrame>
   );
 }
+// (2026-07-13) Scroll window to top on route change. Prev: stay scrolled
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
+}
+
 export function App() {
   const location = useLocation();
   const admin = location.pathname.startsWith("/admin");
   return (
     <>
+      <ScrollToTop />
       {!admin && (
         <>
           <LocalDomainNotice />

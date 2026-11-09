@@ -180,6 +180,12 @@ function SortableBlock({
     </div>
   );
 }
+// (2026-07-13) Auto-detect asset base path for Admin. Prev: BASE_URL
+const assetBase =
+  typeof window !== "undefined" && window.location.pathname.startsWith("/BaiNest")
+    ? "/BaiNest/"
+    : "/";
+
 function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -207,8 +213,7 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
     <div className="admin-login-screen">
       <div className="login-card">
         <Link className="admin-login-brand" to="/">
-          {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
-          <img src={`${import.meta.env.BASE_URL}logo.svg`} />{" "}
+          <img src={`${assetBase}logo.svg`} />{" "}
           <span>
             BAINEST<small>STUDIO ADMIN</small>
           </span>
@@ -261,8 +266,7 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   return (
     <aside className="admin-sidebar">
       <Link to="/" className="admin-logo">
-        {/* (2026-07-13) Fix logo path with BASE_URL. Prev: src="/logo.svg" */}
-        <img src={`${import.meta.env.BASE_URL}logo.svg`} />
+        <img src={`${assetBase}logo.svg`} />
         <span>
           BAINEST<small>STUDIO ADMIN</small>
         </span>
@@ -1078,8 +1082,14 @@ export function AdminApp() {
       <AdminNav user={session.username || "Admin"} onLogout={logout} />
       <main className="admin-main">
         <div className="admin-topbar">
+          {/* (2026-07-13) Show dynamic workspace type. Prev: static Local */}
           <span>
-            <span className="local-dot" /> Local workspace
+            <span className="local-dot" />{" "}
+            {typeof window !== "undefined" &&
+            (window.location.hostname === "localhost" ||
+              window.location.hostname === "127.0.0.1")
+              ? "Local SQLite workspace"
+              : "Firebase Cloud workspace"}
           </span>
           <Link to="/" target="_blank">
             View public site <ArrowUpRight size={14} />
