@@ -179,65 +179,72 @@ function Header() {
             className={`main-nav ${open ? "open" : ""}`}
             aria-label="Primary navigation"
           >
-            {nav.map(([label, to]) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === "/"}
-                className={({ isActive }) => (isActive ? "active" : "")}
-              >
-                {label.toUpperCase()}
-              </NavLink>
-            ))}
-
-            {/* (2026-07-13) Recent posts mega dropdown on header navigation. Prev: none */}
-            <div
-              className={`recent-posts-dropdown ${recentOpen ? "open" : ""}`}
-              onMouseEnter={() => setRecentOpen(true)}
-              onMouseLeave={() => setRecentOpen(false)}
-            >
-              <button
-                type="button"
-                className="recent-posts-trigger"
-                onClick={() => setRecentOpen((v) => !v)}
-              >
-                RECENT POSTS <ChevronDown size={13} />
-              </button>
-              {recentOpen && recentPosts.length > 0 && (
-                <div className="recent-posts-mega">
-                  <div className="recent-posts-grid">
-                    {recentPosts.map((rp) => (
-                      <Link
-                        key={rp.id}
-                        to={`/blog/${rp.slug}`}
-                        className="recent-mega-card"
-                        onClick={() => setRecentOpen(false)}
-                      >
-                        <div className="recent-mega-thumb">
-                          {rp.cover_image ? (
-                            <img src={rp.cover_image} alt={rp.title} />
-                          ) : (
-                            <div className="recent-mega-ph">
-                              <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
-                            </div>
-                          )}
+            {/* (2026-07-13) Attach recent posts dropdown directly to Blog. Prev: separate nav */}
+            {nav.map(([label, to]) => {
+              if (label === "Blog") {
+                return (
+                  <div
+                    key={to}
+                    className={`blog-nav-wrapper recent-posts-dropdown ${recentOpen ? "open" : ""}`}
+                    onMouseEnter={() => setRecentOpen(true)}
+                    onMouseLeave={() => setRecentOpen(false)}
+                  >
+                    <NavLink
+                      to={to}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
+                    >
+                      {label.toUpperCase()} <ChevronDown size={13} />
+                    </NavLink>
+                    {recentOpen && recentPosts.length > 0 && (
+                      <div className="recent-posts-mega">
+                        <div className="recent-posts-grid">
+                          {recentPosts.map((rp) => (
+                            <Link
+                              key={rp.id}
+                              to={`/blog/${rp.slug}`}
+                              className="recent-mega-card"
+                              onClick={() => setRecentOpen(false)}
+                            >
+                              <div className="recent-mega-thumb">
+                                {rp.cover_image ? (
+                                  <img src={rp.cover_image} alt={rp.title} />
+                                ) : (
+                                  <div className="recent-mega-ph">
+                                    <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <h4 className="recent-mega-title">{rp.title}</h4>
+                              <span className="recent-mega-date">
+                                {rp.published_at
+                                  ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  : "Recent"}
+                              </span>
+                            </Link>
+                          ))}
                         </div>
-                        <h4 className="recent-mega-title">{rp.title}</h4>
-                        <span className="recent-mega-date">
-                          {rp.published_at
-                            ? new Date(rp.published_at).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })
-                            : "Recent"}
-                        </span>
-                      </Link>
-                    ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
+                );
+              }
+
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === "/"}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  {label.toUpperCase()}
+                </NavLink>
+              );
+            })}
 
             {/* Custom pages toggled to include in header */}
             {customNavPosts.map((cp) => (

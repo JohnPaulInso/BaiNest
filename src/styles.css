@@ -3072,29 +3072,21 @@ img {
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
-/* (2026-07-13) Header mega-dropdown, sidebar widgets, tags & pillars. Prev: none */
+/* (2026-07-13) Attach recent posts dropdown directly to Blog. Prev: separate nav */
+.blog-nav-wrapper,
 .recent-posts-dropdown {
   position: relative;
   display: flex;
   align-items: center;
   height: 100%;
 }
-.recent-posts-trigger {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
+.blog-nav-wrapper > a {
+  height: 100%;
+  display: flex;
   align-items: center;
   gap: 5px;
-  height: 100%;
-  padding: 0 16px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--navy);
-  transition: color 0.2s ease;
 }
+.blog-nav-wrapper.open > a,
 .recent-posts-trigger:hover,
 .recent-posts-dropdown.open .recent-posts-trigger {
   color: #0d9488;
@@ -3102,7 +3094,8 @@ img {
 .recent-posts-mega {
   position: absolute;
   top: 100%;
-  left: -200px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 860px;
   max-width: 90vw;
   background: #ffffff;
@@ -3114,8 +3107,8 @@ img {
   animation: fadeInDown 0.22s ease-out;
 }
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 .recent-posts-grid {
   display: grid;
