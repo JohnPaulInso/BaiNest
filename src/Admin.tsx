@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import {
@@ -11,6 +11,8 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeft,
   ArrowUpRight,
+  ArrowUp,
+  ArrowDown,
   FileText,
   Globe2,
   Inbox,
@@ -26,6 +28,12 @@ import {
   Check,
   LockKeyhole,
   PenTool,
+  Image as ImageIcon,
+  Heading as HeadingIcon,
+  Type,
+  Quote,
+  List as ListIcon,
+  Minus,
 } from "lucide-react";
 // (2026-07-13) Import SiteSettings and defaultSettings. Prev: Post only
 import {
@@ -64,15 +72,27 @@ function slugify(text: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
+// (2026-07-13) Enhanced block editor with image preview and insert buttons. Prev: basic block
 function SortableBlock({
   block,
+  index,
+  total,
   onChange,
   onRemove,
+  onMoveUp,
+  onMoveDown,
+  onInsertAfter,
 }: {
   block: Block;
+  index: number;
+  total: number;
   onChange: (id: string, key: string, value: string) => void;
   onRemove: (id: string) => void;
+  onMoveUp?: (id: string) => void;
+  onMoveDown?: (id: string) => void;
+  onInsertAfter?: (id: string, type: Block["type"]) => void;
 }) {
+  const [showInserter, setShowInserter] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -100,91 +120,220 @@ function SortableBlock({
       )}
     </label>
   );
+
+  const blockIcons: Record<Block["type"], React.ReactNode> = {
+    heading: <HeadingIcon size={14} />,
+    paragraph: <Type size={14} />,
+    image: <ImageIcon size={14} />,
+    quote: <Quote size={14} />,
+    list: <ListIcon size={14} />,
+    divider: <Minus size={14} />,
+    cta: <ArrowUpRight size={14} />,
+    columns: <FileText size={14} />,
+  };
+
   return (
-    <div className="editor-block" ref={setNodeRef} style={style}>
-      <button
-        type="button"
-        className="drag-handle"
-        {...attributes}
-        {...listeners}
-        aria-label="Drag to reorder"
-      >
-        <GripVertical size={16} />
-      </button>
-      <div className="editor-block-field">
-        <span>{block.type} block</span>
-        {block.type === "image" ? (
-          <div className="block-fields-grid">
-            {field("src", "Image URL", block.src || "", "/images/photo.jpg")}
-            {field("alt", "Alt text", block.alt || "", "Describe the image")}
-            {field(
-              "caption",
-              "Caption",
-              block.caption || "",
-              "Optional image caption",
-            )}
+    <div className="block-wrapper-row" ref={setNodeRef} style={style}>
+      <div className="editor-block">
+        <div className="block-control-rail">
+          <button
+            type="button"
+            className="drag-handle"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+            title="Drag to reorder"
+          >
+            <GripVertical size={16} />
+          </button>
+          {onMoveUp && (
+            <button
+              type="button"
+              className="block-step-btn"
+              onClick={() => onMoveUp(block.id)}
+              disabled={index === 0}
+              title="Move up"
+            >
+              <ArrowUp size={12} />
+            </button>
+          )}
+          {onMoveDown && (
+            <button
+              type="button"
+              className="block-step-btn"
+              onClick={() => onMoveDown(block.id)}
+              disabled={index === total - 1}
+              title="Move down"
+            >
+              <ArrowDown size={12} />
+            </button>
+          )}
+        </div>
+        <div className="editor-block-field">
+          <div className="block-type-badge">
+            {blockIcons[block.type] || <FileText size={14} />}
+            <span>{block.type.toUpperCase()} BLOCK</span>
           </div>
-        ) : block.type === "cta" ? (
-          <div className="block-fields-grid">
-            {field(
-              "text",
-              "Callout text",
-              block.text || "",
-              "A short next step",
-              true,
-            )}
-            {field("label", "Button label", block.label || "", "Get in touch")}
-            {field("href", "Button link", block.href || "/contact", "/contact")}
-          </div>
-        ) : block.type === "columns" ? (
-          <div className="block-fields-grid">
-            {field(
-              "left",
-              "Left column",
-              block.left || "",
-              "Write the left column…",
-              true,
-            )}
-            {field(
-              "right",
-              "Right column",
-              block.right || "",
-              "Write the right column…",
-              true,
-            )}
-          </div>
-        ) : block.type === "list" ? (
-          <textarea
-            value={(block.items || []).join("\n")}
-            onChange={(e) => onChange(block.id, "items", e.target.value)}
-            placeholder="One item per line"
-          />
-        ) : block.type === "divider" ? (
-          <p className="editor-divider-hint">
-            A subtle divider will appear between these sections.
-          </p>
-        ) : (
-          <textarea
-            value={block.text || ""}
-            onChange={(e) => onChange(block.id, "text", e.target.value)}
-            placeholder={
-              block.type === "heading"
-                ? "Section heading"
-                : block.type === "quote"
-                  ? "Pull quote"
-                  : "Write your content…"
-            }
-          />
-        )}
+          {block.type === "image" ? (
+            <div className="block-fields-grid">
+              {block.src && (
+                <div className="inline-block-img-preview">
+                  <img src={block.src} alt={block.alt || "Preview"} />
+                </div>
+              )}
+              {field("src", "Image URL", block.src || "", "Paste image URL (https://... or /image.png)")}
+              {field("alt", "Alt text", block.alt || "", "Describe the image for accessibility")}
+              {field(
+                "caption",
+                "Caption",
+                block.caption || "",
+                "Optional image caption",
+              )}
+            </div>
+          ) : block.type === "cta" ? (
+            <div className="block-fields-grid">
+              {field(
+                "text",
+                "Callout text",
+                block.text || "",
+                "A short next step",
+                true,
+              )}
+              {field("label", "Button label", block.label || "", "Get in touch")}
+              {field("href", "Button link", block.href || "/contact", "/contact")}
+            </div>
+          ) : block.type === "columns" ? (
+            <div className="block-fields-grid">
+              {field(
+                "left",
+                "Left column",
+                block.left || "",
+                "Write the left column…",
+                true,
+              )}
+              {field(
+                "right",
+                "Right column",
+                block.right || "",
+                "Write the right column…",
+                true,
+              )}
+            </div>
+          ) : block.type === "list" ? (
+            <textarea
+              value={(block.items || []).join("\n")}
+              onChange={(e) => onChange(block.id, "items", e.target.value)}
+              placeholder="One item per line"
+            />
+          ) : block.type === "divider" ? (
+            <p className="editor-divider-hint">
+              A subtle divider line will appear here.
+            </p>
+          ) : (
+            <textarea
+              value={block.text || ""}
+              onChange={(e) => onChange(block.id, "text", e.target.value)}
+              placeholder={
+                block.type === "heading"
+                  ? "Section heading"
+                  : block.type === "quote"
+                    ? "Pull quote"
+                    : "Write your content…"
+              }
+            />
+          )}
+        </div>
+        <button
+          type="button"
+          className="icon-button danger"
+          onClick={() => onRemove(block.id)}
+          aria-label="Remove block"
+          title="Delete block"
+        >
+          <X size={15} />
+        </button>
       </div>
-      <button
-        type="button"
-        className="icon-button danger"
-        onClick={() => onRemove(block.id)}
-        aria-label="Remove block"
-      >
-        <X size={15} />
-      </button>
+
+      {/* Inline Insert Palette */}
+      {onInsertAfter && (
+        <div className="inline-insert-section">
+          <div className="inline-insert-divider">
+            <button
+              type="button"
+              className="inline-insert-toggle"
+              onClick={() => setShowInserter((v) => !v)}
+              title="Insert block here"
+            >
+              + Insert block here
+            </button>
+          </div>
+          {showInserter && (
+            <div className="inline-insert-palette">
+              <span className="insert-palette-hint">Insert next:</span>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "image");
+                  setShowInserter(false);
+                }}
+              >
+                <ImageIcon size={13} /> Image
+              </button>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "paragraph");
+                  setShowInserter(false);
+                }}
+              >
+                <Type size={13} /> Paragraph
+              </button>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "heading");
+                  setShowInserter(false);
+                }}
+              >
+                <HeadingIcon size={13} /> Heading
+              </button>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "quote");
+                  setShowInserter(false);
+                }}
+              >
+                <Quote size={13} /> Quote
+              </button>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "list");
+                  setShowInserter(false);
+                }}
+              >
+                <ListIcon size={13} /> List
+              </button>
+              <button
+                type="button"
+                className="palette-btn"
+                onClick={() => {
+                  onInsertAfter(block.id, "divider");
+                  setShowInserter(false);
+                }}
+              >
+                <Minus size={13} /> Divider
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -610,6 +759,7 @@ const postTemplates = [
   },
 ];
 
+// (2026-07-13) Auto-set today date, fetch taxonomy, and check duplicate URLs. Prev: manual
 function PostEditor({
   posts,
   refresh,
@@ -622,7 +772,10 @@ function PostEditor({
   const existing = id
     ? posts.find((p) => String(p.id) === String(id))
     : undefined;
-  const [form, setForm] = useState({ ...emptyPost });
+  const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>({
+    ...emptyPost,
+    published_at: new Date().toISOString(),
+  });
   const [tags, setTags] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -641,10 +794,62 @@ function PostEditor({
         })
         .catch(() => {});
     } else {
-      setForm({ ...emptyPost, blocks: [] });
+      setForm({
+        ...emptyPost,
+        blocks: [],
+        published_at: new Date().toISOString(),
+      });
       setTags("");
     }
   }, [id, existing?.updated_at]);
+
+  // Existing authors from published / existing posts
+  const existingAuthors = useMemo(() => {
+    const set = new Set<string>();
+    posts.forEach((p) => {
+      if (p.author?.trim()) set.add(p.author.trim());
+    });
+    if (!set.has("BaiNest Studio")) set.add("BaiNest Studio");
+    return Array.from(set);
+  }, [posts]);
+
+  // Existing categories from published / existing posts
+  const existingCategories = useMemo(() => {
+    const set = new Set<string>();
+    posts.forEach((p) => {
+      if (p.category?.trim()) set.add(p.category.trim());
+    });
+    ["Brand strategy", "Digital", "Creative", "Case study", "Insights", "Growth"].forEach((c) =>
+      set.add(c),
+    );
+    return Array.from(set);
+  }, [posts]);
+
+  // Existing tags from published / existing posts
+  const existingTags = useMemo(() => {
+    const set = new Set<string>();
+    posts.forEach((p) => {
+      if (Array.isArray(p.tags)) {
+        p.tags.forEach((t) => {
+          if (t?.trim()) set.add(t.trim());
+        });
+      }
+    });
+    return Array.from(set);
+  }, [posts]);
+
+  // Check for duplicate slug across all stories
+  const targetSlug = form.slug || slugify(form.title);
+  const duplicatePost = useMemo(() => {
+    if (!targetSlug) return null;
+    return (
+      posts.find(
+        (p) => p.slug === targetSlug && String(p.id) !== String(id),
+      ) || null
+    );
+  }, [targetSlug, posts, id]);
+
+  const isDuplicateSlug = Boolean(duplicatePost);
 
   function applyTemplate(tpl: (typeof postTemplates)[0]) {
     setForm((old) => ({
@@ -675,10 +880,12 @@ function PostEditor({
       setBusy(false);
     }
   }
+
   const blocks = form.blocks as Block[];
   function patch(key: string, value: unknown) {
     setForm((old) => ({ ...old, [key]: value }));
   }
+
   function addBlock(type: Block["type"]) {
     patch("blocks", [
       ...blocks,
@@ -694,6 +901,38 @@ function PostEditor({
       },
     ]);
   }
+
+  function moveBlockUp(blockId: string) {
+    const index = blocks.findIndex((b) => b.id === blockId);
+    if (index > 0) {
+      patch("blocks", arrayMove(blocks, index, index - 1));
+    }
+  }
+
+  function moveBlockDown(blockId: string) {
+    const index = blocks.findIndex((b) => b.id === blockId);
+    if (index < blocks.length - 1) {
+      patch("blocks", arrayMove(blocks, index, index + 1));
+    }
+  }
+
+  function insertBlockAfter(afterId: string, type: Block["type"]) {
+    const index = blocks.findIndex((b) => b.id === afterId);
+    const newBlock: Block = {
+      id: crypto.randomUUID(),
+      type,
+      text: "",
+      label: type === "cta" ? "Get in touch" : undefined,
+      href: type === "cta" ? "/contact" : undefined,
+      items: type === "list" ? [""] : undefined,
+      left: type === "columns" ? "" : undefined,
+      right: type === "columns" ? "" : undefined,
+    };
+    const newBlocks = [...blocks];
+    newBlocks.splice(index + 1, 0, newBlock);
+    patch("blocks", newBlocks);
+  }
+
   function updateBlock(blockId: string, key: string, value: string) {
     patch(
       "blocks",
@@ -704,18 +943,21 @@ function PostEditor({
       }),
     );
   }
+
   function removeBlock(blockId: string) {
     patch(
       "blocks",
       blocks.filter((b) => b.id !== blockId),
     );
   }
+
   function drop(event: DragEndEvent) {
     if (!event.over || event.active.id === event.over.id) return;
     const a = blocks.findIndex((b) => b.id === event.active.id),
       b = blocks.findIndex((x) => x.id === event.over?.id);
     patch("blocks", arrayMove(blocks, a, b));
   }
+
   function openPreview() {
     if (!id) {
       setNotice("Save this story as a draft before previewing it.");
@@ -727,8 +969,16 @@ function PostEditor({
       "noopener,noreferrer",
     );
   }
+
   async function save(status: "draft" | "published") {
     if (!form.title.trim()) return setNotice("Add a title before saving.");
+    const finalSlug = form.slug || slugify(form.title);
+    if (isDuplicateSlug) {
+      setNotice(
+        `Cannot save: The URL "/${finalSlug}" is already taken by "${duplicatePost?.title}". Please customize the URL.`,
+      );
+      return;
+    }
     const payload = {
       ...form,
       status,
@@ -739,7 +989,7 @@ function PostEditor({
       blocks: blocks.map((b) =>
         b.type === "list" ? { ...b, items: b.items?.filter(Boolean) } : b,
       ),
-      slug: form.slug || slugify(form.title),
+      slug: finalSlug,
     };
     setBusy(true);
     setNotice("");
@@ -852,6 +1102,40 @@ function PostEditor({
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">
+            {/* (2026-07-13) Move cover photo to top of blogger surface. Prev: in sidebar */}
+            <div className="main-cover-section">
+              <div className="main-cover-header">
+                <span className="cover-section-title">
+                  <ImageIcon size={16} /> Cover Photo
+                </span>
+                {form.cover_image && (
+                  <button
+                    type="button"
+                    className="cover-remove-action"
+                    onClick={() => patch("cover_image", "")}
+                  >
+                    Remove cover
+                  </button>
+                )}
+              </div>
+              {form.cover_image ? (
+                <div className="main-cover-preview">
+                  <img src={form.cover_image} alt="Story cover" />
+                </div>
+              ) : (
+                <div className="main-cover-placeholder">
+                  <ImageIcon size={30} />
+                  <span>Add a high-impact cover photo for your story</span>
+                </div>
+              )}
+              <input
+                value={form.cover_image}
+                onChange={(e) => patch("cover_image", e.target.value)}
+                placeholder="Paste or enter cover photo URL (e.g. https://... or /images/cover.jpg)"
+                className="main-cover-input"
+              />
+            </div>
+
             <label className="title-input">
               <span>Post title</span>
               <input
@@ -873,52 +1157,104 @@ function PostEditor({
                 placeholder="A short summary for the journal listing…"
               />
             </label>
+
+            {/* Block Editor Toolbox */}
             <div className="block-editor-heading">
               <div>
                 <h2>Story content</h2>
-                <p>Add and arrange blocks to shape your layout.</p>
+                <p>Add and arrange blocks or insert images anywhere in your layout.</p>
               </div>
               <span>{blocks.length} blocks</span>
             </div>
+
+            {/* (2026-07-13) Top block insert palette with icons. Prev: plain buttons */}
+            <div className="block-quick-palette">
+              <span className="palette-label">Add Block:</span>
+              <div className="palette-buttons">
+                <button
+                  type="button"
+                  onClick={() => addBlock("image")}
+                  className="palette-tool-btn image-highlight"
+                  title="Insert an image at the end"
+                >
+                  <ImageIcon size={14} /> + Image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("paragraph")}
+                  className="palette-tool-btn"
+                  title="Add text paragraph"
+                >
+                  <Type size={14} /> + Paragraph
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("heading")}
+                  className="palette-tool-btn"
+                  title="Add section heading"
+                >
+                  <HeadingIcon size={14} /> + Heading
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("quote")}
+                  className="palette-tool-btn"
+                  title="Add pull quote"
+                >
+                  <Quote size={14} /> + Quote
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("list")}
+                  className="palette-tool-btn"
+                  title="Add bulleted list"
+                >
+                  <ListIcon size={14} /> + List
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("divider")}
+                  className="palette-tool-btn"
+                  title="Add section divider"
+                >
+                  <Minus size={14} /> + Divider
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addBlock("cta")}
+                  className="palette-tool-btn"
+                  title="Add call to action"
+                >
+                  <ArrowUpRight size={14} /> + CTA
+                </button>
+              </div>
+            </div>
+
             <DndContext collisionDetection={closestCenter} onDragEnd={drop}>
               <SortableContext
                 items={blocks.map((b) => b.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="blocks-list">
-                  {blocks.map((b) => (
+                  {blocks.map((b, i) => (
                     <SortableBlock
                       key={b.id}
                       block={b}
+                      index={i}
+                      total={blocks.length}
                       onChange={updateBlock}
                       onRemove={removeBlock}
+                      onMoveUp={moveBlockUp}
+                      onMoveDown={moveBlockDown}
+                      onInsertAfter={insertBlockAfter}
                     />
                   ))}
                 </div>
               </SortableContext>
             </DndContext>
-            <div className="block-add-row">
-              <span>Add a block</span>
-              {(
-                [
-                  "heading",
-                  "paragraph",
-                  "quote",
-                  "list",
-                  "image",
-                  "divider",
-                  "cta",
-                  "columns",
-                ] as const
-              ).map((t) => (
-                <button key={t} onClick={() => addBlock(t)}>
-                  + {t}
-                </button>
-              ))}
-            </div>
             {!blocks.length && (
               <div className="block-empty">
-                Start building your story with a heading or paragraph.
+                Start building your story by adding an image, heading, or paragraph above.
               </div>
             )}
           </div>
@@ -943,44 +1279,126 @@ function PostEditor({
                 value={
                   form.published_at
                     ? new Date(form.published_at).toISOString().slice(0, 16)
-                    : ""
+                    : new Date().toISOString().slice(0, 16)
                 }
                 onChange={(e) =>
                   patch(
                     "published_at",
                     e.target.value
                       ? new Date(e.target.value).toISOString()
-                      : null,
+                      : new Date().toISOString(),
                   )
                 }
               />
-              <small>Leave blank to use the time you publish.</small>
+              <small>Automatically set to today.</small>
             </label>
+
+            {/* (2026-07-13) Author with autofill and dropdown. Prev: text only */}
             <label>
-              Author
-              <input
-                value={form.author}
-                onChange={(e) => patch("author", e.target.value)}
-              />
+              <span>Author</span>
+              <div className="input-with-dropdown">
+                <input
+                  list="authors-datalist"
+                  value={form.author}
+                  onChange={(e) => patch("author", e.target.value)}
+                  placeholder="Select or enter author"
+                />
+                <select
+                  value={existingAuthors.includes(form.author) ? form.author : ""}
+                  onChange={(e) => {
+                    if (e.target.value) patch("author", e.target.value);
+                  }}
+                  className="select-helper"
+                >
+                  <option value="">Existing authors...</option>
+                  {existingAuthors.map((a: string) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <datalist id="authors-datalist">
+                {existingAuthors.map((a: string) => (
+                  <option key={a} value={a} />
+                ))}
+              </datalist>
             </label>
+
+            {/* (2026-07-13) Category with autofill and dropdown. Prev: text only */}
             <label>
-              Category
-              <input
-                value={form.category}
-                onChange={(e) => patch("category", e.target.value)}
-                placeholder="Insights"
-              />
+              <span>Category</span>
+              <div className="input-with-dropdown">
+                <input
+                  list="categories-datalist"
+                  value={form.category}
+                  onChange={(e) => patch("category", e.target.value)}
+                  placeholder="Select or enter category"
+                />
+                <select
+                  value={existingCategories.includes(form.category) ? form.category : ""}
+                  onChange={(e) => {
+                    if (e.target.value) patch("category", e.target.value);
+                  }}
+                  className="select-helper"
+                >
+                  <option value="">Existing categories...</option>
+                  {existingCategories.map((c: string) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <datalist id="categories-datalist">
+                {existingCategories.map((c: string) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </label>
+
+            {/* (2026-07-13) Tags with autofill chips. Prev: text only */}
             <label>
-              Tags
+              <span>Tags</span>
               <input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="Brand, Strategy"
+                placeholder="Brand, Strategy, Digital"
               />
-              <small>Separate tags with commas.</small>
+              <small>Separate tags with commas, or click existing tags:</small>
+              {existingTags.length > 0 && (
+                <div className="editor-tags-suggestions">
+                  {existingTags.map((tg: string) => {
+                    const isSelected = tags
+                      .split(",")
+                      .map((t) => t.trim())
+                      .includes(tg);
+                    return (
+                      <button
+                        key={tg}
+                        type="button"
+                        className={`tag-suggestion-chip ${isSelected ? "selected" : ""}`}
+                        onClick={() => {
+                          const current = tags
+                            .split(",")
+                            .map((t) => t.trim())
+                            .filter(Boolean);
+                          if (isSelected) {
+                            setTags(current.filter((t) => t !== tg).join(", "));
+                          } else {
+                            setTags([...current, tg].join(", "));
+                          }
+                        }}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {tg}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </label>
-            {/* (2026-07-13) Add include_in_nav toggle option. Prev: none */}
+
             <label className="nav-toggle-check" style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", cursor: "pointer", fontSize: "0.86rem", fontWeight: 600 }}>
               <input
                 type="checkbox"
@@ -991,23 +1409,24 @@ function PostEditor({
               Include in header navigation
             </label>
           </div>
+
           <div className="editor-side-card">
             <h3>URL & discovery</h3>
+            {/* (2026-07-13) Editable custom URL with duplicate check. Prev: basic slug */}
             <label>
-              Post URL
+              <span>Post URL</span>
               <input
                 value={form.slug}
                 onChange={(e) => patch("slug", slugify(e.target.value))}
+                className={isDuplicateSlug ? "input-duplicate-error" : ""}
+                placeholder="custom-story-url"
               />
-              <small>/{form.slug || "your-story"}</small>
-            </label>
-            <label>
-              Cover image URL
-              <input
-                value={form.cover_image}
-                onChange={(e) => patch("cover_image", e.target.value)}
-                placeholder="Optional image URL"
-              />
+              <small>/{targetSlug || "your-story"}</small>
+              {isDuplicateSlug && (
+                <div className="slug-duplicate-warn">
+                  ⚠️ URL already taken by &ldquo;{duplicatePost?.title}&rdquo;. Please choose a unique URL.
+                </div>
+              )}
             </label>
             <label>
               SEO title
