@@ -227,7 +227,7 @@ async function saveFirestorePost(post: Post): Promise<void> {
   } catch {}
 }
 
-async function deleteFirestorePost(id: number): Promise<void> {
+async function deleteFirestorePost(id: string | number): Promise<void> {
   try {
     await deleteDoc(doc(firestore, "posts", String(id)));
   } catch {}
@@ -399,17 +399,22 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     }
   }
 
-  const postMatch = url.match(/^\/api\/admin\/posts\/(\d+)/);
+  {/* (2026-07-13) Match string/numeric IDs and add GET for story edit. Prev: \d+ only */}
+  const postMatch = url.match(/^\/api\/admin\/posts\/([^/?]+)(?:\/preview)?$/);
   if (postMatch) {
-    const id = Number(postMatch[1]);
+    const rawId = decodeURIComponent(postMatch[1]);
     const posts = await getFirestorePosts();
-    if (url.endsWith("/preview")) {
-      const p = posts.find((item) => item.id === id);
+    const p = posts.find(
+      (item) => String(item.id) === String(rawId) || String(item.slug) === String(rawId)
+    );
+    if (url.endsWith("/preview") || method === "GET") {
       if (!p) throw new Error("Post not found.");
       return p;
     }
     if (method === "PUT") {
-      const idx = posts.findIndex((item) => item.id === id);
+      const idx = posts.findIndex(
+        (item) => String(item.id) === String(rawId) || String(item.slug) === String(rawId)
+      );
       if (idx === -1) throw new Error("Post not found.");
       const updated: Post = {
         ...posts[idx],
@@ -422,9 +427,11 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
       return updated;
     }
     if (method === "DELETE") {
-      const filtered = posts.filter((item) => item.id !== id);
+      const filtered = posts.filter(
+        (item) => String(item.id) !== String(rawId) && String(item.slug) !== String(rawId)
+      );
       saveStoredPosts(filtered);
-      await deleteFirestorePost(id);
+      await deleteFirestorePost(rawId);
       return { ok: true };
     }
   }

@@ -818,18 +818,23 @@ const postTemplates = [
   },
 ];
 
-// (2026-07-13) Auto-set today date, fetch taxonomy, and check duplicate URLs. Prev: manual
+// (2026-07-13) Support editing stories with postId prop and live sync. Prev: empty
 function PostEditor({
   posts,
   refresh,
+  postId,
 }: {
   posts: Post[];
   refresh: () => void;
+  postId?: string;
 }) {
-  const { id } = useParams();
+  const { id: paramId } = useParams();
+  const id = postId || paramId;
   const navigate = useNavigate();
   const existing = id
-    ? posts.find((p) => String(p.id) === String(id))
+    ? posts.find(
+        (p) => String(p.id) === String(id) || String(p.slug) === String(id),
+      )
     : undefined;
   const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>({
     ...emptyPost,
@@ -860,13 +865,41 @@ function PostEditor({
 
   useEffect(() => {
     if (existing) {
-      setForm({ ...existing });
+      setForm({
+        title: existing.title || "",
+        slug: existing.slug || "",
+        author: existing.author || "BaiNest Studio",
+        category: existing.category || "Insights",
+        status: existing.status || "draft",
+        excerpt: existing.excerpt || "",
+        cover_image: existing.cover_image || "",
+        seo_title: existing.seo_title || "",
+        seo_description: existing.seo_description || "",
+        published_at: existing.published_at || new Date().toISOString(),
+        include_in_nav: Boolean(existing.include_in_nav),
+        blocks: existing.blocks || [],
+        tags: existing.tags || [],
+      });
       setTags(existing.tags ? existing.tags.join(", ") : "");
-    } else if (id) {
-      api<Post>(`/api/admin/posts/${id}/preview`)
+    } else if (id && id !== "new") {
+      api<Post>(`/api/admin/posts/${id}`)
         .then((p) => {
           if (p) {
-            setForm({ ...p });
+            setForm({
+              title: p.title || "",
+              slug: p.slug || "",
+              author: p.author || "BaiNest Studio",
+              category: p.category || "Insights",
+              status: p.status || "draft",
+              excerpt: p.excerpt || "",
+              cover_image: p.cover_image || "",
+              seo_title: p.seo_title || "",
+              seo_description: p.seo_description || "",
+              published_at: p.published_at || new Date().toISOString(),
+              include_in_nav: Boolean(p.include_in_nav),
+              blocks: p.blocks || [],
+              tags: p.tags || [],
+            });
             setTags(p.tags ? p.tags.join(", ") : "");
           }
         })
@@ -879,7 +912,7 @@ function PostEditor({
       });
       setTags("");
     }
-  }, [id, existing?.updated_at]);
+  }, [id, existing]);
 
   // Existing authors from published / existing posts
   const existingAuthors = useMemo(() => {
@@ -1909,10 +1942,15 @@ export function AdminApp() {
           ) : path === "/admin/posts" ? (
             <PostList posts={posts} refresh={() => refresh().catch(() => {})} />
           ) : path === "/admin/posts/new" ||
-            /^\/admin\/posts\/\d+$/.test(path) ? (
+            /^\/admin\/posts\/[^/]+$/.test(path) ? (
             <PostEditor
               posts={posts}
               refresh={() => refresh().catch(() => {})}
+              postId={
+                path !== "/admin/posts/new" && path.startsWith("/admin/posts/")
+                  ? decodeURIComponent(path.replace("/admin/posts/", ""))
+                  : undefined
+              }
             />
           ) : path === "/admin/inbox" ? (
             <InboxPage />
