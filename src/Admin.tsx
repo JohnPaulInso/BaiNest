@@ -278,7 +278,7 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
         <span className="workspace-avatar">B</span>
         <span>
           <b>{user}</b>
-          <small>Local workspace</small>
+          <small>Firebase Cloud · Live</small>
         </span>
         <span className="workspace-dot" />
       </div>
@@ -300,8 +300,9 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
         ))}
       </nav>
       <div className="admin-side-bottom">
-        <span className="local-badge">
-          <span /> Local SQLite · not connected to Firebase
+        {/* (2026-07-13) Show active Firebase cloud connection badge. Prev: static disconnected */}
+        <span className="local-badge connected">
+          <span className="firebase-dot" /> Firebase Cloud Connected
         </span>
         <button onClick={onLogout}>
           <LogOut size={16} /> Sign out
@@ -495,13 +496,29 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
             <span className="recent-date">
               {new Date(p.updated_at).toLocaleDateString()}
             </span>
+            {/* (2026-07-13) Add Edit, View, and Delete buttons for story management. Prev: trash only */}
             <div className="row-actions">
+              <button
+                className="admin-light small-btn"
+                onClick={() => navigate(`/admin/posts/${p.id}`)}
+                title="Edit story"
+              >
+                <PenTool size={13} /> Edit
+              </button>
+              <Link
+                className="admin-light small-btn"
+                to={`/blog/${p.slug}`}
+                target="_blank"
+                title="View live story"
+              >
+                <Eye size={13} /> View
+              </Link>
               <button
                 className="icon-button danger"
                 onClick={() => remove(p.id)}
-                title="Delete post"
+                title="Delete story"
               >
-                <Trash2 size={15} />
+                <Trash2 size={14} />
               </button>
             </div>
           </div>
@@ -513,6 +530,81 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
     </>
   );
 }
+// (2026-07-13) High-converting story templates and editor enhancements. Prev: none
+const postTemplates = [
+  {
+    name: "Case Study",
+    desc: "Problem, strategic execution, quantitative results & quote",
+    title: "How We Accelerated Digital Growth for [Client Name]",
+    category: "Case study",
+    tags: "Case Study, Digital, Growth",
+    excerpt: "A deep dive into our strategic collaboration that delivered measurable business impact and long-term brand equity.",
+    blocks: [
+      { id: "cs-1", type: "heading" as const, text: "The Challenge" },
+      { id: "cs-2", type: "paragraph" as const, text: "[Client Name] was facing stagnant conversion rates and brand communication that no longer reflected their operational quality." },
+      { id: "cs-3", type: "heading" as const, text: "Strategic Approach" },
+      { id: "cs-4", type: "paragraph" as const, text: "We diagnosed key friction points in the customer journey and rebuilt the brand experience around clear, outcome-driven value propositions." },
+      { id: "cs-5", type: "list" as const, items: ["End-to-end user experience redesign", "High-velocity content strategy", "Direct conversion funnel optimization"] },
+      { id: "cs-6", type: "quote" as const, text: "Working with BaiNest gave us the clarity and creative confidence we needed to lead our category." },
+      { id: "cs-7", type: "heading" as const, text: "Key Results" },
+      { id: "cs-8", type: "paragraph" as const, text: "Within 90 days of launch, organic reach increased by 140% and qualified lead volume doubled." },
+      { id: "cs-9", type: "cta" as const, text: "Ready for similar results for your business?", label: "Start your project", href: "/contact" },
+    ],
+  },
+  {
+    name: "Thought Leadership",
+    desc: "Industry perspective, contrarian insights & strategic advice",
+    title: "Why Modern Brands Win on Clarity, Not Noise",
+    category: "Strategy",
+    tags: "Brand, Strategy, Insights",
+    excerpt: "In a crowded market, saying less with greater precision is the most underutilized competitive advantage.",
+    blocks: [
+      { id: "tl-1", type: "heading" as const, text: "The Illusion of Volume" },
+      { id: "tl-2", type: "paragraph" as const, text: "Most digital marketing advice pushes companies to produce more content across more channels. But without a sharp strategic foundation, high volume merely accelerates customer confusion." },
+      { id: "tl-3", type: "quote" as const, text: "Simplicity is not the absence of nuance—it is the mastery of value." },
+      { id: "tl-4", type: "heading" as const, text: "Three Rules for Strategic Positioning" },
+      { id: "tl-5", type: "list" as const, items: ["Name the exact problem you solve better than anyone else.", "Remove every buzzword from your primary headline.", "Anchor your proof in specific, verifiable outcomes."] },
+      { id: "tl-6", type: "paragraph" as const, text: "When your business solves a real problem and articulates it without pretense, customers choose you as the obvious partner." },
+      { id: "tl-7", type: "cta" as const, text: "Ready to sharpen your brand strategy?", label: "Talk with BaiNest", href: "/contact" },
+    ],
+  },
+  {
+    name: "Service Launch",
+    desc: "Announce new studio offerings, packages, or capabilities",
+    title: "Introducing [New Capability]: Built for Modern Growth",
+    category: "Announcement",
+    tags: "Studio, Service, Launch",
+    excerpt: "We are expanding our studio offerings with a dedicated framework designed to solve [specific client need].",
+    blocks: [
+      { id: "sl-1", type: "heading" as const, text: "Why We Created This" },
+      { id: "sl-2", type: "paragraph" as const, text: "Over the past year, our clients repeatedly asked for a faster, more integrated way to handle [key capability]. Today, we're proud to open our dedicated service framework." },
+      { id: "sl-3", type: "heading" as const, text: "What's Included" },
+      { id: "sl-4", type: "columns" as const, left: "Sprint 1: Discovery & Architecture\nComprehensive audit of your current assets, customer interviews, and foundational strategy roadmap.", right: "Sprint 2: Execution & Rollout\nFull production design, precision copy, development, and high-touch launch management." },
+      { id: "sl-5", type: "heading" as const, text: "Who It's For" },
+      { id: "sl-6", type: "paragraph" as const, text: "Ideal for growth-stage businesses, boutique firms, and founders preparing for their next major market expansion." },
+      { id: "sl-7", type: "cta" as const, text: "Explore how this service fits your roadmap", label: "Schedule a discovery call", href: "/contact" },
+    ],
+  },
+  {
+    name: "How-To Guide",
+    desc: "Actionable blueprint with structured steps and best practices",
+    title: "The Step-by-Step Blueprint to [Achieve Goal]",
+    category: "Guides",
+    tags: "Guide, Tutorial, Growth",
+    excerpt: "A practical, no-nonsense guide to achieve [specific goal] without wasted spend or unnecessary complexity.",
+    blocks: [
+      { id: "ht-1", type: "heading" as const, text: "Step 1: Set the Baseline" },
+      { id: "ht-2", type: "paragraph" as const, text: "Before making changes, document your current metrics and establish clear KPIs so you can objectively evaluate progress." },
+      { id: "ht-3", type: "heading" as const, text: "Step 2: Eliminate Friction Points" },
+      { id: "ht-4", type: "paragraph" as const, text: "Focus first on the highest-leverage touchpoint. Eliminating a single hurdle in the user journey often produces greater gains than adding ten new features." },
+      { id: "ht-5", type: "list" as const, items: ["Audit existing analytics for drop-offs", "Conduct 3 user observation walkthroughs", "Deploy targeted copy enhancements"] },
+      { id: "ht-6", type: "heading" as const, text: "Step 3: Measure and Iterate" },
+      { id: "ht-7", type: "paragraph" as const, text: "Review performance after 14 days and make disciplined incremental adjustments based on verified user behavior." },
+      { id: "ht-8", type: "cta" as const, text: "Need expert help executing this playbook?", label: "Get in touch with BaiNest", href: "/contact" },
+    ],
+  },
+];
+
 function PostEditor({
   posts,
   refresh,
@@ -522,17 +614,62 @@ function PostEditor({
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const existing = id ? posts.find((p) => p.id === Number(id)) : undefined;
+  const existing = id
+    ? posts.find((p) => String(p.id) === String(id))
+    : undefined;
   const [form, setForm] = useState({ ...emptyPost });
   const [tags, setTags] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+
   useEffect(() => {
     if (existing) {
       setForm({ ...existing });
-      setTags(existing.tags.join(", "));
-    } else setForm({ ...emptyPost, blocks: [] });
+      setTags(existing.tags ? existing.tags.join(", ") : "");
+    } else if (id) {
+      api<Post>(`/api/admin/posts/${id}/preview`)
+        .then((p) => {
+          if (p) {
+            setForm({ ...p });
+            setTags(p.tags ? p.tags.join(", ") : "");
+          }
+        })
+        .catch(() => {});
+    } else {
+      setForm({ ...emptyPost, blocks: [] });
+      setTags("");
+    }
   }, [id, existing?.updated_at]);
+
+  function applyTemplate(tpl: (typeof postTemplates)[0]) {
+    setForm((old) => ({
+      ...old,
+      title: tpl.title,
+      category: tpl.category,
+      excerpt: tpl.excerpt,
+      blocks: tpl.blocks.map((b) => ({ ...b, id: crypto.randomUUID() })),
+    }));
+    setTags(tpl.tags);
+    setNotice(`Applied “${tpl.name}” template. Customize your story and publish.`);
+  }
+
+  async function removeThisPost() {
+    if (
+      !id ||
+      !window.confirm("Are you sure you want to delete this story permanently?")
+    )
+      return;
+    setBusy(true);
+    try {
+      await api(`/api/admin/posts/${id}`, { method: "DELETE" });
+      refresh();
+      navigate("/admin/posts");
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Could not delete post.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const blocks = form.blocks as Block[];
   function patch(key: string, value: unknown) {
     setForm((old) => ({ ...old, [key]: value }));
@@ -657,8 +794,56 @@ function PostEditor({
                 : "Publish"}{" "}
             <ArrowUpRight size={15} />
           </button>
+          {id && (
+            <button
+              className="admin-light danger-btn"
+              onClick={removeThisPost}
+              disabled={busy}
+              title="Delete this story"
+            >
+              <Trash2 size={15} /> Delete
+            </button>
+          )}
         </div>
       </div>
+      {/* (2026-07-13) Professional story template picker for new posts. Prev: none */}
+      {!id && (
+        <div className="template-picker">
+          <div className="template-picker-head">
+            <span className="template-picker-title">
+              ✨ Professional Story Templates
+            </span>
+            <span className="template-picker-hint">
+              Click any template to auto-populate layout, or write from scratch
+            </span>
+          </div>
+          <div className="template-cards-grid">
+            {postTemplates.map((tpl) => (
+              <button
+                key={tpl.name}
+                type="button"
+                className="template-card-btn"
+                onClick={() => applyTemplate(tpl)}
+              >
+                <b>{tpl.name}</b>
+                <small>{tpl.desc}</small>
+              </button>
+            ))}
+            <button
+              type="button"
+              className="template-card-btn"
+              onClick={() => {
+                setForm({ ...emptyPost, blocks: [] });
+                setTags("");
+                setNotice("Reset to blank story.");
+              }}
+            >
+              <b>Blank Canvas</b>
+              <small>Start with a clean title and empty block editor</small>
+            </button>
+          </div>
+        </div>
+      )}
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">
