@@ -260,6 +260,7 @@ function SortableBlock({
             </div>
           ) : block.type === "list" ? (
             <textarea
+              className="block-list-textarea"
               value={(block.items || []).join("\n")}
               onChange={(e) => onChange(block.id, "items", e.target.value)}
               placeholder="One item per line"
@@ -270,6 +271,13 @@ function SortableBlock({
             </p>
           ) : (
             <textarea
+              className={
+                block.type === "heading"
+                  ? "block-heading-textarea"
+                  : block.type === "quote"
+                    ? "block-quote-textarea"
+                    : "block-paragraph-textarea"
+              }
               value={block.text || ""}
               onChange={(e) => onChange(block.id, "text", e.target.value)}
               placeholder={
@@ -1477,12 +1485,13 @@ function PostEditor({
               )}
             </label>
 
-            <label className="nav-toggle-check" style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", cursor: "pointer", fontSize: "0.86rem", fontWeight: 600 }}>
+            {/* (2026-07-13) Sized header nav checkbox to 15px font. Prev: 0.86rem */}
+            <label className="nav-toggle-check" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "14px", cursor: "pointer", fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>
               <input
                 type="checkbox"
                 checked={Boolean(form.include_in_nav)}
                 onChange={(e) => patch("include_in_nav", e.target.checked)}
-                style={{ width: "auto", margin: 0 }}
+                style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
               />
               Include in header navigation
             </label>
