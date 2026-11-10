@@ -41,6 +41,7 @@ import {
   BookOpen,
   PlusCircle,
   Crop,
+  Sparkles,
 } from "lucide-react";
 // (2026-07-13) Import ImageCropperModal & Crop icon. Prev: no cropper
 import { ImageCropperModal } from "./ImageCropperModal";
@@ -925,6 +926,18 @@ function PostEditor({
   );
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  // (2026-07-13) Action buttons toast notification state. Prev: none
+  const [toast, setToast] = useState<{ message: string; type: "info" | "success" | "error" | "warning" } | null>(null);
+
+  const showToast = (message: string, type: "info" | "success" | "error" | "warning" = "info") => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(timer);
+  }, [toast]);
   const [coverUploading, setCoverUploading] = useState(false);
   // (2026-07-13) Crop cover upload to standard blog size. Prev: raw image
   const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
@@ -1140,19 +1153,24 @@ function PostEditor({
     setNotice(`Applied “${tpl.name}” template. Customize your story and publish.`);
   }
 
+  // (2026-07-13) Show toast on delete action click. Prev: confirm only
   async function removeThisPost() {
-    if (
-      !id ||
-      !window.confirm("Are you sure you want to delete this story permanently?")
-    )
+    if (!id) return;
+    if (!window.confirm("Are you sure you want to delete this story permanently?")) {
+      showToast("Delete cancelled.", "info");
       return;
+    }
+    showToast("Deleting story...", "warning");
     setBusy(true);
     try {
       await api(`/api/admin/posts/${id}`, { method: "DELETE" });
       refresh();
+      showToast("Story deleted permanently.", "success");
       navigate("/admin/posts");
     } catch (e) {
-      setNotice(e instanceof Error ? e.message : "Could not delete post.");
+      const errMsg = e instanceof Error ? e.message : "Could not delete post.";
+      setNotice(errMsg);
+      showToast(errMsg, "error");
     } finally {
       setBusy(false);
     }
@@ -1235,11 +1253,14 @@ function PostEditor({
     patch("blocks", arrayMove(blocks, a, b));
   }
 
+  // (2026-07-13) Show toast on preview action click. Prev: notice only
   function openPreview() {
     if (!id) {
+      showToast("Save this story as a draft before previewing.", "warning");
       setNotice("Save this story as a draft before previewing it.");
       return;
     }
+    showToast("Opening preview in new tab...", "info");
     window.open(
       `/blog/${encodeURIComponent(form.slug)}?preview=1&id=${id}`,
       "_blank",
@@ -1247,16 +1268,22 @@ function PostEditor({
     );
   }
 
+  // (2026-07-13) Show toast on save/publish action click. Prev: notice only
   async function save(status: "draft" | "published") {
-    if (!form.title.trim()) return setNotice("Add a title before saving.");
+    if (!form.title.trim()) {
+      showToast("Please add a title before saving.", "warning");
+      return setNotice("Add a title before saving.");
+    }
     const finalSlug = form.slug || slugify(form.title);
     if (isDuplicateSlug) {
+      showToast(`URL "/${finalSlug}" is already taken.`, "error");
       setNotice(
         `Cannot save: The URL "/${finalSlug}" is already taken by "${duplicatePost?.title}". Please customize the URL.`,
       );
       return;
     }
     setBusy(true);
+    showToast(status === "published" ? (form.status === "published" ? "Updating post..." : "Publishing story...") : "Saving draft...", "info");
     // (2026-07-13) Compress & upload cover on save/publish. Prev: hung in form
     let finalCover = form.cover_image;
     if (pendingCoverFile) {
@@ -1287,27 +1314,50 @@ function PostEditor({
       ),
       slug: finalSlug,
     };
-    setNotice(status === "published" ? "Publishing story..." : "Saving draft...");
+    const actionLabel = status === "published" ? "Publishing story..." : "Saving draft...";
+    setNotice(actionLabel);
     try {
       const saved = await api<Post>(
         id ? `/api/admin/posts/${id}` : "/api/admin/posts",
         { method: id ? "PUT" : "POST", body: JSON.stringify(payload) },
       );
       await refresh();
-      setNotice(
-        status === "published"
-          ? "Published and ready to read."
-          : "Draft saved.",
-      );
+      const successMsg = status === "published"
+        ? (form.status === "published" ? "Post updated successfully!" : "Published and ready to read.")
+        : "Draft saved successfully.";
+      setNotice(successMsg);
+      showToast(successMsg, "success");
       if (!id) navigate(`/admin/posts/${saved.id}`, { replace: true });
     } catch (e) {
-      setNotice(e instanceof Error ? e.message : "Could not save this story.");
+      const errMsg = e instanceof Error ? e.message : "Could not save this story.";
+      setNotice(errMsg);
+      showToast(errMsg, "error");
     } finally {
       setBusy(false);
     }
   }
   return (
     <>
+      {/* (2026-07-13) Little floating toast for editor action buttons. Prev: none */}
+      {toast && (
+        <div className={`admin-toast-badge toast-${toast.type}`}>
+          <span className="toast-icon">
+            {toast.type === "success" && <Check size={16} />}
+            {toast.type === "error" && <X size={16} />}
+            {toast.type === "warning" && <X size={16} />}
+            {toast.type === "info" && <Sparkles size={16} />}
+          </span>
+          <span className="toast-text">{toast.message}</span>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToast(null)}
+            aria-label="Close notification"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
       <div className="admin-page-title editor-title">
         <div>
           <button
