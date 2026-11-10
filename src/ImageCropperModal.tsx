@@ -28,8 +28,32 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [imgNaturalSize, setImgNaturalSize] = useState<{ width: number; height: number } | null>(null);
 
+  // (2026-07-13) Scale base image to viewport and support zoom down to 20%. Prev: 80% min
+  const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({ width: 560, height: 315 });
+
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setViewportSize({ width: rect.width, height: rect.height });
+        }
+      }
+    };
+    updateSize();
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [aspect]);
+
+  const baseScale =
+    imgNaturalSize && viewportSize.width > 0 && viewportSize.height > 0
+      ? Math.min(viewportSize.width / imgNaturalSize.width, viewportSize.height / imgNaturalSize.height)
+      : 1;
 
   // Load natural dimensions
   useEffect(() => {
@@ -69,7 +93,7 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY * -0.0015;
-    setZoom((z) => Math.min(3, Math.max(0.8, z + delta)));
+    setZoom((z) => Math.min(3, Math.max(0.2, z + delta)));
   };
 
   const handleReset = () => {
@@ -82,27 +106,10 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
     if (!imgNaturalSize || !containerRef.current) return;
 
     const viewport = containerRef.current.getBoundingClientRect();
-    const vWidth = viewport.width;
-    const vHeight = viewport.height;
+    const vWidth = viewport.width || viewportSize.width;
+    const vHeight = viewport.height || viewportSize.height;
 
-    // Minimum scale to cover viewport
-    const minScale = Math.max(vWidth / imgNaturalSize.width, vHeight / imgNaturalSize.height);
-    const activeScale = minScale * zoom;
-
-    const renderedWidth = imgNaturalSize.width * activeScale;
-    const renderedHeight = imgNaturalSize.height * activeScale;
-
-    // Center coordinates with pan offset
-    const centerInRenderedX = renderedWidth / 2 - pan.x;
-    const centerInRenderedY = renderedHeight / 2 - pan.y;
-
-    const cropLeftRendered = centerInRenderedX - vWidth / 2;
-    const cropTopRendered = centerInRenderedY - vHeight / 2;
-
-    const sourceX = cropLeftRendered / activeScale;
-    const sourceY = cropTopRendered / activeScale;
-    const sourceW = vWidth / activeScale;
-    const sourceH = vHeight / activeScale;
+    const currentBaseScale = Math.min(vWidth / imgNaturalSize.width, vHeight / imgNaturalSize.height);
 
     // Standard output resolution: 1200px wide
     const outputWidth = 1200;
@@ -119,20 +126,18 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
+    const scaleRatio = outputWidth / vWidth;
+
     const imageElement = new Image();
     imageElement.crossOrigin = "anonymous";
     imageElement.onload = () => {
-      ctx.drawImage(
-        imageElement,
-        sourceX,
-        sourceY,
-        sourceW,
-        sourceH,
-        0,
-        0,
-        outputWidth,
-        outputHeight
-      );
+      ctx.save();
+      ctx.translate(outputWidth / 2, outputHeight / 2);
+      ctx.translate(pan.x * scaleRatio, pan.y * scaleRatio);
+      const drawW = imgNaturalSize.width * currentBaseScale * zoom * scaleRatio;
+      const drawH = imgNaturalSize.height * currentBaseScale * zoom * scaleRatio;
+      ctx.drawImage(imageElement, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
 
       canvas.toBlob(
         (blob) => {
@@ -148,7 +153,7 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
       );
     };
     imageElement.src = imageSrc;
-  }, [imgNaturalSize, zoom, pan, aspect, imageSrc, onCrop]);
+  }, [imgNaturalSize, viewportSize, aspect, pan, zoom, imageSrc, onCrop]);
 
   return (
     <div className="crop-modal-overlay">
@@ -192,7 +197,8 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
             onPointerCancel={handlePointerUp}
             onWheel={handleWheel}
           >
-            {imageSrc && (
+            {/* (2026-07-13) Base image scaled to frame, zoom down to 20%. Prev: unscaled */}
+            {imageSrc && imgNaturalSize && (
               <img
                 ref={imgRef}
                 src={imageSrc}
@@ -200,6 +206,8 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
                 className="crop-active-image"
                 draggable={false}
                 style={{
+                  width: `${imgNaturalSize.width * baseScale}px`,
+                  height: `${imgNaturalSize.height * baseScale}px`,
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                 }}
               />
@@ -218,11 +226,12 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
         <div className="crop-controls-bar">
           <div className="crop-zoom-strip">
             <ZoomOut size={15} />
+            {/* (2026-07-13) Wide zoom slider from 20% to 300%. Prev: 80% min */}
             <input
               type="range"
-              min="0.8"
+              min="0.2"
               max="3.0"
-              step="0.05"
+              step="0.02"
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
               className="crop-zoom-slider"
