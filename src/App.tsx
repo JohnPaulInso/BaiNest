@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-// (2026-07-13) Add social, navigation, and settings imports. Prev: basic icons
+// (2026-07-13) Clean up unused Menu icon import. Prev: Menu included
 import {
   ArrowDown,
   ArrowRight,
@@ -24,7 +24,6 @@ import {
   Instagram,
   Layers3,
   Mail,
-  Menu,
   MessageCircle,
   PenTool,
   Phone,
@@ -36,12 +35,12 @@ import {
   Youtube,
 } from "lucide-react";
 import { AdminApp } from "./Admin";
+// (2026-07-13) Remove unused defaultTags from App imports. Prev: defaultTags
 import {
   api,
   subscribeToPosts,
   subscribeToSettings,
   defaultSettings,
-  defaultTags,
   type Block,
   type Post,
   type SiteSettings,
@@ -90,16 +89,17 @@ const assetBase =
     ? "/BaiNest/"
     : "/";
 
+// (2026-07-13) Rebrand title to bainest digital marketing agency & new logo
 function Brand({ footer = false }: { footer?: boolean }) {
   return (
     <Link
       className={`brand ${footer ? "brand-footer" : ""}`}
       to="/"
-      aria-label="BaiNest Studio home"
+      aria-label="bainest digital marketing agency"
     >
-      <img src={`${assetBase}logo.svg`} alt="" />
+      <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />
       <span>
-        BAINEST<small>DIGITAL STUDIO</small>
+        bainest<small>digital marketing agency</small>
       </span>
     </Link>
   );
@@ -139,14 +139,12 @@ function LocalDomainNotice() {
   );
 }
 
-// (2026-07-13) Sticky header with Recent Posts dropdown and dynamic pages. Prev: static nav
+// (2026-07-13) Header state without mobile hamburger toggle. Prev: open state
 function Header() {
-  const [open, setOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
   const { posts } = usePosts();
   const loc = useLocation();
   useEffect(() => {
-    setOpen(false);
     setRecentOpen(false);
   }, [loc.pathname]);
 
@@ -162,23 +160,16 @@ function Header() {
         <div className="wrap brand-inner">
           <Brand />
           <span className="brand-note">Innovate. Elevate. Connect.</span>
-          <Link className="header-work" to="/contact">
-            Let’s talk <ArrowUpRight size={15} />
+          {/* (2026-07-13) Move Start a project to top bar replacing Let's talk. Prev: text */}
+          <Link className="header-work header-work-btn" to="/contact">
+            Start a project <ArrowUpRight size={14} />
           </Link>
         </div>
       </div>
       <div className="nav-sticky">
         <div className="wrap nav-inner">
-          <button
-            className="menu-toggle"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
-          >
-            {open ? <X /> : <Menu />}
-          </button>
           <nav
-            className={`main-nav ${open ? "open" : ""}`}
+            className="main-nav"
             aria-label="Primary navigation"
           >
             {/* (2026-07-13) Attach recent posts dropdown directly to Blog. Prev: separate nav */}
@@ -1045,14 +1036,12 @@ function PostDetail() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
-  const [subEmail, setSubEmail] = useState("");
+  // (2026-07-13) Clean up unused sidebar states & tags in PostDetail. Prev: kept
   const [commentText, setCommentText] = useState("");
   const [commentName, setCommentName] = useState("");
   const [commentDone, setCommentDone] = useState(false);
 
   const { posts: allPosts } = usePosts();
-  const settings = useSettings();
 
   useEffect(() => {
     setLoading(true);
@@ -1075,18 +1064,6 @@ function PostDetail() {
 
   const latestPosts = useMemo(() => {
     return allPosts.filter((p) => p.status === "published").slice(0, 4);
-  }, [allPosts]);
-
-  {/* (2026-07-13) Seed main tags from imported database tag set. Prev: posts only */}
-  const mainTags = useMemo(() => {
-    const set = new Set<string>(defaultTags);
-    allPosts.forEach((p) => {
-      if (p.category) set.add(p.category.trim());
-      if (Array.isArray(p.tags)) {
-        p.tags.forEach((t) => t && set.add(t.trim()));
-      }
-    });
-    return Array.from(set);
   }, [allPosts]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -1306,84 +1283,7 @@ function PostDetail() {
 
         {/* Right Sidebar Widgets */}
         <aside className="article-sidebar">
-          {/* Follow Us Widget */}
-          <div className="sidebar-widget-card">
-            <h3 className="widget-title">Follow Us</h3>
-            <div className="follow-us-grid">
-              <a
-                href={settings.facebook || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="follow-btn follow-fb"
-              >
-                <Facebook size={18} />
-                <span className="follow-count">7k</span>
-              </a>
-              <a
-                href={settings.twitter || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="follow-btn follow-tw"
-              >
-                <Twitter size={18} />
-                <span className="follow-count">1k</span>
-              </a>
-              <a
-                href={settings.youtube || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="follow-btn follow-yt"
-              >
-                <Youtube size={18} />
-                <span className="follow-count">6</span>
-              </a>
-              <a
-                href={settings.instagram || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="follow-btn follow-ig"
-              >
-                <Instagram size={18} />
-                <span className="follow-count">702</span>
-              </a>
-            </div>
-          </div>
-
-          {/* MailChimp Form Widget */}
-          <div className="sidebar-widget-card mailchimp-widget">
-            <div className="mailchimp-icon-header">
-              <div className="mailchimp-icon-circle">
-                <Mail size={18} />
-              </div>
-            </div>
-            <h4>MailChimp Form</h4>
-            <p>Subscribe to our mailing list to get the new updates.</p>
-            {subscribed ? (
-              <div className="subscribe-success">
-                <Check size={15} /> You’re on the list!
-              </div>
-            ) : (
-              <form
-                className="mailchimp-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (subEmail.trim()) setSubscribed(true);
-                }}
-              >
-                <input
-                  type="email"
-                  value={subEmail}
-                  onChange={(e) => setSubEmail(e.target.value)}
-                  placeholder="Email Address"
-                  required
-                />
-                <button type="submit" className="subscribe-submit-btn">
-                  Subscribe
-                </button>
-              </form>
-            )}
-          </div>
-
+          {/* (2026-07-13) Remove Follow Us, MailChimp, and Main Tags cards. Prev: present */}
           {/* Latest Posts Widget */}
           {latestPosts.length > 0 && (
             <div className="sidebar-widget-card">
@@ -1461,23 +1361,7 @@ function PostDetail() {
             </div>
           )}
 
-          {/* Main Tags Widget */}
-          {mainTags.length > 0 && (
-            <div className="sidebar-widget-card">
-              <h3 className="widget-title">Main Tags</h3>
-              <div className="tags-cloud-wrap">
-                {mainTags.map((tg) => (
-                  <Link
-                    key={tg}
-                    to="/blog"
-                    className="tag-cloud-chip"
-                  >
-                    {tg}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* (2026-07-13) Remove Main Tags widget from blog sidebar. Prev: tag cloud */}
         </aside>
       </div>
     </PageFrame>

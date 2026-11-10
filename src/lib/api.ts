@@ -115,8 +115,9 @@ export const defaultTags: string[] = [
   "Unfiltered",
   "Wakal-Wakal"
 ];
+// (2026-07-13) Rebrand default siteName to bainest. Prev: BaiNest
 export const defaultSettings: SiteSettings = {
-  siteName: "BaiNest",
+  siteName: "bainest",
   email: "contact@bainestdigital.com",
   phone: "+63 900 000 0000",
   facebook: "https://facebook.com/bainestdigital",

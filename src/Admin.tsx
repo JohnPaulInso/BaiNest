@@ -422,10 +422,11 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
   return (
     <div className="admin-login-screen">
       <div className="login-card">
+        {/* (2026-07-13) Rebrand admin logo and title. Prev: logo.svg & studio admin */}
         <Link className="admin-login-brand" to="/">
-          <img src={`${assetBase}logo.svg`} />{" "}
+          <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />{" "}
           <span>
-            BAINEST<small>STUDIO ADMIN</small>
+            bainest<small>digital marketing agency</small>
           </span>
         </Link>
         <span className="login-icon">
@@ -476,10 +477,11 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   ] as const;
   return (
     <aside className="admin-sidebar">
+      {/* (2026-07-13) Rebrand admin logo and title. Prev: logo.svg & studio admin */}
       <Link to="/" className="admin-logo">
-        <img src={`${assetBase}logo.svg`} />
+        <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />
         <span>
-          BAINEST<small>STUDIO ADMIN</small>
+          bainest<small>digital marketing agency</small>
         </span>
       </Link>
       <div className="admin-workspace">

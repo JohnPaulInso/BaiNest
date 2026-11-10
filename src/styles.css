@@ -78,30 +78,36 @@ img {
   align-items: center;
   gap: 18px;
 }
+/* (2026-07-13) Rebrand brand logo styling & top bar action button. Prev: plain */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--navy);
   font:
     800 20px/1 "Manrope",
     sans-serif;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.01em;
+  text-decoration: none;
 }
 .brand img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(16, 43, 70, 0.08);
 }
 .brand small,
 .admin-logo small,
 .admin-login-brand small {
   display: block;
-  margin-top: 5px;
+  margin-top: 4px;
   color: var(--muted);
   font:
-    700 8px/1 "DM Sans",
+    700 8.5px/1 "DM Sans",
     sans-serif;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
 }
 .brand-note {
   font-size: 12px;
@@ -110,17 +116,29 @@ img {
   padding-left: 23px;
   border-left: 1px solid var(--line);
 }
-.header-work {
+.header-work,
+.header-work-btn {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  color: var(--navy);
-  font-size: 12px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 11.5px;
   font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: all 0.2s;
+  text-decoration: none;
 }
-.header-work:hover {
-  color: var(--teal-dark);
+.header-work:hover,
+.header-work-btn:hover {
+  background: var(--teal-dark);
+  color: #fff;
+  transform: translateY(-1px);
 }
 .nav-sticky {
   position: sticky;
@@ -2525,51 +2543,69 @@ img {
   .wrap {
     width: calc(100% - 34px);
   }
+  /* (2026-07-13) Show full nav row on mobile & move CTA to top. Prev: hamburger */
   .brand-inner {
-    height: 67px;
+    height: 62px;
+    gap: 10px;
   }
   .brand {
-    font-size: 18px;
+    font-size: 17px;
   }
   .brand img {
-    width: 33px;
-    height: 33px;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
   }
   .brand-note {
     display: none;
   }
-  .nav-inner {
-    height: 55px;
+  .header-work,
+  .header-work-btn {
+    padding: 6px 12px;
+    font-size: 10.5px;
+    gap: 5px;
+    margin-left: auto;
   }
   .menu-toggle {
-    display: grid;
-    place-items: center;
+    display: none !important;
+  }
+  .nav-inner {
+    height: 46px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+  .nav-inner::-webkit-scrollbar {
+    display: none;
   }
   .main-nav {
-    display: none;
-    position: absolute;
-    top: 55px;
-    left: 0;
-    right: 0;
-    height: auto;
-    padding: 17px 24px 20px;
-    border-bottom: 1px solid var(--line);
-    background: #fff;
-    box-shadow: 0 14px 22px rgba(16, 43, 70, 0.08);
-  }
-  .main-nav.open {
-    display: grid;
-    gap: 0;
+    display: flex !important;
+    position: static !important;
+    height: 100% !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    gap: 18px !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    width: auto !important;
   }
   .main-nav a {
-    height: 40px;
+    height: 100% !important;
+    padding: 0 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
   }
   .main-nav a:after {
-    right: auto;
-    width: 30px;
+    bottom: 0;
+    width: auto;
+    right: 0;
   }
   .nav-cta {
-    margin-left: auto;
+    display: none !important;
   }
   .hero {
     padding: 69px 0 78px;
