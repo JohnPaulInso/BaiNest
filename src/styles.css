@@ -773,11 +773,15 @@ img {
   grid-template-columns: repeat(3, 1fr);
   gap: 19px;
 }
+/* (2026-07-13) Symmetrical post cards with fixed title & excerpt clamp. Prev: var */
 .post-card {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   transition:
     box-shadow 0.2s,
     transform 0.2s;
@@ -820,6 +824,9 @@ img {
 }
 .post-card-body {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 .post-meta {
   display: flex;
@@ -845,6 +852,11 @@ img {
   color: var(--navy);
   font: 700 17px/1.35 "Manrope";
   letter-spacing: -0.025em;
+  min-height: 46px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .post-card h3 a:hover {
   color: var(--teal-dark);
@@ -855,9 +867,15 @@ img {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .post-card .text-link {
-  margin-top: 15px;
+  margin-top: auto;
+  padding-top: 15px;
   font-size: 9px;
 }
 .cta-band {
@@ -3606,22 +3624,26 @@ img {
   color: #0f766e;
   text-decoration: underline;
 }
+/* (2026-07-13) Symmetrical dropdown blog cards scaled by screen size. Prev: 170px */
 .recent-posts-grid {
   display: flex;
   gap: 12px;
   align-items: stretch;
 }
 .recent-mega-card {
-  width: 170px;
+  width: 175px;
+  min-height: 195px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   text-decoration: none;
   color: inherit;
   border-radius: 8px;
   padding: 8px;
   background: #fafbfc;
   border: 1px solid #f1f5f9;
+  box-sizing: border-box;
   transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .recent-mega-card:hover {
@@ -3632,16 +3654,22 @@ img {
 }
 .recent-mega-thumb {
   width: 100%;
-  height: 96px;
+  height: 100px;
   border-radius: 6px;
   overflow: hidden;
-  background: #f1f5f9;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 8px;
+  flex-shrink: 0;
 }
 .recent-mega-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 4px;
 }
 .recent-mega-ph {
   width: 100%;
@@ -3660,7 +3688,8 @@ img {
   line-height: 1.35;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
+  height: 33px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -3669,6 +3698,31 @@ img {
 .recent-mega-date {
   font-size: 11px;
   color: #94a3b8;
+  margin-top: auto;
+}
+/* Responsive card count depending on screen size */
+.recent-posts-grid .recent-mega-card:nth-child(n + 6) {
+  display: none;
+}
+@media (max-width: 1200px) {
+  .recent-posts-grid .recent-mega-card:nth-child(n + 5) {
+    display: none;
+  }
+}
+@media (max-width: 992px) {
+  .recent-posts-grid .recent-mega-card:nth-child(n + 4) {
+    display: none;
+  }
+}
+@media (max-width: 680px) {
+  .recent-posts-grid .recent-mega-card:nth-child(n + 3) {
+    display: none;
+  }
+}
+@media (max-width: 440px) {
+  .recent-posts-grid .recent-mega-card:nth-child(n + 2) {
+    display: none;
+  }
 }
 
 /* Category Chips */

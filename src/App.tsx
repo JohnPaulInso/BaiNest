@@ -157,7 +157,11 @@ function Header() {
     () => posts.filter((p) => p.include_in_nav && p.status === "published"),
     [posts]
   );
-  const recentPosts = useMemo(() => posts.slice(0, 5), [posts]);
+  // (2026-07-13) Supply published posts for screen-scaled menu. Prev: slice(0, 5)
+  const recentPosts = useMemo(
+    () => posts.filter((p) => p.status === "published").slice(0, 8),
+    [posts]
+  );
 
   return (
     <header className="site-header">
