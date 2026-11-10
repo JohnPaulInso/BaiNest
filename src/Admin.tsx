@@ -849,15 +849,17 @@ const postTemplates = [
   },
 ];
 
-// (2026-07-13) Support editing stories with postId prop and live sync. Prev: empty
+// (2026-07-13) Sync active story meta to sticky header. Prev: no meta sync
 function PostEditor({
   posts,
   refresh,
   postId,
+  onMetaChange,
 }: {
   posts: Post[];
   refresh: () => void;
   postId?: string;
+  onMetaChange?: (meta: { title: string; slug: string; category: string; status: string } | null) => void;
 }) {
   const { id: paramId } = useParams();
   const id = postId || paramId;
@@ -904,6 +906,17 @@ function PostEditor({
   // (2026-07-13) Crop cover upload to standard blog size. Prev: raw image
   const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
   const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
+
+  // (2026-07-13) Emit real-time story meta to admin header. Prev: none
+  useEffect(() => {
+    onMetaChange?.({
+      title: form.title,
+      slug: form.slug || slugify(form.title),
+      category: form.category || "Story",
+      status: form.status || "draft",
+    });
+    return () => onMetaChange?.(null);
+  }, [form.title, form.slug, form.category, form.status, onMetaChange]);
 
   function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -2066,24 +2079,93 @@ export function AdminApp() {
       />
     );
   const path = location.pathname;
+  const [activeMeta, setActiveMeta] = useState<{
+    title: string;
+    slug: string;
+    category: string;
+    status: string;
+  } | null>(null);
+
+  const editingPostId =
+    path.startsWith("/admin/posts/") && path.replace(/\/+$/, "") !== "/admin/posts/new"
+      ? decodeURIComponent(path.replace(/\/+$/, "").replace("/admin/posts/", ""))
+      : null;
+  const currentPost = editingPostId
+    ? posts.find((p) => String(p.id) === editingPostId || p.slug === editingPostId)
+    : null;
+
+  const activeBlogInfo =
+    path.startsWith("/admin/posts/")
+      ? activeMeta || (currentPost ? {
+          title: currentPost.title,
+          slug: currentPost.slug,
+          category: currentPost.category || "Story",
+          status: currentPost.status || "draft",
+        } : path.replace(/\/+$/, "") === "/admin/posts/new" ? {
+          title: "New Story",
+          slug: "",
+          category: "Draft",
+          status: "draft",
+        } : null)
+      : null;
+
   return (
     <div className="admin-shell">
       {/* (2026-07-13) Default admin name Jan Errol Duazo. Prev: Admin */}
       <AdminNav user={session.username && session.username !== "admin" ? session.username : "Jan Errol Duazo"} onLogout={logout} />
       <main className="admin-main">
+        {/* (2026-07-13) Sticky topbar with blog meta & specific post link. Prev: plain */}
         <div className="admin-topbar">
-          {/* (2026-07-13) Show dynamic workspace type. Prev: static Local */}
-          <span>
-            <span className="local-dot" />{" "}
-            {typeof window !== "undefined" &&
-            (window.location.hostname === "localhost" ||
-              window.location.hostname === "127.0.0.1")
-              ? "Local SQLite workspace"
-              : "Firebase Cloud workspace"}
-          </span>
-          <Link to="/" target="_blank">
-            View public site <ArrowUpRight size={14} />
-          </Link>
+          <div className="admin-topbar-left">
+            <span className="admin-topbar-ws">
+              <span className="local-dot" />{" "}
+              {typeof window !== "undefined" &&
+              (window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1")
+                ? "Local SQLite"
+                : "Firebase Cloud"}
+            </span>
+            {activeBlogInfo && (
+              <div className="topbar-blog-meta">
+                <span className="topbar-blog-divider">/</span>
+                <span className="topbar-blog-title" title={activeBlogInfo.title}>
+                  {activeBlogInfo.title || "Untitled story"}
+                </span>
+                <span className={`topbar-blog-status ${activeBlogInfo.status === "published" ? "published" : "draft"}`}>
+                  {activeBlogInfo.status === "published" ? "Published" : "Draft"}
+                </span>
+                {activeBlogInfo.category && (
+                  <span className="topbar-blog-cat">{activeBlogInfo.category}</span>
+                )}
+                {activeBlogInfo.slug && (
+                  <span className="topbar-blog-slug">/blog/{activeBlogInfo.slug}</span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="admin-topbar-right">
+            {activeBlogInfo?.slug ? (
+              <Link
+                to={`/blog/${encodeURIComponent(activeBlogInfo.slug)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="topbar-view-site-btn"
+                title={`Open public blog /blog/${activeBlogInfo.slug} in new tab`}
+              >
+                <span>View this blog</span> <ArrowUpRight size={14} />
+              </Link>
+            ) : (
+              <Link
+                to="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="topbar-view-site-btn"
+                title="Open public homepage in new tab"
+              >
+                <span>View public site</span> <ArrowUpRight size={14} />
+              </Link>
+            )}
+          </div>
         </div>
         <div className="admin-content">
           {path === "/admin" || path === "/admin/" ? (
@@ -2097,6 +2179,7 @@ export function AdminApp() {
               key={path.replace(/\/+$/, "")}
               posts={posts}
               refresh={() => refresh().catch(() => {})}
+              onMetaChange={setActiveMeta}
               postId={
                 path.replace(/\/+$/, "") !== "/admin/posts/new" &&
                 path.startsWith("/admin/posts/")
