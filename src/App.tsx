@@ -18,18 +18,23 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Clock,
   Code2,
   Copy,
   Facebook,
+  FileText,
   Instagram,
   Layers3,
   Mail,
+  MailCheck,
   MessageCircle,
   PenTool,
   Phone,
   RotateCcw,
   Share2,
   ShieldCheck,
+  Sparkles,
+  Target,
   Twitter,
   X,
   Youtube,
@@ -1444,9 +1449,17 @@ function PostDetail() {
     </PageFrame>
   );
 }
-// (2026-07-13) Contact page with requested pillars and improved cards. Prev: basic form
+// (2026-07-13) Contact with confirmation email receipt and icons. Prev: plain form
 function Contact() {
   const [sent, setSent] = useState(false);
+  const [submittedData, setSubmittedData] = useState<{
+    name: string;
+    email: string;
+    company: string;
+    message: string;
+    submittedAt: string;
+    referenceId: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const settings = useSettings();
@@ -1457,15 +1470,32 @@ function Contact() {
     setError("");
     setBusy(true);
     const form = new FormData(formElement);
+    const name = String(form.get("name") || "").trim();
+    const email = String(form.get("email") || "").trim();
+    const company = String(form.get("company") || "").trim();
+    const message = String(form.get("message") || "").trim();
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const refId = `BN-${Math.floor(100000 + Math.random() * 900000)}`;
+
     try {
       await api("/api/contact", {
         method: "POST",
-        body: JSON.stringify({
-          name: form.get("name"),
-          email: form.get("email"),
-          company: form.get("company"),
-          message: form.get("message"),
-        }),
+        body: JSON.stringify({ name, email, company, message }),
+      });
+      setSubmittedData({
+        name,
+        email,
+        company,
+        message,
+        submittedAt: formattedDate,
+        referenceId: refId,
       });
       setSent(true);
       formElement.reset();
@@ -1496,9 +1526,12 @@ function Contact() {
               question you’re trying to answer.
             </p>
 
-            {/* Requested Pillars */}
+            {/* Requested Pillars with improved icons */}
             <div className="contact-pillar-card">
-              <span className="pillar-num">01</span>
+              <div className="pillar-icon-badge">
+                <Target size={20} />
+                <span className="pillar-num-tag">01</span>
+              </div>
               <div className="pillar-body">
                 <h4>Built around your goals.</h4>
                 <p>
@@ -1509,7 +1542,10 @@ function Contact() {
             </div>
 
             <div className="contact-pillar-card">
-              <span className="pillar-num">02</span>
+              <div className="pillar-icon-badge">
+                <Sparkles size={20} />
+                <span className="pillar-num-tag">02</span>
+              </div>
               <div className="pillar-body">
                 <h4>Strategy starts with a conversation.</h4>
                 <p>
@@ -1532,89 +1568,151 @@ function Contact() {
               )}
             </div>
           </div>
-          <form className="contact-form" onSubmit={submit}>
-            {/* (2026-07-13) Polished success card with roadmap and styled reset. Prev: plain box */}
-            {sent ? (
-              <div className="form-success">
-                <div className="success-icon-wrap">
-                  <Check size={32} />
+          {sent && submittedData ? (
+            /* (2026-07-13) Confirmation email receipt with customer details. Prev: plain box */
+            <div className="confirmation-email-card">
+              <div className="confirmation-email-topbar">
+                <div className="confirmation-email-badge">
+                  <MailCheck size={16} /> Confirmation Email Dispatched
                 </div>
-                <h3>Message Sent Successfully!</h3>
-                <p className="success-copy">
-                  Thank you for reaching out. We have received your note and our team will get back to you with next steps within 24 hours.
-                </p>
-                <div className="success-steps-box">
-                  <div className="success-step-item">
-                    <span className="step-dot" />
-                    <div>
-                      <b>Prompt Response</b>
-                      <small>We'll review your goals and reply directly via email.</small>
-                    </div>
-                  </div>
-                  <div className="success-step-item">
-                    <span className="step-dot" />
-                    <div>
-                      <b>Discovery Alignment</b>
-                      <small>If aligned, we'll set up a short strategy call to explore solutions.</small>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="success-reset-btn"
-                  onClick={() => setSent(false)}
-                >
-                  <RotateCcw size={15} /> Send another message
-                </button>
+                <span className="confirmation-ref">Ref #{submittedData.referenceId}</span>
               </div>
-            ) : (
-              <>
-                <div className="form-head">
-                  <h2>Tell us a little more.</h2>
-                  <p>Fields marked * are required.</p>
+
+              <div className="confirmation-email-envelope">
+                <div className="confirmation-email-header">
+                  <div className="email-meta-field">
+                    <span className="email-meta-label">From:</span>
+                    <span className="email-meta-val">
+                      BaiNest Digital Marketing &lt;contact@bainestdigital.com&gt;
+                    </span>
+                  </div>
+                  <div className="email-meta-field">
+                    <span className="email-meta-label">To:</span>
+                    <span className="email-meta-val">
+                      <strong>{submittedData.name}</strong> &lt;{submittedData.email}&gt;
+                    </span>
+                  </div>
+                  <div className="email-meta-field">
+                    <span className="email-meta-label">Date:</span>
+                    <span className="email-meta-val">{submittedData.submittedAt}</span>
+                  </div>
+                  <div className="email-meta-field">
+                    <span className="email-meta-label">Subject:</span>
+                    <span className="email-meta-subject">
+                      Inquiry Confirmation: We received your message, {submittedData.name}!
+                    </span>
+                  </div>
                 </div>
-                <div className="form-row">
-                  <label>
-                    Your name *
-                    <input
-                      name="name"
-                      required
-                      minLength={2}
-                      placeholder="Name"
-                    />
-                  </label>
-                  <label>
-                    Email address *
-                    <input
-                      name="email"
-                      required
-                      type="email"
-                      placeholder="you@example.com"
-                    />
-                  </label>
+
+                <div className="confirmation-email-body">
+                  <p className="email-greeting">Hi {submittedData.name},</p>
+                  <p className="email-intro">
+                    Thank you for getting in touch with BaiNest Digital Marketing Agency. We've logged your request in our direct inquiry pipeline and our team in Bogo City is reviewing your goals.
+                  </p>
+
+                  <div className="email-summary-box">
+                    <div className="summary-box-title">
+                      <FileText size={15} /> Summary of your submission:
+                    </div>
+                    <div className="summary-detail-row">
+                      <span className="summary-label">Name:</span>
+                      <span className="summary-value">{submittedData.name}</span>
+                    </div>
+                    <div className="summary-detail-row">
+                      <span className="summary-label">Email:</span>
+                      <span className="summary-value">{submittedData.email}</span>
+                    </div>
+                    {submittedData.company && (
+                      <div className="summary-detail-row">
+                        <span className="summary-label">Company:</span>
+                        <span className="summary-value">{submittedData.company}</span>
+                      </div>
+                    )}
+                    <div className="summary-detail-row message-block">
+                      <span className="summary-label">What you'd like to work on:</span>
+                      <blockquote className="summary-message-quote">
+                        "{submittedData.message}"
+                      </blockquote>
+                    </div>
+                  </div>
+
+                  <div className="email-next-steps">
+                    <div className="next-step-row">
+                      <Clock size={16} />
+                      <span><strong>Expected Reply:</strong> Within 24 business hours directly to {submittedData.email}.</span>
+                    </div>
+                    <div className="next-step-row">
+                      <Sparkles size={16} />
+                      <span><strong>Next:</strong> We'll propose strategic recommendations or schedule an introductory chat.</span>
+                    </div>
+                  </div>
+
+                  <div className="email-signature">
+                    <p>Warm regards,</p>
+                    <strong>Jan Errol Duazo &amp; The BaiNest Team</strong>
+                    <small>Innovate. Elevate. Connect.</small>
+                  </div>
                 </div>
+              </div>
+
+              <button
+                type="button"
+                className="success-reset-btn"
+                onClick={() => {
+                  setSent(false);
+                  setSubmittedData(null);
+                }}
+              >
+                <RotateCcw size={15} /> Send another message
+              </button>
+            </div>
+          ) : (
+            <form className="contact-form" onSubmit={submit}>
+              <div className="form-head">
+                <h2>Tell us a little more.</h2>
+                <p>Fields marked * are required.</p>
+              </div>
+              <div className="form-row">
                 <label>
-                  Company or organization
-                  <input name="company" placeholder="Optional" />
-                </label>
-                <label>
-                  What would you like to work on? *
-                  <textarea
-                    name="message"
+                  Your name *
+                  <input
+                    name="name"
                     required
-                    minLength={10}
-                    rows={5}
-                    placeholder="A few details about your goals or question…"
+                    minLength={2}
+                    placeholder="Name"
                   />
                 </label>
-                {error && <p className="form-error">{error}</p>}
-                <button className="btn" disabled={busy}>
-                  {busy ? "Sending…" : "Send your note"}{" "}
-                  <ArrowRight size={15} />
-                </button>
-              </>
-            )}
-          </form>
+                <label>
+                  Email address *
+                  <input
+                    name="email"
+                    required
+                    type="email"
+                    placeholder="you@example.com"
+                  />
+                </label>
+              </div>
+              <label>
+                Company or organization
+                <input name="company" placeholder="Optional" />
+              </label>
+              <label>
+                What would you like to work on? *
+                <textarea
+                  name="message"
+                  required
+                  minLength={10}
+                  rows={5}
+                  placeholder="A few details about your goals or question…"
+                />
+              </label>
+              {error && <p className="form-error">{error}</p>}
+              <button className="btn" disabled={busy}>
+                {busy ? "Sending…" : "Send your note"}{" "}
+                <ArrowRight size={15} />
+              </button>
+            </form>
+          )}
         </div>
       </section>
     </PageFrame>

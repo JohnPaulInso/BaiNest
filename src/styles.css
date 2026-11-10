@@ -4343,6 +4343,29 @@ img {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(0,0,0,0.06);
 }
+/* (2026-07-13) Upgraded pillar icons & confirmation email receipt. Prev: num pill */
+.pillar-icon-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 44px;
+  height: 48px;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  color: #0d9488;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.08);
+}
+.pillar-num-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #0f766e;
+  line-height: 1;
+}
 .pillar-num {
   font-size: 13px;
   font-weight: 800;
@@ -4393,6 +4416,200 @@ img {
   text-decoration: none;
   margin-top: 6px;
   transition: color 0.15s ease;
+}
+.direct-link:hover {
+  color: #0d9488;
+}
+/* Confirmation Email Receipt Styles */
+.confirmation-email-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  animation: fadeInEmail 0.35s ease-out;
+}
+@keyframes fadeInEmail {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.confirmation-email-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #0f172a;
+  color: #ffffff;
+}
+.confirmation-email-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5eead4;
+}
+.confirmation-ref {
+  font-size: 11.5px;
+  font-family: monospace;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.confirmation-email-envelope {
+  padding: 22px;
+  background: #f8fafc;
+}
+.confirmation-email-header {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.email-meta-field {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+.email-meta-label {
+  width: 58px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.email-meta-val {
+  color: #334155;
+  word-break: break-all;
+}
+.email-meta-subject {
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 13.5px;
+}
+.confirmation-email-body {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+}
+.email-greeting {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+.email-intro {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 16px 0;
+}
+.email-summary-box {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.summary-box-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+.summary-detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.summary-detail-row.message-block {
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.summary-label {
+  font-weight: 700;
+  color: #334155;
+  min-width: 75px;
+}
+.summary-value {
+  color: #0f172a;
+  font-weight: 600;
+}
+.summary-message-quote {
+  margin: 0;
+  padding: 10px 12px;
+  background: #ffffff;
+  border-left: 3px solid #0d9488;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1e293b;
+  font-style: italic;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.email-next-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+.next-step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #475569;
+}
+.next-step-row svg {
+  color: #0d9488;
+  flex-shrink: 0;
+}
+.email-signature {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.email-signature p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+.email-signature strong {
+  font-size: 13.5px;
+  color: #0f172a;
+}
+.email-signature small {
+  font-size: 11px;
+  color: #0d9488;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.confirmation-email-card .success-reset-btn {
+  margin: 0 22px 22px;
 }
 .direct-link:hover {
   color: #0d9488;
