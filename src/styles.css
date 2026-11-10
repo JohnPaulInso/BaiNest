@@ -1052,60 +1052,162 @@ img {
   color: var(--muted);
   font-size: 12px;
 }
-.services-detail {
+/* (2026-07-13) Revamped modern services cards grid & styling. Prev: basic list */
+.services-cards-grid {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  align-items: stretch;
 }
-.service-detail {
-  display: grid;
-  grid-template-columns: 50px 48px 1fr 25px;
-  gap: 22px;
-  align-items: start;
-  padding: 30px 10px;
-  border-bottom: 1px solid var(--line);
+.service-card-revamp {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 34px 30px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  position: relative;
+  overflow: hidden;
 }
-.service-detail .service-no {
-  padding-top: 5px;
+.service-card-revamp::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0d9488, #38bdf8);
+  opacity: 0;
+  transition: opacity 0.22s ease;
 }
-.service-detail-icon {
-  width: 43px;
-  height: 43px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: #e5f5f4;
-  color: var(--teal-dark);
+.service-card-revamp:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.09);
+  border-color: #cbd5e1;
 }
-.service-detail h2 {
-  margin: 0 0 8px;
-  font-size: 24px;
+.service-card-revamp:hover::before {
+  opacity: 1;
 }
-.service-detail p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-.service-detail ul {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 17px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.service-detail li {
+.service-card-badge-wrap {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: #516477;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.service-card-revamp-no {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+  font-family: monospace;
+}
+.service-card-revamp-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f0fdfa;
+  color: #0d9488;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ccfbf1;
+}
+.service-card-revamp-title {
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+.service-card-revamp-tagline {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0 0 22px 0;
+}
+.service-card-capabilities {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 18px;
+  flex: 1;
+}
+.service-capabilities-label {
+  display: block;
   font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 12px;
 }
-.service-detail li svg {
-  flex: 0 0 auto;
-  color: var(--teal-dark);
+.service-capabilities-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9.5px;
 }
-.service-detail-arrow {
-  margin-top: 9px;
-  color: #9aa8b5;
+.service-capability-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #334155;
+}
+.capability-check-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #059669;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.service-card-action {
+  border-top: 1px solid #f8fafc;
+  padding-top: 16px;
+}
+.service-card-inquire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d9488;
+  text-decoration: none;
+  transition: gap 0.18s ease, color 0.18s ease;
+}
+.service-card-inquire-btn:hover {
+  color: #0f766e;
+  gap: 9px;
+}
+.cta-brand-tagline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5eead4;
+}
+.tagline-dot {
+  color: rgba(255, 255, 255, 0.4);
+}
+@media (max-width: 900px) {
+  .services-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .service-card-revamp {
+    padding: 24px 20px 20px;
+  }
 }
 .portfolio-grid {
   display: grid;
