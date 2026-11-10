@@ -9,10 +9,11 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-// (2026-07-13) Clean up unused Menu icon import. Prev: Menu included
+// (2026-07-13) Import ArrowUp for blue back-to-top button. Prev: ArrowDown
 import {
   ArrowDown,
   ArrowRight,
+  ArrowUp,
   ArrowUpRight,
   BarChart3,
   Check,
@@ -987,6 +988,38 @@ function Portfolio() {
     </PageFrame>
   );
 }
+// (2026-07-13) Blue back to top button for all blog views. Prev: none
+function BackToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    function handleScroll() {
+      if (window.scrollY > 250) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      type="button"
+      className="back-to-top-blue-btn"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      title="Back to top"
+      aria-label="Back to top"
+    >
+      <ArrowUp size={20} />
+    </button>
+  );
+}
+
 // (2026-07-13) Blogs page with category chips and card images. Prev: The journal
 function Blog() {
   const { posts, loading } = usePosts();
@@ -1072,6 +1105,8 @@ function Blog() {
           )}
         </div>
       </section>
+      {/* (2026-07-13) Blue back to top button on blogs listing. Prev: none */}
+      <BackToTopButton />
     </PageFrame>
   );
 }
@@ -1576,6 +1611,8 @@ function PostDetail() {
           {/* (2026-07-13) Remove Main Tags widget from blog sidebar. Prev: tag cloud */}
         </aside>
       </div>
+      {/* (2026-07-13) Blue back to top button on blog post detail. Prev: none */}
+      <BackToTopButton />
     </PageFrame>
   );
 }

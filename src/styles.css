@@ -2862,40 +2862,54 @@ img {
   .wrap {
     width: calc(100% - 34px);
   }
-  /* (2026-07-13) Show full nav row on mobile & move CTA to top. Prev: hamburger */
+  /* (2026-07-13) Responsive mobile header with scaled nav items. Prev: clipped */
+  .site-header .wrap {
+    width: calc(100% - 20px);
+  }
   .brand-inner {
-    height: 62px;
-    gap: 10px;
+    height: 56px;
+    gap: 8px;
   }
   .brand {
-    font-size: 17px;
+    font-size: 15px;
+    gap: 8px;
   }
   .brand img {
-    width: 32px;
-    height: 32px;
-    border-radius: 7px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+  .brand small {
+    font-size: 7.5px;
+    letter-spacing: 0.08em;
   }
   .brand-note {
     display: none;
   }
   .header-work,
   .header-work-btn {
-    padding: 6px 12px;
-    font-size: 10.5px;
-    gap: 5px;
+    padding: 5px 11px;
+    font-size: 9.5px;
+    letter-spacing: 0.03em;
+    gap: 4px;
     margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .header-work-btn svg {
+    width: 12px;
+    height: 12px;
   }
   .menu-toggle {
     display: none !important;
   }
-  /* (2026-07-13) Fit all mobile nav items including Contact. Prev: 12px 18px gap */
   .nav-inner {
-    height: 44px;
+    height: 40px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    justify-content: space-between;
     width: 100%;
+    padding: 0;
   }
   .nav-inner::-webkit-scrollbar {
     display: none;
@@ -2908,26 +2922,29 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: clamp(5px, 1.8vw, 14px) !important;
+    gap: clamp(6px, 1.6vw, 12px) !important;
     justify-content: space-between !important;
     width: 100% !important;
+    min-width: max-content !important;
     align-items: center !important;
   }
   .main-nav a {
     height: 100% !important;
-    padding: 0 2px !important;
-    font-size: 10.5px !important;
+    padding: 0 1px !important;
+    font-size: 9.5px !important;
     font-weight: 700 !important;
     letter-spacing: 0.02em !important;
     white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
   .main-nav a svg {
-    width: 11px !important;
-    height: 11px !important;
+    width: 10px !important;
+    height: 10px !important;
+    margin-left: 2px !important;
   }
   .main-nav a:after {
     bottom: 0;
-    width: auto;
+    width: 100%;
     right: 0;
   }
   .nav-cta {
@@ -5914,4 +5931,51 @@ img {
   width: 18px !important;
   height: 18px !important;
   cursor: pointer;
+}
+
+/* (2026-07-13) Blue floating back-to-top button for blog pages. Prev: none */
+.back-to-top-blue-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 999;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  animation: backToTopPop 0.25s ease-out;
+}
+.back-to-top-blue-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+}
+.back-to-top-blue-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+@keyframes backToTopPop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (max-width: 760px) {
+  .back-to-top-blue-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+  }
 }
