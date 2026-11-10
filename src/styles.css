@@ -4049,7 +4049,42 @@ img {
 .cover-remove-action:hover {
   text-decoration: underline;
 }
+/* (2026-07-13) Cover pending badge & upload action. Prev: none */
+.cover-upload-now-btn {
+  background: #0d9488;
+  color: #ffffff;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease;
+}
+.cover-upload-now-btn:hover {
+  background: #0f766e;
+}
+.cover-upload-now-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.cover-pending-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(4px);
+  color: #5eead4;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
 .main-cover-preview {
+  position: relative;
   width: 100%;
   max-height: 280px;
   border-radius: 10px;

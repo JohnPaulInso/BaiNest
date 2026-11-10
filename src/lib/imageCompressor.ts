@@ -68,7 +68,7 @@ export async function compressImage(
   });
 }
 
-// (2026-07-13) Smart image uploader with Storage and base64 fallback. Prev: none
+// (2026-07-13) Add upload timeout race & base64 fallback. Prev: hung uploads
 export async function uploadBlogImage(
   file: File,
   storage?: any,
@@ -79,7 +79,7 @@ export async function uploadBlogImage(
   },
 ): Promise<string> {
   // Try Firebase Cloud Storage if initialized
-  if (storage && storageHelpers) {
+  if (storage && storageHelpers?.ref && storageHelpers?.uploadBytes && storageHelpers?.getDownloadURL) {
     try {
       const blob = (await compressImage(file, {
         maxDimension: 1280,
@@ -91,12 +91,18 @@ export async function uploadBlogImage(
         storage,
         `blog-images/${Date.now()}_${cleanName}`,
       );
-      const snapshot = await storageHelpers.uploadBytes(storageRef, blob, {
-        contentType: "image/jpeg",
-      });
-      return await storageHelpers.getDownloadURL(snapshot.ref);
+      const uploadPromise = (async () => {
+        const snapshot = await storageHelpers.uploadBytes(storageRef, blob, {
+          contentType: "image/jpeg",
+        });
+        return await storageHelpers.getDownloadURL(snapshot.ref);
+      })();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Storage timeout")), 4500)
+      );
+      return await Promise.race([uploadPromise, timeoutPromise]);
     } catch {
-      // Storage blocked or not set up; fallback to inline compressed dataUrl
+      // Storage blocked or timed out; fallback to inline compressed dataUrl
     }
   }
 

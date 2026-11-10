@@ -872,18 +872,30 @@ function PostEditor({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
+  // (2026-07-13) Instant preview with post-time compression. Prev: hung upload
+  const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
 
-  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingCoverFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    patch("cover_image", previewUrl);
+  }
+
+  async function uploadPendingCover() {
+    if (!pendingCoverFile) return;
     setCoverUploading(true);
+    setNotice("Compressing & uploading photo...");
     try {
-      const url = await uploadBlogImage(file, storage, {
+      const url = await uploadBlogImage(pendingCoverFile, storage, {
         ref: storageRef,
         uploadBytes,
         getDownloadURL,
       });
       patch("cover_image", url);
+      setPendingCoverFile(null);
+      setNotice("Cover photo compressed & uploaded.");
     } catch (err) {
       alert("Could not upload cover: " + (err instanceof Error ? err.message : String(err)));
     } finally {
@@ -1134,8 +1146,27 @@ function PostEditor({
       );
       return;
     }
+    setBusy(true);
+    // (2026-07-13) Compress & upload cover on save/publish. Prev: hung in form
+    let finalCover = form.cover_image;
+    if (pendingCoverFile) {
+      setNotice("Compressing & uploading cover photo...");
+      try {
+        finalCover = await uploadBlogImage(pendingCoverFile, storage, {
+          ref: storageRef,
+          uploadBytes,
+          getDownloadURL,
+        });
+        patch("cover_image", finalCover);
+        setPendingCoverFile(null);
+      } catch (err) {
+        console.warn("Cover image upload failed", err);
+      }
+    }
+
     const payload = {
       ...form,
+      cover_image: finalCover,
       status,
       tags: tags
         .split(",")
@@ -1146,8 +1177,7 @@ function PostEditor({
       ),
       slug: finalSlug,
     };
-    setBusy(true);
-    setNotice("");
+    setNotice(status === "published" ? "Publishing story..." : "Saving draft...");
     try {
       const saved = await api<Post>(
         id ? `/api/admin/posts/${id}` : "/api/admin/posts",
@@ -1267,25 +1297,45 @@ function PostEditor({
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">
-            {/* (2026-07-13) Simplified unified cover photo uploader. Prev: stacked messy controls */}
+            {/* (2026-07-13) Instant thumbnail preview with post upload. Prev: hung uploader */}
             <div className="main-cover-section">
               <div className="main-cover-header">
                 <span className="cover-section-title">
                   <ImageIcon size={18} /> Featured Cover Photo
                 </span>
                 {form.cover_image && (
-                  <button
-                    type="button"
-                    className="cover-remove-action"
-                    onClick={() => patch("cover_image", "")}
-                  >
-                    <Trash2 size={13} /> Remove cover
-                  </button>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    {pendingCoverFile && (
+                      <button
+                        type="button"
+                        className="cover-upload-now-btn"
+                        onClick={uploadPendingCover}
+                        disabled={coverUploading}
+                      >
+                        <Upload size={13} /> {coverUploading ? "Compressing..." : "Compress & upload now"}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="cover-remove-action"
+                      onClick={() => {
+                        setPendingCoverFile(null);
+                        patch("cover_image", "");
+                      }}
+                    >
+                      <Trash2 size={13} /> Remove cover
+                    </button>
+                  </div>
                 )}
               </div>
               {form.cover_image ? (
                 <div className="main-cover-preview">
                   <img src={form.cover_image} alt="Story cover" />
+                  {pendingCoverFile && (
+                    <div className="cover-pending-badge">
+                      <span>Preview ready · Auto-compresses on publish</span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="cover-uploader-box">
@@ -1300,8 +1350,8 @@ function PostEditor({
                     <div className="cover-upload-icon-circle">
                       <Upload size={22} />
                     </div>
-                    <b>{coverUploading ? "Compressing & uploading photo…" : "Upload Cover Photo"}</b>
-                    <span>Click to browse from device or drag image here · Auto-compressed</span>
+                    <b>Upload Cover Photo</b>
+                    <span>Click to browse from device or drag image here</span>
                   </label>
                   <div className="cover-url-input-wrap">
                     <input
