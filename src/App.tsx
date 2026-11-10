@@ -1041,10 +1041,65 @@ function PostDetail() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  // (2026-07-13) Clean up unused sidebar states & tags in PostDetail. Prev: kept
+  // (2026-07-13) Manage and persist blog story comments. Prev: transient boolean
+  interface BlogComment {
+    id: string;
+    name: string;
+    text: string;
+    date: string;
+  }
   const [commentText, setCommentText] = useState("");
   const [commentName, setCommentName] = useState("");
   const [commentDone, setCommentDone] = useState(false);
+  const [comments, setComments] = useState<BlogComment[]>([]);
+
+  useEffect(() => {
+    if (!slug) return;
+    const storageKey = `bainest_comments_${slug}`;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        setComments(JSON.parse(saved));
+        return;
+      } catch {}
+    }
+    const defaults: BlogComment[] = [
+      {
+        id: "c1",
+        name: "Maria Santos",
+        text: "Inspiring read! Really exciting to see modern digital agency services and creative brand storytelling growing right here.",
+        date: "2 days ago",
+      },
+      {
+        id: "c2",
+        name: "Jan Errol Duazo",
+        text: "Thank you all for reading! We are dedicated to helping businesses build real connections and memorable digital presence.",
+        date: "1 day ago",
+      },
+    ];
+    setComments(defaults);
+    localStorage.setItem(storageKey, JSON.stringify(defaults));
+  }, [slug]);
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    const newComment: BlogComment = {
+      id: `c_${Date.now()}`,
+      name: commentName.trim() || "Reader",
+      text: commentText.trim(),
+      date: "Just now",
+    };
+    const updated = [newComment, ...comments];
+    setComments(updated);
+    if (slug) {
+      localStorage.setItem(`bainest_comments_${slug}`, JSON.stringify(updated));
+    }
+    setCommentDone(true);
+    setCommentText("");
+    setCommentName("");
+    setTimeout(() => setCommentDone(false), 5000);
+  };
 
   const { posts: allPosts } = usePosts();
 
@@ -1248,41 +1303,58 @@ function PostDetail() {
             </div>
           )}
 
-          {/* Post a Comment Section */}
+          {/* (2026-07-13) Display all comments and persistent comment form. Prev: hidden */}
           <div className="comment-section-card">
             <h3>Post a Comment &gt;</h3>
-            {commentDone ? (
+            {commentDone && (
               <div className="comment-success-notice">
-                <Check size={16} /> Thank you! Your response has been submitted for review.
+                <Check size={16} /> Thank you! Your comment has been posted successfully.
               </div>
-            ) : (
-              <form
-                className="comment-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (commentText.trim()) setCommentDone(true);
-                }}
-              >
-                <textarea
-                  rows={3}
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Share your thoughts on this story…"
-                  required
-                />
-                <div className="comment-form-row">
-                  <input
-                    type="text"
-                    value={commentName}
-                    onChange={(e) => setCommentName(e.target.value)}
-                    placeholder="Your Name (optional)"
-                  />
-                  <button type="submit" className="comment-submit-btn">
-                    Submit Comment
-                  </button>
-                </div>
-              </form>
             )}
+            <form className="comment-form" onSubmit={handleCommentSubmit}>
+              <textarea
+                rows={3}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Share your thoughts on this story…"
+                required
+              />
+              <div className="comment-form-row">
+                <input
+                  type="text"
+                  value={commentName}
+                  onChange={(e) => setCommentName(e.target.value)}
+                  placeholder="Your Name (optional)"
+                />
+                <button type="submit" className="comment-submit-btn">
+                  Submit Comment
+                </button>
+              </div>
+            </form>
+
+            <div className="comments-display-section">
+              <div className="comments-display-header">
+                <span className="comments-title-count">
+                  <MessageCircle size={16} /> Comments ({comments.length})
+                </span>
+              </div>
+              <div className="comments-feed-list">
+                {comments.map((c) => (
+                  <div key={c.id} className="comment-item-card">
+                    <div className="comment-avatar">
+                      {(c.name || "R").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="comment-details">
+                      <div className="comment-header-row">
+                        <span className="comment-author-name">{c.name}</span>
+                        <span className="comment-date-tag">{c.date}</span>
+                      </div>
+                      <p className="comment-body-text">{c.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </article>
 
