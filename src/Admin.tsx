@@ -1355,7 +1355,8 @@ function PostEditor({
                   <ImageIcon size={18} /> Featured Cover Photo
                 </span>
                 {form.cover_image && (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  /* (2026-07-13) Responsive cover buttons container. Prev: inline flex style */
+                  <div className="main-cover-actions">
                     {/* (2026-07-13) Add Crop to Blog Size button on cover. Prev: remove only */}
                     <button
                       type="button"

@@ -3015,16 +3015,76 @@ img {
   .admin-side-bottom {
     display: none;
   }
+  /* (2026-07-13) Responsive admin shell, topbar, and main container. Prev: fixed */
   .admin-main {
     margin-left: 0;
     min-height: calc(100vh - 110px);
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   .admin-topbar {
-    height: 40px;
-    padding: 0 17px;
+    height: auto;
+    min-height: 46px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .admin-topbar::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-topbar-left {
+    max-width: none;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .admin-topbar-ws {
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .topbar-blog-divider {
+    font-size: 12px;
+  }
+  .topbar-blog-meta {
+    min-width: 0;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .topbar-blog-title {
+    max-width: 120px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar-blog-slug {
+    display: none;
+  }
+  .admin-topbar-right {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .topbar-view-site-btn {
+    padding: 4px 8px;
+    font-size: 10.5px;
+    white-space: nowrap;
+    gap: 4px;
   }
   .admin-content {
-    padding: 26px 16px 45px;
+    padding: 14px 10px 50px;
   }
   .admin-page-title {
     align-items: flex-start;
@@ -3095,8 +3155,70 @@ img {
   .editor-side {
     grid-row: 1;
   }
+  /* (2026-07-13) Responsive admin blog editor layout and blocks. Prev: desktop 28px */
+  .editor-surface,
   .editor-side-card {
-    padding: 16px;
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+  .main-cover-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .main-cover-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+  .cover-section-title {
+    font-size: 12px;
+  }
+  .cover-crop-action,
+  .cover-upload-now-btn,
+  .cover-remove-action {
+    font-size: 10.5px;
+    padding: 5px 8px;
+  }
+  .title-input input {
+    font-size: clamp(20px, 5.5vw, 24px) !important;
+    line-height: 1.25 !important;
+    padding-bottom: 8px !important;
+  }
+  .block-heading-textarea {
+    font-size: 18px !important;
+    min-height: 48px !important;
+  }
+  .editor-block-field textarea {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .editor-block {
+    padding: 12px 8px;
+    gap: 8px;
+  }
+  .block-step-btn {
+    width: 24px;
+    height: 24px;
+  }
+  .block-quick-palette {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .palette-label {
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .palette-buttons {
+    gap: 6px;
+    width: 100%;
+  }
+  .palette-tool-btn {
+    font-size: 11px;
+    padding: 5px 8px;
   }
   .domain-add-form {
     grid-template-columns: 1fr;
