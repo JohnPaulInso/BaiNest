@@ -1075,19 +1075,32 @@ function Blog() {
     </PageFrame>
   );
 }
+// (2026-07-13) Helper to render text with line breaks as br tags. Prev: none
+function renderWithLinebreaks(text?: string) {
+  if (!text) return null;
+  const lines = text.split(/(?:<br\s*\/?>|\r?\n)/gi);
+  return lines.map((line, idx) => (
+    <React.Fragment key={idx}>
+      {line}
+      {idx < lines.length - 1 && <br />}
+    </React.Fragment>
+  ));
+}
+
+// (2026-07-13) Render blog blocks with line break preservation. Prev: flat text
 function BlockRenderer({ blocks }: { blocks: Block[] }) {
   return (
     <div className="post-body">
       {blocks.map((b, i) => {
-        if (b.type === "heading") return <h2 key={i}>{b.text}</h2>;
-        if (b.type === "paragraph") return <p key={i}>{b.text}</p>;
+        if (b.type === "heading") return <h2 key={i}>{renderWithLinebreaks(b.text)}</h2>;
+        if (b.type === "paragraph") return <p key={i}>{renderWithLinebreaks(b.text)}</p>;
         if (b.type === "quote")
-          return <blockquote key={i}>{b.text}</blockquote>;
+          return <blockquote key={i}>{renderWithLinebreaks(b.text)}</blockquote>;
         if (b.type === "columns")
           return (
             <div className="post-columns" key={i}>
-              <p>{b.left}</p>
-              <p>{b.right}</p>
+              <p>{renderWithLinebreaks(b.left)}</p>
+              <p>{renderWithLinebreaks(b.right)}</p>
             </div>
           );
         if (b.type === "list")
@@ -1316,7 +1329,8 @@ function PostDetail() {
             </div>
           )}
 
-          {post.excerpt && <p className="post-lead-excerpt">{post.excerpt}</p>}
+          {/* (2026-07-13) Support linebreaks in post lead excerpt. Prev: flat text */}
+          {post.excerpt && <p className="post-lead-excerpt">{renderWithLinebreaks(post.excerpt)}</p>}
 
           <div className="post-content-blocks">
             <BlockRenderer blocks={post.blocks || []} />

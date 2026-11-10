@@ -148,9 +148,12 @@ function SortableBlock({
   ) => (
     <label className="block-field">
       <span>{label}</span>
+      {/* (2026-07-13) Support enter key for linebreaks in field. Prev: plain textarea */}
       {multiline ? (
         <textarea
           value={value}
+          enterKeyHint="enter"
+          rows={3}
           onChange={(e) => onChange(block.id, key, e.target.value)}
           placeholder={placeholder}
         />
@@ -213,9 +216,22 @@ function SortableBlock({
           )}
         </div>
         <div className="editor-block-field">
+          {/* (2026-07-13) Block badge with newline insertion trigger. Prev: badge only */}
           <div className="block-type-badge">
-            {blockIcons[block.type] || <FileText size={14} />}
-            <span>{block.type.toUpperCase()} BLOCK</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {blockIcons[block.type] || <FileText size={14} />}
+              <span>{block.type.toUpperCase()} BLOCK</span>
+            </div>
+            {(block.type === "paragraph" || block.type === "heading" || block.type === "quote") && (
+              <button
+                type="button"
+                className="block-linebreak-btn"
+                onClick={() => onChange(block.id, "text", (block.text || "") + "\n")}
+                title="Insert a line break (newline)"
+              >
+                ↵ Line break
+              </button>
+            )}
           </div>
           {block.type === "image" ? (
             <div className="block-fields-grid">
@@ -298,6 +314,7 @@ function SortableBlock({
               A subtle divider line will appear here.
             </p>
           ) : (
+            /* (2026-07-13) Support multiline editing and Enter key. Prev: raw textarea */
             <textarea
               className={
                 block.type === "heading"
@@ -307,13 +324,15 @@ function SortableBlock({
                     : "block-paragraph-textarea"
               }
               value={block.text || ""}
+              enterKeyHint="enter"
+              rows={block.type === "paragraph" ? 4 : 2}
               onChange={(e) => onChange(block.id, "text", e.target.value)}
               placeholder={
                 block.type === "heading"
                   ? "Section heading"
                   : block.type === "quote"
                     ? "Pull quote"
-                    : "Write your content…"
+                    : "Write your content (Enter for line break)…"
               }
             />
           )}
