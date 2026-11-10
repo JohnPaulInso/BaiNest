@@ -40,8 +40,10 @@ import {
   Rocket,
   BookOpen,
   PlusCircle,
+  Crop,
 } from "lucide-react";
-// (2026-07-13) Import client compression uploader and storage. Prev: none
+// (2026-07-13) Import ImageCropperModal & Crop icon. Prev: no cropper
+import { ImageCropperModal } from "./ImageCropperModal";
 import { uploadBlogImage } from "./lib/imageCompressor";
 import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
 import {
@@ -103,23 +105,33 @@ function SortableBlock({
 }) {
   const [showInserter, setShowInserter] = useState(false);
   const [uploading, setUploading] = useState(false);
+  // (2026-07-13) Crop block image upload to blog standard. Prev: direct upload
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
-  async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    onChange(block.id, "src", previewUrl);
+    setCropSrc(previewUrl);
+  }
+
+  async function handleBlockCropped(croppedFile: File, croppedUrl: string) {
+    onChange(block.id, "src", croppedUrl);
+    setCropSrc(null);
     setUploading(true);
     try {
-      const url = await uploadBlogImage(file, storage, {
+      const url = await uploadBlogImage(croppedFile, storage, {
         ref: storageRef,
         uploadBytes,
         getDownloadURL,
       });
       onChange(block.id, "src", url);
-    } catch (err) {
-      alert("Could not upload image: " + (err instanceof Error ? err.message : String(err)));
+    } catch {
+      // Retain croppedUrl
     } finally {
       setUploading(false);
     }
@@ -208,6 +220,14 @@ function SortableBlock({
               {block.src && (
                 <div className="inline-block-img-preview">
                   <img src={block.src} alt={block.alt || "Preview"} />
+                  {/* (2026-07-13) Add Crop button to block image preview. Prev: view only */}
+                  <button
+                    type="button"
+                    className="block-crop-action-btn"
+                    onClick={() => setCropSrc(block.src)}
+                  >
+                    <Crop size={12} /> Crop to Blog Size
+                  </button>
                 </div>
               )}
               {/* (2026-07-13) Device image upload button with auto-compression. Prev: text URL only */}
@@ -386,6 +406,14 @@ function SortableBlock({
             </div>
           )}
         </div>
+      )}
+      {/* (2026-07-13) Crop modal for block images. Prev: none */}
+      {cropSrc && (
+        <ImageCropperModal
+          imageSrc={cropSrc}
+          onCrop={handleBlockCropped}
+          onClose={() => setCropSrc(null)}
+        />
       )}
     </div>
   );
@@ -872,8 +900,9 @@ function PostEditor({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
-  // (2026-07-13) Instant preview with post-time compression. Prev: hung upload
+  // (2026-07-13) Crop cover upload to standard blog size. Prev: raw image
   const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
+  const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
 
   function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -881,6 +910,14 @@ function PostEditor({
     setPendingCoverFile(file);
     const previewUrl = URL.createObjectURL(file);
     patch("cover_image", previewUrl);
+    setCropModalSrc(previewUrl);
+  }
+
+  function handleCoverCropped(croppedFile: File, croppedUrl: string) {
+    setPendingCoverFile(croppedFile);
+    patch("cover_image", croppedUrl);
+    setCropModalSrc(null);
+    setNotice("Cover photo cropped to standard blog size (16:9).");
   }
 
   async function uploadPendingCover() {
@@ -1305,6 +1342,14 @@ function PostEditor({
                 </span>
                 {form.cover_image && (
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    {/* (2026-07-13) Add Crop to Blog Size button on cover. Prev: remove only */}
+                    <button
+                      type="button"
+                      className="cover-crop-action"
+                      onClick={() => setCropModalSrc(form.cover_image)}
+                    >
+                      <Crop size={13} /> Crop to Blog Size
+                    </button>
                     {pendingCoverFile && (
                       <button
                         type="button"
@@ -1686,6 +1731,14 @@ function PostEditor({
           )}
         </aside>
       </div>
+      {/* (2026-07-13) Render crop modal for cover photos. Prev: none */}
+      {cropModalSrc && (
+        <ImageCropperModal
+          imageSrc={cropModalSrc}
+          onCrop={handleCoverCropped}
+          onClose={() => setCropModalSrc(null)}
+        />
+      )}
     </>
   );
 }

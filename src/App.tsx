@@ -54,69 +54,30 @@ const nav = [
   ["Blog", "/blog"],
   ["Contact", "/contact"],
 ] as const;
-// (2026-07-13) Update services descriptions and capability lists. Prev: brief
 const services = [
   {
     no: "01",
     icon: PenTool,
     title: "Brand & Strategy",
-    text: "A distinct identity. A clear direction. A brand people recognize and remember.",
-    items: [
-      "Brand identity development",
-      "Logo and visual branding",
-      "Brand positioning and strategy",
-      "Brand guidelines and design systems",
-      "Brand messaging and communication",
-      "Business profile and brand presentation",
-      "Event branding and promotional materials",
-    ],
+    text: "A distinct point of view, shaped into a brand people recognize and trust.",
   },
   {
     no: "02",
     icon: Layers3,
     title: "Digital Experiences",
-    text: "Build a professional digital presence that makes your business easier to discover, understand, and connect with.",
-    items: [
-      "Business website design and development",
-      "Website strategy and structure",
-      "Landing page design",
-      "Website content and copywriting",
-      "Mobile-responsive website experiences",
-      "Facebook Business Page creation and optimization",
-      "Social media profile setup and optimization",
-    ],
+    text: "Beautiful, useful digital homes built to make the next step feel effortless.",
   },
   {
     no: "03",
     icon: BarChart3,
     title: "Growth Marketing",
-    text: "Turn visibility into meaningful engagement and opportunities for business growth.",
-    items: [
-      "Social media management",
-      "Social media marketing strategy",
-      "Facebook and Instagram advertising",
-      "Paid campaign planning and management",
-      "Content calendar development",
-      "Audience targeting and engagement strategy",
-      "Campaign performance monitoring",
-      "Monthly analytics and reporting",
-    ],
+    text: "Thoughtful campaigns that connect your message with the people who need it.",
   },
   {
     no: "04",
     icon: Code2,
     title: "Content & Creative",
-    text: "Create meaningful content and compelling visuals that make your brand stand out.",
-    items: [
-      "Social media graphics and creatives",
-      "Content creation and copywriting",
-      "Social media captions",
-      "Promotional and advertising materials",
-      "Marketing collaterals",
-      "Event posters and digital invitations",
-      "Campaign creatives and visual concepts",
-      "Content planning and production",
-    ],
+    text: "Clear stories, memorable visuals, and creative that works hard across channels.",
   },
 ];
 // (2026-07-13) Purge sample projects for real client showcase. Prev: dummy data
@@ -591,16 +552,16 @@ function Home() {
         <div className="wrap">
           <div className="section-head">
             <div>
-              {/* (2026-07-13) Update home services copy. Prev: ideas with clear line */}
-              <Eyebrow>OUR SERVICES</Eyebrow>
+              <Eyebrow>What we do</Eyebrow>
               <h2>
-                Strategy, creativity,
+                Ideas with a clear
                 <br />
-                & digital solutions.
+                line to impact.
               </h2>
             </div>
             <p className="section-intro">
-              We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online.
+              From the first strategic question to the final pixel, our work
+              keeps your business goals in view.
             </p>
           </div>
           <div className="services-grid">
@@ -848,18 +809,17 @@ function About() {
     </PageFrame>
   );
 }
-// (2026-07-13) Update services detail page & footer banner. Prev: generic
 function Services() {
   return (
     <PageFrame>
       <PageHeading
-        label="OUR SERVICES"
-        title="Strategy, creativity, and digital solutions."
-        copy="We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online."
+        label="Services"
+        title="A clear path from good idea to real impact."
+        copy="Bring us the challenge, the ambition, or the part that still feels a little unclear. We’ll find the right way forward together."
       />
       <section className="section">
         <div className="wrap services-detail">
-          {services.map((s) => (
+          {services.map((s, i) => (
             <article className="service-detail" key={s.no}>
               <span className="service-no">{s.no}</span>
               <div className="service-detail-icon">
@@ -869,7 +829,28 @@ function Services() {
                 <h2>{s.title}</h2>
                 <p>{s.text}</p>
                 <ul>
-                  {s.items.map((t) => (
+                  {[
+                    [
+                      "Positioning & brand foundations",
+                      "Visual identity & design systems",
+                      "Messaging & brand direction",
+                    ],
+                    [
+                      "Website strategy & experience design",
+                      "Responsive web development",
+                      "Conversion-focused digital journeys",
+                    ],
+                    [
+                      "Campaign planning & creative",
+                      "Audience & channel strategy",
+                      "Measurement and iteration",
+                    ],
+                    [
+                      "Content strategy & production",
+                      "Editorial and social content",
+                      "Creative systems for your team",
+                    ],
+                  ][i].map((t) => (
                     <li key={t}>
                       <Check size={15} />
                       {t}
@@ -882,27 +863,7 @@ function Services() {
           ))}
         </div>
       </section>
-      <section className="cta-band">
-        <div className="wrap cta-inner">
-          <div>
-            <Eyebrow>BAINEST DIGITAL MARKETING SERVICES</Eyebrow>
-            <h2>
-              MORE THAN JUST
-              <br />
-              <em>DIGITAL MARKETING.</em>
-            </h2>
-            <p>
-              We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter.
-            </p>
-            <p style={{ marginTop: "12px", fontSize: "13px", fontWeight: 700, color: "var(--teal)", letterSpacing: "0.08em" }}>
-              Innovate. Elevate. Connect.
-            </p>
-          </div>
-          <Link className="btn" to="/contact">
-            Start a project <ArrowRight size={15} />
-          </Link>
-        </div>
-      </section>
+      <CtaBand />
     </PageFrame>
   );
 }
