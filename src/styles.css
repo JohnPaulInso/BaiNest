@@ -97,6 +97,7 @@ img {
   object-fit: cover;
   box-shadow: 0 2px 6px rgba(16, 43, 70, 0.08);
 }
+/* (2026-07-13) Capitalize brand subtitle to uppercase. Prev: lowercase */
 .brand small,
 .admin-logo small,
 .admin-login-brand small {
@@ -106,8 +107,8 @@ img {
   font:
     700 8.5px/1 "DM Sans",
     sans-serif;
-  letter-spacing: 0.12em;
-  text-transform: lowercase;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 .brand-note {
   font-size: 12px;

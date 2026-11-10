@@ -422,11 +422,11 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
   return (
     <div className="admin-login-screen">
       <div className="login-card">
-        {/* (2026-07-13) Rebrand admin logo and title. Prev: logo.svg & studio admin */}
+        {/* (2026-07-13) Capitalize admin brand to BAINEST & AGENCY. Prev: lowercase */}
         <Link className="admin-login-brand" to="/">
-          <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />{" "}
+          <img src={`${assetBase}bainest-logo.jpg`} alt="BAINEST" />{" "}
           <span>
-            bainest<small>digital marketing agency</small>
+            BAINEST<small>DIGITAL MARKETING AGENCY</small>
           </span>
         </Link>
         <span className="login-icon">
@@ -477,11 +477,11 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   ] as const;
   return (
     <aside className="admin-sidebar">
-      {/* (2026-07-13) Rebrand admin logo and title. Prev: logo.svg & studio admin */}
+      {/* (2026-07-13) Capitalize admin brand to BAINEST & AGENCY. Prev: lowercase */}
       <Link to="/" className="admin-logo">
-        <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />
+        <img src={`${assetBase}bainest-logo.jpg`} alt="BAINEST" />
         <span>
-          bainest<small>digital marketing agency</small>
+          BAINEST<small>DIGITAL MARKETING AGENCY</small>
         </span>
       </Link>
       <div className="admin-workspace">

@@ -89,17 +89,17 @@ const assetBase =
     ? "/BaiNest/"
     : "/";
 
-// (2026-07-13) Rebrand title to bainest digital marketing agency & new logo
+// (2026-07-13) Capitalize brand name to BAINEST & AGENCY. Prev: lowercase
 function Brand({ footer = false }: { footer?: boolean }) {
   return (
     <Link
       className={`brand ${footer ? "brand-footer" : ""}`}
       to="/"
-      aria-label="bainest digital marketing agency"
+      aria-label="BAINEST DIGITAL MARKETING AGENCY"
     >
-      <img src={`${assetBase}bainest-logo.jpg`} alt="bainest" />
+      <img src={`${assetBase}bainest-logo.jpg`} alt="BAINEST" />
       <span>
-        bainest<small>digital marketing agency</small>
+        BAINEST<small>DIGITAL MARKETING AGENCY</small>
       </span>
     </Link>
   );
