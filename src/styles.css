@@ -2764,12 +2764,14 @@ img {
   .menu-toggle {
     display: none !important;
   }
+  /* (2026-07-13) Fit all mobile nav items including Contact. Prev: 12px 18px gap */
   .nav-inner {
-    height: 46px;
+    height: 44px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    justify-content: flex-start;
+    justify-content: space-between;
+    width: 100%;
   }
   .nav-inner::-webkit-scrollbar {
     display: none;
@@ -2782,17 +2784,22 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: 18px !important;
-    flex-shrink: 0 !important;
+    gap: clamp(5px, 1.8vw, 14px) !important;
+    justify-content: space-between !important;
+    width: 100% !important;
     align-items: center !important;
-    width: auto !important;
   }
   .main-nav a {
     height: 100% !important;
-    padding: 0 4px !important;
-    font-size: 12px !important;
+    padding: 0 2px !important;
+    font-size: 10.5px !important;
     font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
     white-space: nowrap !important;
+  }
+  .main-nav a svg {
+    width: 11px !important;
+    height: 11px !important;
   }
   .main-nav a:after {
     bottom: 0;
