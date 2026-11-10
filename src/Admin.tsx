@@ -2024,6 +2024,13 @@ export function AdminApp() {
   const [session, setSession] = useState<AdminState | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  // (2026-07-13) Move activeMeta hook to top of AdminApp. Prev: after early return
+  const [activeMeta, setActiveMeta] = useState<{
+    title: string;
+    slug: string;
+    category: string;
+    status: string;
+  } | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   async function refresh() {
@@ -2079,12 +2086,6 @@ export function AdminApp() {
       />
     );
   const path = location.pathname;
-  const [activeMeta, setActiveMeta] = useState<{
-    title: string;
-    slug: string;
-    category: string;
-    status: string;
-  } | null>(null);
 
   const editingPostId =
     path.startsWith("/admin/posts/") && path.replace(/\/+$/, "") !== "/admin/posts/new"
