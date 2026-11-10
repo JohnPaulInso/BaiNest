@@ -191,6 +191,13 @@ function Header() {
                     </NavLink>
                     {recentOpen && recentPosts.length > 0 && (
                       <div className="recent-posts-mega">
+                        {/* (2026-07-13) Header for blog dropdown. Prev: bare grid */}
+                        <div className="recent-posts-top">
+                          <span className="recent-posts-top-label">RECENT STORIES</span>
+                          <Link to="/blog" className="recent-posts-view-all" onClick={() => setRecentOpen(false)}>
+                            All stories &rarr;
+                          </Link>
+                        </div>
                         <div className="recent-posts-grid">
                           {recentPosts.map((rp) => (
                             <Link

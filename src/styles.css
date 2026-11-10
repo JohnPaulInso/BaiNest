@@ -3218,18 +3218,20 @@ img {
 .recent-posts-dropdown.open .recent-posts-trigger {
   color: #0d9488;
 }
+/* (2026-07-13) Fix blog dropdown sizing & card flex. Prev: 860px grid */
 .recent-posts-mega {
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  width: 860px;
-  max-width: 90vw;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(840px, 92vw);
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
   border: 1px solid #e2e8f0;
-  padding: 16px;
+  padding: 14px 16px;
   z-index: 200;
   animation: fadeInDown 0.22s ease-out;
 }
@@ -3237,27 +3239,58 @@ img {
   from { opacity: 0; transform: translate(-50%, -8px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+.recent-posts-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 11px;
+}
+.recent-posts-top-label {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.recent-posts-view-all {
+  color: #0d9488;
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.15s ease;
+}
+.recent-posts-view-all:hover {
+  color: #0f766e;
+  text-decoration: underline;
+}
 .recent-posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
 }
 .recent-mega-card {
+  width: 170px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   text-decoration: none;
   color: inherit;
   border-radius: 8px;
-  padding: 6px;
-  transition: transform 0.18s ease, background-color 0.18s ease;
+  padding: 8px;
+  background: #fafbfc;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .recent-mega-card:hover {
-  background: #f8fafc;
+  background: #ffffff;
+  border-color: #cbd5e1;
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 .recent-mega-thumb {
   width: 100%;
-  height: 94px;
+  height: 96px;
   border-radius: 6px;
   overflow: hidden;
   background: #f1f5f9;
@@ -3274,10 +3307,11 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #38bdf8;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: #ffffff;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 15px;
+  letter-spacing: 0.05em;
 }
 .recent-mega-title {
   font-size: 12px;
