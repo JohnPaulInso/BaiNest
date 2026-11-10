@@ -460,6 +460,16 @@ function useSettings() {
 }
 function Home() {
   const { posts } = usePosts();
+  // (2026-07-13) Filter published portfolio stories for homepage. Prev: none
+  const featuredProjects = useMemo(() => {
+    return posts.filter(
+      (p) =>
+        p.status === "published" &&
+        (p.include_in_portfolio ||
+          p.slug?.toLowerCase().includes("aton") ||
+          p.title?.toLowerCase().includes("aton"))
+    );
+  }, [posts]);
   return (
     <PageFrame>
       <section className="hero">
@@ -615,23 +625,32 @@ function Home() {
               View all work <ArrowRight size={14} />
             </Link>
           </div>
-          {/* (2026-07-13) Show clean teaser when projects is empty. Prev: empty map */}
-          {projects.length > 0 ? (
+          {/* (2026-07-13) Show real portfolio stories or clean teaser. Prev: empty map */}
+          {featuredProjects.length > 0 ? (
             <div className="projects-grid">
-              {projects.slice(0, 2).map((p, i) => (
+              {featuredProjects.slice(0, 2).map((p, i) => (
                 <Link
                   className={`project-card project-${i}`}
-                  key={p.title}
-                  to="/portfolio"
+                  key={p.slug || p.id}
+                  to={`/blog/${p.slug}`}
                 >
                   <div className="project-art">
-                    <span>{p.initials}</span>
+                    {p.cover_image ? (
+                      <img
+                        src={p.cover_image}
+                        alt={p.title}
+                        className="project-cover-img"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "14px" }}
+                      />
+                    ) : (
+                      <span>{p.title.slice(0, 2).toUpperCase()}</span>
+                    )}
                     <div className="project-orbit" />
                   </div>
                   <div className="project-content">
-                    <span className="project-type">{p.type}</span>
+                    <span className="project-type">{p.category || "Case Study"}</span>
                     <h3>{p.title}</h3>
-                    <p>{p.text}</p>
+                    <p>{p.excerpt || "View this client case study."}</p>
                     <ArrowUpRight className="project-arrow" size={20} />
                   </div>
                 </Link>
@@ -877,8 +896,19 @@ function Services() {
     </PageFrame>
   );
 }
-// (2026-07-13) Clean showcase ready for client portfolio posts. Prev: mock projects
+// (2026-07-13) Showcase real client portfolio stories with link. Prev: empty state
 function Portfolio() {
+  const { posts } = usePosts();
+  const portfolioPosts = useMemo(() => {
+    return posts.filter(
+      (p) =>
+        p.status === "published" &&
+        (p.include_in_portfolio ||
+          p.slug?.toLowerCase().includes("aton") ||
+          p.title?.toLowerCase().includes("aton"))
+    );
+  }, [posts]);
+
   return (
     <PageFrame>
       <PageHeading
@@ -888,16 +918,69 @@ function Portfolio() {
       />
       <section className="section">
         <div className="wrap">
-          <div className="portfolio-empty-state">
-            <span className="empty-badge">Curated Showcase</span>
-            <h2>Client Case Studies Coming Soon</h2>
-            <p>
-              We are currently curating and uploading our real client case studies and digital project launches directly to this gallery. Check back shortly or reach out to explore our private deck.
-            </p>
-            <Link className="btn" to="/contact">
-              Talk with our team <ArrowRight size={14} />
-            </Link>
-          </div>
+          {portfolioPosts.length > 0 ? (
+            <div className="portfolio-gallery-grid">
+              {portfolioPosts.map((p) => (
+                <article key={p.id} className="portfolio-project-card">
+                  <Link to={`/blog/${p.slug}`} className="portfolio-card-cover-wrap">
+                    {p.cover_image ? (
+                      <img
+                        src={p.cover_image}
+                        alt={p.title}
+                        className="portfolio-card-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="portfolio-card-cover-fallback">
+                        <span>{p.title.slice(0, 2).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <span className="portfolio-badge-pill">{p.category || "Case Study"}</span>
+                  </Link>
+                  <div className="portfolio-card-content">
+                    <div className="portfolio-card-meta">
+                      {p.published_at && (
+                        <time dateTime={p.published_at}>
+                          {new Date(p.published_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </time>
+                      )}
+                      {p.author && <span>· by {p.author}</span>}
+                    </div>
+                    <h3>
+                      <Link to={`/blog/${p.slug}`}>{p.title}</Link>
+                    </h3>
+                    {p.excerpt && <p className="portfolio-card-excerpt">{p.excerpt}</p>}
+                    {Array.isArray(p.tags) && p.tags.length > 0 && (
+                      <div className="portfolio-card-tags">
+                        {p.tags.slice(0, 3).map((t) => (
+                          <span key={t} className="portfolio-tag-chip">
+                            #{t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <Link to={`/blog/${p.slug}`} className="portfolio-card-cta">
+                      Explore case study <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="portfolio-empty-state">
+              <span className="empty-badge">Curated Showcase</span>
+              <h2>Client Case Studies Coming Soon</h2>
+              <p>
+                We are currently curating and uploading our real client case studies and digital project launches directly to this gallery. Check back shortly or reach out to explore our private deck.
+              </p>
+              <Link className="btn" to="/contact">
+                Talk with our team <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
       <CtaBand />

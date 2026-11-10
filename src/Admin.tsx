@@ -73,7 +73,9 @@ const emptyPost: Omit<Post, "id" | "created_at" | "updated_at"> = {
   seo_title: "",
   seo_description: "",
   published_at: null,
+  // (2026-07-13) Add include_in_portfolio flag. Prev: include_in_nav only
   include_in_nav: false,
+  include_in_portfolio: false,
 };
 function slugify(text: string) {
   return text
@@ -883,7 +885,9 @@ function PostEditor({
         seo_title: existing.seo_title || "",
         seo_description: existing.seo_description || "",
         published_at: existing.published_at || new Date().toISOString(),
+        // (2026-07-13) Set portfolio inclusion in init. Prev: nav only
         include_in_nav: Boolean(existing.include_in_nav),
+        include_in_portfolio: Boolean(existing.include_in_portfolio),
         blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       };
@@ -967,7 +971,9 @@ function PostEditor({
         seo_title: existing.seo_title || "",
         seo_description: existing.seo_description || "",
         published_at: existing.published_at || new Date().toISOString(),
+        // (2026-07-13) Set portfolio inclusion in init. Prev: nav only
         include_in_nav: Boolean(existing.include_in_nav),
+        include_in_portfolio: Boolean(existing.include_in_portfolio),
         blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       });
@@ -1003,7 +1009,9 @@ function PostEditor({
               seo_title: p.seo_title || "",
               seo_description: p.seo_description || "",
               published_at: p.published_at || new Date().toISOString(),
+              // (2026-07-13) Set portfolio inclusion on fetch. Prev: nav only
               include_in_nav: Boolean(p.include_in_nav),
+              include_in_portfolio: Boolean(p.include_in_portfolio),
               blocks: parsedBlocks,
               tags: parsedTags,
             });
@@ -1764,6 +1772,17 @@ function PostEditor({
                 style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
               />
               Include in header navigation
+            </label>
+
+            {/* (2026-07-13) Add portfolio showcase toggle checkbox. Prev: none */}
+            <label className="portfolio-toggle-check" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", cursor: "pointer", fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>
+              <input
+                type="checkbox"
+                checked={Boolean(form.include_in_portfolio)}
+                onChange={(e) => patch("include_in_portfolio", e.target.checked)}
+                style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
+              />
+              Showcase in Portfolio
             </label>
           </div>
 
