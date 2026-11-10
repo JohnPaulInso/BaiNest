@@ -159,9 +159,9 @@ function Header() {
     () => posts.filter((p) => p.include_in_nav && p.status === "published"),
     [posts]
   );
-  // (2026-07-13) Supply published posts for screen-scaled menu. Prev: slice(0, 5)
+  // (2026-07-13) Supply published blog stories excluding portfolio-only. Prev: published
   const recentPosts = useMemo(
-    () => posts.filter((p) => p.status === "published").slice(0, 8),
+    () => posts.filter((p) => p.status === "published" && !p.portfolio_only).slice(0, 8),
     [posts]
   );
 
@@ -467,6 +467,7 @@ function Home() {
       (p) =>
         p.status === "published" &&
         (p.include_in_portfolio ||
+          p.portfolio_only ||
           p.slug?.toLowerCase().includes("aton") ||
           p.title?.toLowerCase().includes("aton"))
     );
@@ -905,6 +906,7 @@ function Portfolio() {
       (p) =>
         p.status === "published" &&
         (p.include_in_portfolio ||
+          p.portfolio_only ||
           p.slug?.toLowerCase().includes("aton") ||
           p.title?.toLowerCase().includes("aton"))
     );
@@ -954,15 +956,7 @@ function Portfolio() {
                       <Link to={`/blog/${p.slug}`}>{p.title}</Link>
                     </h3>
                     {p.excerpt && <p className="portfolio-card-excerpt">{p.excerpt}</p>}
-                    {Array.isArray(p.tags) && p.tags.length > 0 && (
-                      <div className="portfolio-card-tags">
-                        {p.tags.slice(0, 3).map((t) => (
-                          <span key={t} className="portfolio-tag-chip">
-                            #{t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    {/* (2026-07-13) Removed tag chips from portfolio cards. Prev: tags rendered */}
                     <Link to={`/blog/${p.slug}`} className="portfolio-card-cta">
                       Explore case study <ArrowRight size={14} />
                     </Link>
@@ -1026,19 +1020,25 @@ function Blog() {
   const [query, setQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState("All");
 
+  // (2026-07-13) Exclude portfolio-only posts from blog. Prev: all posts
+  const blogPosts = useMemo(
+    () => posts.filter((p) => !p.portfolio_only),
+    [posts]
+  );
+
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    posts.forEach((p) => {
+    blogPosts.forEach((p) => {
       if (p.category) set.add(p.category.trim());
       if (Array.isArray(p.tags)) {
         p.tags.forEach((t) => t && set.add(t.trim()));
       }
     });
     return ["All", ...Array.from(set)];
-  }, [posts]);
+  }, [blogPosts]);
 
   const filtered = useMemo(() => {
-    return posts.filter((p) => {
+    return blogPosts.filter((p) => {
       const matchesQuery = `${p.title} ${p.excerpt} ${p.category} ${(p.tags || []).join(" ")}`
         .toLowerCase()
         .includes(query.toLowerCase());
@@ -1048,7 +1048,7 @@ function Blog() {
         (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase());
       return matchesQuery && matchesTag;
     });
-  }, [posts, query, selectedTag]);
+  }, [blogPosts, query, selectedTag]);
 
   return (
     <PageFrame>
@@ -1272,15 +1272,16 @@ function PostDetail() {
       .finally(() => setLoading(false));
   }, [slug, preview, previewId]);
 
+  // (2026-07-13) Exclude portfolio-only posts from related & latest. Prev: published
   const relatedPosts = useMemo(() => {
     if (!post) return [];
     return allPosts
-      .filter((p) => p.id !== post.id && p.status === "published")
+      .filter((p) => p.id !== post.id && p.status === "published" && !p.portfolio_only)
       .slice(0, 3);
   }, [allPosts, post]);
 
   const latestPosts = useMemo(() => {
-    return allPosts.filter((p) => p.status === "published").slice(0, 4);
+    return allPosts.filter((p) => p.status === "published" && !p.portfolio_only).slice(0, 4);
   }, [allPosts]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";

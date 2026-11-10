@@ -51,9 +51,10 @@ export type Post = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
-// (2026-07-13) Add portfolio inclusion flag to Post type (was nav only)
+// (2026-07-13) Add portfolio_only flag to Post (was portfolio inclusion only)
   include_in_nav?: boolean;
   include_in_portfolio?: boolean;
+  portfolio_only?: boolean;
 };
 export type SiteSettings = {
   siteName: string;
@@ -418,9 +419,10 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         published_at: body.published_at || new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        // (2026-07-13) Set portfolio inclusion on create (was none)
+        // (2026-07-13) Set portfolio flags on create (was portfolio inclusion only)
         include_in_nav: Boolean(body.include_in_nav),
         include_in_portfolio: Boolean(body.include_in_portfolio),
+        portfolio_only: Boolean(body.portfolio_only),
       };
       posts.unshift(newPost);
       saveStoredPosts(posts);
