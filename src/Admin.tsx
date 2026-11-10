@@ -1021,6 +1021,38 @@ function PostEditor({
     }
   }, [id, existing]);
 
+  // (2026-07-13) Manage and delete story comments in editor. Prev: none
+  interface BlogComment {
+    id: string;
+    name: string;
+    text: string;
+    date: string;
+  }
+  const [blogComments, setBlogComments] = useState<BlogComment[]>([]);
+
+  useEffect(() => {
+    const activeSlug = form.slug || (existing && existing.slug);
+    if (!activeSlug) return;
+    const storageKey = `bainest_comments_${activeSlug}`;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        setBlogComments(JSON.parse(saved));
+        return;
+      } catch {}
+    }
+    setBlogComments([]);
+  }, [form.slug, existing]);
+
+  const deleteBlogComment = (commentId: string) => {
+    if (!window.confirm("Delete this comment permanently?")) return;
+    const activeSlug = form.slug || (existing && existing.slug);
+    if (!activeSlug) return;
+    const updated = blogComments.filter((c) => c.id !== commentId);
+    setBlogComments(updated);
+    localStorage.setItem(`bainest_comments_${activeSlug}`, JSON.stringify(updated));
+  };
+
   // Existing authors from published / existing posts
   const existingAuthors = useMemo(() => {
     const set = new Set<string>();
@@ -1733,6 +1765,65 @@ function PostEditor({
               />
               Include in header navigation
             </label>
+          </div>
+
+          {/* (2026-07-13) Admin comment management card with delete capability. Prev: none */}
+          <div className="editor-side-card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+              <h3 style={{ margin: 0 }}>Comments ({blogComments.length})</h3>
+              <small style={{ color: "#64748b", fontSize: "11px" }}>Manage comments</small>
+            </div>
+            {blogComments.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontStyle: "italic" }}>
+                No reader comments posted on this story yet.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {blogComments.map((c) => (
+                  <div
+                    key={c.id}
+                    style={{
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      padding: "10px 12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <strong style={{ fontSize: "13px", color: "#0f172a" }}>{c.name}</strong>
+                      <span style={{ fontSize: "11px", color: "#94a3b8" }}>{c.date}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "12.5px", color: "#475569", lineHeight: 1.5, wordBreak: "break-word" }}>
+                      {c.text}
+                    </p>
+                    <button
+                      type="button"
+                      style={{
+                        alignSelf: "flex-end",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        background: "#fff1f2",
+                        border: "1px solid #fecdd3",
+                        color: "#e11d48",
+                        padding: "3px 8px",
+                        borderRadius: "5px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => deleteBlogComment(c.id)}
+                      title="Delete comment permanently"
+                    >
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {notice && (
             <div

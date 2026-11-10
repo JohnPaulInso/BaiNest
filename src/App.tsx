@@ -35,6 +35,7 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  Trash2,
   Twitter,
   X,
   Youtube,
@@ -1050,7 +1051,7 @@ function PostDetail() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  // (2026-07-13) Manage and persist blog story comments. Prev: transient boolean
+  // (2026-07-13) Manage, persist, and admin-delete blog story comments. Prev: persist only
   interface BlogComment {
     id: string;
     name: string;
@@ -1061,6 +1062,22 @@ function PostDetail() {
   const [commentName, setCommentName] = useState("");
   const [commentDone, setCommentDone] = useState(false);
   const [comments, setComments] = useState<BlogComment[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    api<{ authenticated: boolean }>("/api/admin/session")
+      .then((s) => setIsAdmin(Boolean(s?.authenticated)))
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  const handleDeleteComment = (commentId: string) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+    const updated = comments.filter((c) => c.id !== commentId);
+    setComments(updated);
+    if (slug) {
+      localStorage.setItem(`bainest_comments_${slug}`, JSON.stringify(updated));
+    }
+  };
 
   useEffect(() => {
     if (!slug) return;
@@ -1356,7 +1373,19 @@ function PostDetail() {
                     <div className="comment-details">
                       <div className="comment-header-row">
                         <span className="comment-author-name">{c.name}</span>
-                        <span className="comment-date-tag">{c.date}</span>
+                        <div className="comment-header-actions">
+                          <span className="comment-date-tag">{c.date}</span>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              className="comment-delete-admin-btn"
+                              onClick={() => handleDeleteComment(c.id)}
+                              title="Delete comment as Admin"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <p className="comment-body-text">{c.text}</p>
                     </div>
