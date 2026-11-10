@@ -17,11 +17,25 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
-* {
+/* (2026-07-13) Global tap highlight reset and touch response. Prev: default blue */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent !important;
 }
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent !important;
+}
+a,
+button,
+input,
+textarea,
+select,
+article,
+div {
+  -webkit-tap-highlight-color: transparent !important;
 }
 body {
   margin: 0;
@@ -32,6 +46,7 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent !important;
 }
 button,
 input,
@@ -135,11 +150,19 @@ img {
   transition: all 0.2s;
   text-decoration: none;
 }
-.header-work:hover,
-.header-work-btn:hover {
-  background: var(--teal-dark);
-  color: #fff;
-  transform: translateY(-1px);
+/* (2026-07-13) Header work CTA hover in media query with active state. Prev: raw hover */
+@media (hover: hover) {
+  .header-work:hover,
+  .header-work-btn:hover {
+    background: var(--teal-dark);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+  }
+}
+.header-work:active,
+.header-work-btn:active {
+  transform: scale(0.96);
 }
 .nav-sticky {
   position: sticky;
@@ -186,13 +209,23 @@ img {
   transform-origin: left;
   transition: transform 0.2s;
 }
-.main-nav a:hover,
 .main-nav a.active {
   color: var(--navy);
 }
-.main-nav a.active:after,
-.main-nav a:hover:after {
+.main-nav a.active:after {
   transform: scaleX(1);
+}
+/* (2026-07-13) Main nav hover in media query with active touch feedback. Prev: static */
+@media (hover: hover) {
+  .main-nav a:hover {
+    color: var(--navy);
+  }
+  .main-nav a:hover:after {
+    transform: scaleX(1);
+  }
+}
+.main-nav a:active {
+  opacity: 0.7;
 }
 .nav-cta,
 .btn {
@@ -219,21 +252,26 @@ img {
   min-height: 36px;
   padding: 0 14px;
 }
-.nav-cta:hover,
-.btn:hover {
-  background: var(--teal-dark);
-  border-color: var(--teal-dark);
-  transform: translateY(-1px);
+/* (2026-07-13) Button hover effects in media query with active states. Prev: raw hover */
+@media (hover: hover) {
+  .nav-cta:hover,
+  .btn:hover {
+    background: var(--teal-dark);
+    border-color: var(--teal-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(13, 148, 136, 0.25);
+  }
+  .btn-outline:hover {
+    background: #fff;
+    color: var(--navy);
+    border-color: #fff;
+    transform: translateY(-2px);
+  }
 }
-.btn-outline {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.42);
-  color: #fff;
-}
-.btn-outline:hover {
-  background: #fff;
-  color: var(--navy);
-  border-color: #fff;
+.btn:active,
+.btn-outline:active,
+.nav-cta:active {
+  transform: scale(0.97);
 }
 .menu-toggle {
   display: none;
@@ -786,9 +824,16 @@ img {
     box-shadow 0.2s,
     transform 0.2s;
 }
-.post-card:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-3px);
+/* (2026-07-13) Blog post card hover in media query with active state. Prev: raw hover */
+@media (hover: hover) {
+  .post-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-3px);
+    border-color: #cbd5e1;
+  }
+}
+.post-card:active {
+  transform: scale(0.98);
 }
 .post-thumb {
   position: relative;
@@ -3769,11 +3814,17 @@ img {
   box-sizing: border-box;
   transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
-.recent-mega-card:hover {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+/* (2026-07-13) Mega card hover in media query with active touch feedback. Prev: static */
+@media (hover: hover) {
+  .recent-mega-card:hover {
+    background: #ffffff;
+    border-color: #0d9488;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.12);
+  }
+}
+.recent-mega-card:active {
+  transform: scale(0.97);
 }
 .recent-mega-thumb {
   width: 100%;
@@ -3866,10 +3917,17 @@ img {
   cursor: pointer;
   transition: all 0.18s ease;
 }
-.category-chip:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
+/* (2026-07-13) Category chip hover in media query with active state. Prev: raw hover */
+@media (hover: hover) {
+  .category-chip:hover {
+    border-color: #0d9488;
+    background: #f0fdfa;
+    color: #0d9488;
+    transform: translateY(-1px);
+  }
+}
+.category-chip:active {
+  transform: scale(0.95);
 }
 .category-chip.active {
   background: #0f172a;
@@ -3941,10 +3999,19 @@ img {
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.portfolio-project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(13, 148, 136, 0.12);
-  border-color: #0d9488;
+/* (2026-07-13) Wrap portfolio card hover in hover media query. Prev: static hover */
+@media (hover: hover) {
+  .portfolio-project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(13, 148, 136, 0.12);
+    border-color: #0d9488;
+  }
+  .portfolio-project-card:hover .portfolio-card-cover {
+    transform: scale(1.04);
+  }
+}
+.portfolio-project-card:active {
+  transform: scale(0.98);
 }
 .portfolio-card-cover-wrap {
   position: relative;
@@ -3959,9 +4026,6 @@ img {
   height: 100%;
   object-fit: cover;
   transition: transform 0.35s ease;
-}
-.portfolio-project-card:hover .portfolio-card-cover {
-  transform: scale(1.04);
 }
 .portfolio-card-cover-fallback {
   width: 100%;
@@ -4182,8 +4246,17 @@ img {
   color: #fff;
   transition: opacity 0.18s;
 }
-.share-btn:hover {
-  opacity: 0.9;
+/* (2026-07-13) Share button hover in media query with active state. Prev: raw hover */
+@media (hover: hover) {
+  .share-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+.share-btn:active {
+  transform: scale(0.96);
+  opacity: 0.85;
 }
 .share-fb {
   background: #3b5998;
@@ -4238,12 +4311,22 @@ img {
   border: 1px solid #f1f5f9;
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   padding-bottom: 10px;
 }
-.related-post-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+/* (2026-07-13) Wrap related card hover in hover media query & add active state. Prev: static hover */
+@media (hover: hover) {
+  .related-post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(13, 148, 136, 0.12);
+    border-color: #0d9488;
+  }
+  .related-post-card:hover .related-card-thumb img {
+    transform: scale(1.04);
+  }
+}
+.related-post-card:active {
+  transform: scale(0.98);
 }
 .related-card-thumb {
   width: 100%;
@@ -4255,6 +4338,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 .related-thumb-ph {
   width: 100%;
@@ -4327,9 +4411,18 @@ img {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: all 0.18s ease;
 }
-.comment-submit-btn:hover {
+/* (2026-07-13) Comment submit button hover in media query with active state. Prev: raw hover */
+@media (hover: hover) {
+  .comment-submit-btn:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  }
+}
+.comment-submit-btn:active {
+  transform: scale(0.96);
   opacity: 0.9;
 }
 /* (2026-07-13) Comment feed list & avatar items styling. Prev: none */
@@ -4584,9 +4677,17 @@ img {
   color: inherit;
   transition: transform 0.16s ease;
 }
-.latest-post-row:hover,
-.popular-post-row:hover {
-  transform: translateX(2px);
+/* (2026-07-13) Latest/popular post row hover in media query. Prev: raw hover */
+@media (hover: hover) {
+  .latest-post-row:hover,
+  .popular-post-row:hover {
+    transform: translateX(4px);
+    color: #0d9488;
+  }
+}
+.latest-post-row:active,
+.popular-post-row:active {
+  opacity: 0.75;
 }
 .latest-post-thumb,
 .popular-post-thumb-wrap {
@@ -5953,13 +6054,45 @@ img {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
   animation: backToTopPop 0.25s ease-out;
 }
-.back-to-top-blue-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-3px) scale(1.06);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+/* (2026-07-13) Wrap back-to-top hover in hover query with active state. Prev: raw */
+@media (hover: hover) {
+  .back-to-top-blue-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+  }
 }
 .back-to-top-blue-btn:active {
   transform: translateY(0) scale(0.96);
+}
+
+/* (2026-07-13) App-wide hover queries & touch active feedback. Prev: sticky hover */
+@media (hover: hover) {
+  .text-link:hover {
+    color: var(--teal);
+  }
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(16, 43, 70, 0.08);
+    border-color: #0d9488;
+  }
+  .contact-pillar-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(13, 148, 136, 0.12);
+    border-color: #0d9488;
+  }
+  .footer-links a:hover,
+  .admin-footer-link:hover {
+    color: #ffffff;
+  }
+}
+
+.service-card:active,
+.contact-pillar-card:active,
+.value-card:active,
+.text-link:active {
+  transform: scale(0.98);
+  transition: transform 0.08s ease;
 }
 @keyframes backToTopPop {
   0% {
