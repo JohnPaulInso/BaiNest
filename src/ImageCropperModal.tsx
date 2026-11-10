@@ -248,3 +248,4 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
     </div>
   );
 }
+

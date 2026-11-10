@@ -512,10 +512,11 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
           BAINEST<small>DIGITAL MARKETING AGENCY</small>
         </span>
       </Link>
+      {/* (2026-07-13) Set admin workspace name to Jan Errol Duazo. Prev: user/admin */}
       <div className="admin-workspace">
-        <span className="workspace-avatar">B</span>
+        <span className="workspace-avatar">J</span>
         <span>
-          <b>{user}</b>
+          <b>{user === "admin" || !user ? "Jan Errol Duazo" : user}</b>
           <small>Firebase Cloud · Live</small>
         </span>
         <span className="workspace-dot" />
@@ -2067,7 +2068,8 @@ export function AdminApp() {
   const path = location.pathname;
   return (
     <div className="admin-shell">
-      <AdminNav user={session.username || "Admin"} onLogout={logout} />
+      {/* (2026-07-13) Default admin name Jan Errol Duazo. Prev: Admin */}
+      <AdminNav user={session.username && session.username !== "admin" ? session.username : "Jan Errol Duazo"} onLogout={logout} />
       <main className="admin-main">
         <div className="admin-topbar">
           {/* (2026-07-13) Show dynamic workspace type. Prev: static Local */}
