@@ -249,10 +249,8 @@ function Header() {
                 {cp.title.toUpperCase()}
               </NavLink>
             ))}
+            {/* (2026-07-13) Remove duplicate Start a project in nav. Prev: duplicate */}
           </nav>
-          <Link className="nav-cta" to="/contact">
-            Start a project <ArrowUpRight size={14} />
-          </Link>
         </div>
       </div>
     </header>
