@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+// (2026-07-13) Import Fragment for line break mapping. Prev: useEffect, useMemo, useState
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Link,
   NavLink,
@@ -1110,15 +1111,15 @@ function Blog() {
     </PageFrame>
   );
 }
-// (2026-07-13) Helper to render text with line breaks as br tags. Prev: none
+// (2026-07-13) Fix Fragment usage without React namespace. Prev: React.Fragment
 function renderWithLinebreaks(text?: string) {
   if (!text) return null;
   const lines = text.split(/(?:<br\s*\/?>|\r?\n)/gi);
   return lines.map((line, idx) => (
-    <React.Fragment key={idx}>
+    <Fragment key={idx}>
       {line}
       {idx < lines.length - 1 && <br />}
-    </React.Fragment>
+    </Fragment>
   ));
 }
 
