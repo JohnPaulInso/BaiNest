@@ -56,6 +56,12 @@ export type Post = {
   include_in_portfolio?: boolean;
   portfolio_only?: boolean;
 };
+/* (2026-07-13) Helper to determine placement type: Blog, Portfolio, or Both. Prev: none */
+export function getPostPlacement(p: { portfolio_only?: boolean; include_in_portfolio?: boolean }): "Blog" | "Portfolio" | "Both" {
+  if (p?.portfolio_only) return "Portfolio";
+  if (p?.include_in_portfolio) return "Both";
+  return "Blog";
+}
 export type SiteSettings = {
   siteName: string;
   email: string;

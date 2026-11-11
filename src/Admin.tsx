@@ -54,6 +54,7 @@ import {
   subscribeToContacts,
   defaultSettings,
   defaultTags,
+  getPostPlacement,
   type AdminState,
   type Block,
   type Post,
@@ -662,8 +663,14 @@ function Overview({ posts }: { posts: Post[] }) {
             <span className="recent-post-icon">
               <FileText size={17} />
             </span>
+            {/* (2026-07-13) Show placement chip in overview stories. Prev: title only */}
             <span className="recent-post-main">
-              <b>{p.title || "Untitled"}</b>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                <b>{p.title || "Untitled"}</b>
+                <span className={`placement-chip placement-${getPostPlacement(p).toLowerCase()}`} style={{ fontSize: "8.5px", padding: "1px 6px" }}>
+                  {getPostPlacement(p)}
+                </span>
+              </span>
               <small>/{p.slug}</small>
             </span>
             <span className={`status-pill ${p.status}`}>{p.status}</span>
@@ -684,10 +691,13 @@ function Overview({ posts }: { posts: Post[] }) {
 function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
+  const [placementFilter, setPlacementFilter] = useState<"all" | "blog" | "portfolio" | "both">("all");
   const [query, setQuery] = useState("");
+  /* (2026-07-13) Filter & show placement chip on stories list. Prev: title only */
   const visible = posts.filter(
     (p) =>
       (filter === "all" || p.status === filter) &&
+      (placementFilter === "all" || getPostPlacement(p).toLowerCase() === placementFilter) &&
       `${p.title} ${p.category}`.toLowerCase().includes(query.toLowerCase()),
   );
   async function remove(id: number) {
@@ -712,7 +722,7 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
         </Link>
       </div>
       <div className="admin-panel">
-        <div className="post-table-toolbar">
+        <div className="post-table-toolbar" style={{ flexWrap: "wrap", gap: 12 }}>
           <div className="filter-tabs">
             {(["all", "published", "draft"] as const).map((v) => (
               <button
@@ -726,6 +736,17 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
                     ? posts.length
                     : posts.filter((p) => p.status === v).length}
                 </span>
+              </button>
+            ))}
+          </div>
+          <div className="filter-tabs">
+            {(["all", "blog", "portfolio", "both"] as const).map((pl) => (
+              <button
+                key={pl}
+                className={placementFilter === pl ? "current" : ""}
+                onClick={() => setPlacementFilter(pl)}
+              >
+                {pl === "all" ? "All Types" : pl[0].toUpperCase() + pl.slice(1)}
               </button>
             ))}
           </div>
@@ -752,7 +773,12 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
                 <FileText size={17} />
               </span>
               <span>
-                <b>{p.title || "Untitled"}</b>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <b>{p.title || "Untitled"}</b>
+                  <span className={`placement-chip placement-${getPostPlacement(p).toLowerCase()}`}>
+                    {getPostPlacement(p)}
+                  </span>
+                </span>
                 <small>/{p.slug}</small>
               </span>
             </button>
@@ -1848,27 +1874,56 @@ function PostEditor({
               Include in header navigation
             </label>
 
-            {/* (2026-07-13) Add portfolio showcase toggle checkbox. Prev: none */}
-            <label className="portfolio-toggle-check" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", cursor: "pointer", fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>
-              <input
-                type="checkbox"
-                checked={Boolean(form.include_in_portfolio)}
-                onChange={(e) => patch("include_in_portfolio", e.target.checked)}
-                style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
-              />
-              Showcase in Portfolio
-            </label>
-
-            {/* (2026-07-13) Add portfolio-only setting checkbox. Prev: none */}
-            <label className="portfolio-only-check" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", cursor: "pointer", fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>
-              <input
-                type="checkbox"
-                checked={Boolean(form.portfolio_only)}
-                onChange={(e) => patch("portfolio_only", e.target.checked)}
-                style={{ width: "18px", height: "18px", margin: 0, accentColor: "#0d9488", cursor: "pointer" }}
-              />
-              Portfolio only (hide from Blog)
-            </label>
+            {/* (2026-07-13) Set story placement: Blog, Portfolio, or Both. Prev: checkboxes */}
+            <div className="placement-selector-box" style={{ marginTop: "16px", padding: "14px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: "0.06em" }}>Placement Type</span>
+                <span className={`placement-chip placement-${getPostPlacement(form).toLowerCase()}`}>
+                  {getPostPlacement(form)}
+                </span>
+              </div>
+              <div style={{ display: "grid", gap: "10px" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>
+                  <input
+                    type="radio"
+                    name="placement_mode"
+                    checked={!form.include_in_portfolio && !form.portfolio_only}
+                    onChange={() => {
+                      patch("include_in_portfolio", false);
+                      patch("portfolio_only", false);
+                    }}
+                    style={{ width: "16px", height: "16px", accentColor: "#0d9488", cursor: "pointer" }}
+                  />
+                  Blog only
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>
+                  <input
+                    type="radio"
+                    name="placement_mode"
+                    checked={Boolean(form.portfolio_only)}
+                    onChange={() => {
+                      patch("include_in_portfolio", true);
+                      patch("portfolio_only", true);
+                    }}
+                    style={{ width: "16px", height: "16px", accentColor: "#0d9488", cursor: "pointer" }}
+                  />
+                  Portfolio only (hidden from Blog)
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>
+                  <input
+                    type="radio"
+                    name="placement_mode"
+                    checked={Boolean(form.include_in_portfolio) && !form.portfolio_only}
+                    onChange={() => {
+                      patch("include_in_portfolio", true);
+                      patch("portfolio_only", false);
+                    }}
+                    style={{ width: "16px", height: "16px", accentColor: "#0d9488", cursor: "pointer" }}
+                  />
+                  Both (Blog & Portfolio)
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* (2026-07-13) Admin comment management card with delete capability. Prev: none */}
