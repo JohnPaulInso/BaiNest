@@ -693,13 +693,31 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [placementFilter, setPlacementFilter] = useState<"all" | "blog" | "portfolio" | "both">("all");
   const [query, setQuery] = useState("");
-  /* (2026-07-13) Filter & show placement chip on stories list. Prev: title only */
-  const visible = posts.filter(
-    (p) =>
-      (filter === "all" || p.status === filter) &&
-      (placementFilter === "all" || getPostPlacement(p).toLowerCase() === placementFilter) &&
-      `${p.title} ${p.category}`.toLowerCase().includes(query.toLowerCase()),
-  );
+  const placementCounts = {
+    all: posts.length,
+    blog: posts.filter((p) => {
+      const pl = getPostPlacement(p);
+      return pl === "Blog" || pl === "Both";
+    }).length,
+    portfolio: posts.filter((p) => {
+      const pl = getPostPlacement(p);
+      return pl === "Portfolio" || pl === "Both";
+    }).length,
+    both: posts.filter((p) => getPostPlacement(p) === "Both").length,
+  };
+  /* (2026-07-13) Portfolio filter includes both & portfolio only. Prev: strict */
+  const visible = posts.filter((p) => {
+    if (filter !== "all" && p.status !== filter) return false;
+    const pl = getPostPlacement(p);
+    if (placementFilter === "portfolio") {
+      if (pl !== "Portfolio" && pl !== "Both") return false;
+    } else if (placementFilter === "blog") {
+      if (pl !== "Blog" && pl !== "Both") return false;
+    } else if (placementFilter === "both") {
+      if (pl !== "Both") return false;
+    }
+    return `${p.title} ${p.category}`.toLowerCase().includes(query.toLowerCase());
+  });
   async function remove(id: number) {
     if (!window.confirm("Delete this post permanently?")) return;
     try {
@@ -746,7 +764,8 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
                 className={placementFilter === pl ? "current" : ""}
                 onClick={() => setPlacementFilter(pl)}
               >
-                {pl === "all" ? "All Types" : pl[0].toUpperCase() + pl.slice(1)}
+                {pl === "all" ? "All Types" : pl[0].toUpperCase() + pl.slice(1)}{" "}
+                <span>{placementCounts[pl]}</span>
               </button>
             ))}
           </div>
