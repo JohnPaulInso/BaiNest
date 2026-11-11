@@ -3666,16 +3666,24 @@ img {
     grid-column: 1/-1;
   }
 }
+/* (2026-07-13) Subtle page entrance fade in transition. Prev: none */
+.page-transition {
+  animation: pageFadeIn 0.28s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  min-height: calc(100vh - 140px);
+}
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-  *,
-  *:before,
-  *:after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }
 

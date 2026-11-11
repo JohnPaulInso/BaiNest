@@ -408,15 +408,15 @@ function Footer() {
 function Eyebrow({ children }: { children: string }) {
   return <div className="eyebrow">{children}</div>;
 }
+/* (2026-07-13) Smooth subtle fade in transition when switching pages. Prev: cut */
 function PageFrame({ children }: { children: React.ReactNode }) {
-  const reduce = useReducedMotion();
   return (
     <motion.main
       className="page-transition"
-      initial={reduce ? false : { opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={reduce ? undefined : { opacity: 0, y: -8 }}
-      transition={{ duration: 0.24, ease: "easeOut" }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
     >
       {children}
     </motion.main>
