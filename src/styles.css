@@ -2939,35 +2939,41 @@ img {
   .site-header .wrap {
     width: calc(100% - 20px);
   }
+  /* (2026-07-13) Improve mobile header font sizes and spacing. Prev: 9.5px */
   .brand-inner {
-    height: 56px;
-    gap: 8px;
+    height: 58px;
+    gap: 10px;
   }
   .brand {
-    font-size: 15px;
-    gap: 8px;
+    font-size: 17.5px;
+    font-weight: 800;
+    gap: 9px;
   }
   .brand img {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
   }
   .brand small {
-    font-size: 7.5px;
-    letter-spacing: 0.08em;
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #64748b;
   }
   .brand-note {
     display: none;
   }
   .header-work,
   .header-work-btn {
-    padding: 5px 11px;
-    font-size: 9.5px;
-    letter-spacing: 0.03em;
-    gap: 4px;
+    padding: 6px 13px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    gap: 5px;
     margin-left: auto;
     white-space: nowrap;
     flex-shrink: 0;
+    border-radius: 20px;
   }
   .header-work-btn svg {
     width: 12px;
@@ -2977,12 +2983,13 @@ img {
     display: none !important;
   }
   .nav-inner {
-    height: 40px;
+    height: 44px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     width: 100%;
-    padding: 0;
+    padding: 0 4px;
+    border-top: 1px solid #f1f5f9;
   }
   .nav-inner::-webkit-scrollbar {
     display: none;
@@ -2995,30 +3002,38 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: clamp(6px, 1.6vw, 12px) !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    min-width: max-content !important;
+    gap: 15px !important;
+    justify-content: flex-start !important;
+    width: max-content !important;
+    min-width: 100% !important;
     align-items: center !important;
   }
   .main-nav a {
     height: 100% !important;
-    padding: 0 1px !important;
-    font-size: 9.5px !important;
+    padding: 0 4px !important;
+    font-size: 12px !important;
     font-weight: 700 !important;
-    letter-spacing: 0.02em !important;
+    letter-spacing: 0.04em !important;
+    color: #475569 !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
   }
+  .main-nav a.active {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+  }
   .main-nav a svg {
-    width: 10px !important;
-    height: 10px !important;
-    margin-left: 2px !important;
+    width: 11px !important;
+    height: 11px !important;
+    margin-left: 3px !important;
+    stroke-width: 2.5;
   }
   .main-nav a:after {
     bottom: 0;
     width: 100%;
+    height: 2.5px;
     right: 0;
+    border-radius: 2px 2px 0 0;
   }
   .nav-cta {
     display: none !important;
