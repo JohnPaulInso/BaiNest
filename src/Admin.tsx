@@ -2115,19 +2115,20 @@ function DomainSettings() {
           </label>
           <label>
             Contact Email
+            {/* (2026-07-13) Set default email placeholder. Prev: bainestdigital */}
             <input
               type="email"
-              value={settings.email}
+              value={settings.email ?? "bainestph@gmail.com"}
               onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-              placeholder="contact@bainestdigital.com"
+              placeholder="bainestph@gmail.com"
             />
           </label>
           <label>
             Phone / WhatsApp
             <input
-              value={settings.phone}
+              value={settings.phone ?? "09622302015"}
               onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-              placeholder="+63 900 000 0000"
+              placeholder="09622302015"
             />
           </label>
           <label>

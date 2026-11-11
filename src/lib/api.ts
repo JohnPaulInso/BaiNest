@@ -303,8 +303,12 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
     if (snap.exists()) {
       const data = snap.data() as Partial<SiteSettings>;
       const merged = { ...defaultSettings, ...data };
-      if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
-      if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
+      // (2026-07-13) Overwrite legacy footer contacts in settings. Prev: placeholder
+      if (!merged.email || merged.email.includes("bainestdigital.com")) merged.email = "bainestph@gmail.com";
+      if (!merged.phone || merged.phone.includes("900 000")) merged.phone = "09622302015";
+      if (data.email?.includes("bainestdigital.com") || data.phone?.includes("900 000")) {
+        setDoc(doc(firestore, "settings", "global"), { email: "bainestph@gmail.com", phone: "09622302015" }, { merge: true }).catch(() => {});
+      }
       return merged;
     }
     await setDoc(doc(firestore, "settings", "global"), defaultSettings);
@@ -347,8 +351,8 @@ export function subscribeToSettings(
         if (snap.exists()) {
           const data = snap.data() as Partial<SiteSettings>;
           const merged = { ...defaultSettings, ...data };
-          if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
-          if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
+          if (!merged.email || merged.email.includes("bainestdigital.com")) merged.email = "bainestph@gmail.com";
+          if (!merged.phone || merged.phone.includes("900 000")) merged.phone = "09622302015";
           callback(merged);
         } else {
           callback(defaultSettings);

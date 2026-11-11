@@ -384,8 +384,13 @@ function Footer() {
           </div>
           <div className="footer-links">
             <h4>Connect</h4>
-            <p>{settings.email || "Have a good idea? Let’s find its next step."}</p>
-            {settings.phone && <p className="footer-phone">{settings.phone}</p>}
+            {/* (2026-07-13) Update footer contact links to bainestph. Prev: placeholder */}
+            <a href={`mailto:${(settings.email && !settings.email.includes("bainestdigital.com")) ? settings.email : "bainestph@gmail.com"}`}>
+              {(settings.email && !settings.email.includes("bainestdigital.com")) ? settings.email : "bainestph@gmail.com"}
+            </a>
+            <a href={`tel:${(settings.phone && !settings.phone.includes("900 000")) ? settings.phone : "09622302015"}`}>
+              {(settings.phone && !settings.phone.includes("900 000")) ? settings.phone : "09622302015"}
+            </a>
             <Link to="/contact">
               Start a conversation <ArrowUpRight size={13} />
             </Link>
