@@ -866,20 +866,18 @@ img {
 .post-card:active {
   transform: scale(0.98);
 }
-.post-thumb {
+/* (2026-07-13) Set solid white background behind post images. Prev: tinted */
+.post-thumb,
+.thumb-0,
+.thumb-1,
+.thumb-2 {
   position: relative;
   height: 190px;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #ffffff !important;
   border-bottom: 1px solid #f1f5f9;
-}
-.thumb-1 {
-  background: linear-gradient(145deg, #f8fafc 0%, #f0fdfa 100%);
-}
-.thumb-2 {
-  background: linear-gradient(145deg, #f8fafc 0%, #f5f3ff 100%);
 }
 .thumb-mark {
   position: relative;
@@ -2952,13 +2950,15 @@ img {
   .wrap {
     width: calc(100% - 34px);
   }
-  /* (2026-07-13) Dynamic clamp font & gaps so Contact never clips. Prev: 11px cut */
+  /* (2026-07-13) Reduce edge gaps, remove blog arrow & mega menu. Prev: arrow cut */
   .site-header .wrap {
-    width: calc(100% - 10px);
+    width: calc(100% - 4px);
   }
   .brand-inner {
     height: 58px;
     gap: 10px;
+    padding: 0 6px;
+    box-sizing: border-box;
   }
   .brand {
     font-size: 17px;
@@ -3004,7 +3004,7 @@ img {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     width: 100%;
-    padding: 0 2px;
+    padding: 0 4px;
     box-sizing: border-box;
     border-top: 1px solid #f1f5f9;
   }
@@ -3019,7 +3019,7 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: clamp(2px, 1.2vw, 8px) !important;
+    gap: clamp(2px, 1.4vw, 8px) !important;
     justify-content: space-between !important;
     width: 100% !important;
     align-items: center !important;
@@ -3028,16 +3028,17 @@ img {
   .main-nav a,
   .blog-nav-wrapper > a {
     height: 100% !important;
-    padding: 0 !important;
-    font-size: clamp(9.5px, 2.5vw, 11px) !important;
+    padding: 0 1px !important;
+    font-size: clamp(10px, 2.7vw, 11.5px) !important;
     font-weight: 800 !important;
-    letter-spacing: 0.01em !important;
+    letter-spacing: 0.015em !important;
     color: #334155 !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: 0 !important;
   }
   .main-nav a.active,
   .blog-nav-wrapper > a.active {
@@ -3046,10 +3047,7 @@ img {
   }
   .main-nav a svg,
   .blog-nav-wrapper > a svg {
-    width: 8.5px !important;
-    height: 8.5px !important;
-    margin-left: 2px !important;
-    stroke-width: 2.5;
+    display: none !important;
   }
   .main-nav a:after,
   .blog-nav-wrapper > a:after {
@@ -3060,10 +3058,7 @@ img {
     border-radius: 2px 2px 0 0;
   }
   .recent-posts-mega {
-    right: 0 !important;
-    left: auto !important;
-    transform: none !important;
-    max-width: min(320px, 90vw) !important;
+    display: none !important;
   }
   .nav-cta {
     display: none !important;
@@ -3964,7 +3959,7 @@ img {
   height: 105px;
   border-radius: 8px;
   overflow: hidden;
-  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -4471,7 +4466,7 @@ img {
 .related-card-thumb {
   width: 100%;
   height: 110px;
-  background: #f1f5f9;
+  background: #ffffff;
   overflow: hidden;
 }
 .related-card-thumb img {
