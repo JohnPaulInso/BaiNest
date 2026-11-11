@@ -1,722 +1,653 @@
 # Graph Report - BaiNest  (2026-11-10)
 
 ## Corpus Check
-- 32 files · ~108,706 words
+- 53 files · ~124,013 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 10 file(s) not represented in the graph (top: (none) 4, .css 3, .bat 2)
 
 ## Summary
-- 3726 nodes · 11188 edges · 174 communities (120 shown, 54 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 783 edges (avg confidence: 0.85)
+- 3717 nodes · 11266 edges · 165 communities (107 shown, 58 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 760 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
-## Graph Freshness
-- Built from commit: `2d8e7f14`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
-
 ## Community Hubs (Navigation)
-- $
-- HV
-- .slice
-- sU
-- wG
-- zP
-- .convertValue
-- l
-- .wt
-- Xw
-- push
-- LocalAdapter
-- parseInternal
-- Ss
-- t
-- constructor
-- sk
-- s
-- .add
-- match
-- Yo
-- index.ts
-- .get
-- n
-- .It
-- ty
-- lv
-- executeEngine
-- .substring
-- Qt
-- Lt
-- pM
-- package.json
-- gT
-- PS
-- u8
-- d
-- Admin.tsx
-- Fe
-- M_
-- tN
-- App.tsx
-- nU
-- WE
-- o
-- .clearTimeout
-- z3
-- t3
-- .getDocumentsMatchingQuery
-- fO
-- wj
-- pN
-- .field
-- api
-- PostEditor
-- .I
-- .asBoolean
-- rs
-- ._toProto
-- .resolve
-- hG
-- .isEqual
-- .p
-- Ut
-- compilerOptions
-- d7
-- d2
-- L
-- .Vt
-- gk
-- qo
-- Qd
-- isByteArray
-- qm
-- BN
-- tI
-- dD
-- o
-- .yt
-- .info
-- gR
-- Gt
-- lD
-- .Ri
-- test
-- appendRange
-- .toString
-- .Un
-- dependencies
-- .apply
-- BO
-- .zc
-- w7
-- fr
-- qa
-- compilerOptions
-- iE
-- Wm
-- uk
-- rR
-- Wo
-- em
-- devDependencies
-- Master AI Build Prompt — BaiNest Studio
-- canonicalString
-- .Vl
-- ._create
-- vr
-- v7
-- .In
-- lq
-- cU
-- DI
-- xc
-- .error
-- y7
-- hD
-- .oe
-- MB
-- .on
-- .compareTo
-- .Vn
-- oN
-- Vc
-- .In
-- _8
-- eD
-- .sort
-- gc
-- kR
-- xm
-- Ko
-- ._parse
-- jO
-- wt
-- o2
-- hasAnyString
-- f7
-- gD
-- oB
-- a5
-- aU
-- GV
-- BaiNest Studio — Implementation Plan
-- pk
-- Po
-- z5
-- toString
-- c2
-- rq
-- GF
-- l8
-- BaiNest Studio
-- import-tags.ts
-- TODO — BaiNest Studio
-- .ji
-- rU
-- u2
-- Ym
-- checkLimits
-- cD
-- Im
-- e7
-- xl
-- ac
-- k5
-- pD
-- yI
-- sB
-- x
-- _N
-- Yd
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Firebase Authentication & Storage
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (content.ts, package.json)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (package.json, ImageCropperModal.tsx)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Admin Dashboard & CMS
+- Frontend Application & Pages
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Admin Dashboard & CMS
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Frontend Application & Pages
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (tsconfig.json)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (package.json)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (tsconfig.server.json)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (package.json)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (import-tags.ts)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
+- Module (index-CmPURCT4.js)
 
 ## God Nodes (most connected - your core abstractions)
-1. `$` - 1323 edges
-2. `HV()` - 438 edges
-3. `push()` - 153 edges
-4. `t()` - 152 edges
-5. `sU()` - 130 edges
-6. `s()` - 129 edges
-7. `e()` - 99 edges
-8. `n()` - 85 edges
-9. `r()` - 60 edges
-10. `o()` - 58 edges
+1. `YV()` - 439 edges
+2. `push()` - 151 edges
+3. `t()` - 149 edges
+4. `s()` - 136 edges
+5. `iU()` - 127 edges
+6. `e()` - 114 edges
+7. `n()` - 85 edges
+8. `r()` - 62 edges
+9. `Et` - 57 edges
+10. `o()` - 53 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Public identity, navigation, and design` --references--> `PageFrame()`  [INFERRED]
-  TODO.md → src/App.tsx
-- `iV()` --indirect_call--> `go()`  [INFERRED]
-  docs/assets/index-DiN_JVR5.js → assets/js/core/router.js
-- `oV()` --indirect_call--> `go()`  [INFERRED]
-  docs/assets/index-DiN_JVR5.js → assets/js/core/router.js
-- `qu()` --indirect_call--> `go()`  [INFERRED]
-  docs/assets/index-DiN_JVR5.js → assets/js/core/router.js
-- `handleBlockImageUpload()` --calls--> `uploadBlogImage()`  [EXTRACTED]
+- `fV()` --indirect_call--> `go()`  [INFERRED]
+  docs/assets/index-CmPURCT4.js → assets/js/core/router.js
+- `pV()` --indirect_call--> `go()`  [INFERRED]
+  docs/assets/index-CmPURCT4.js → assets/js/core/router.js
+- `Xu()` --indirect_call--> `go()`  [INFERRED]
+  docs/assets/index-CmPURCT4.js → assets/js/core/router.js
+- `handleBlockCropped()` --calls--> `uploadBlogImage()`  [EXTRACTED]
   src/Admin.tsx → src/lib/imageCompressor.ts
+- `submit()` --calls--> `setCsrf()`  [EXTRACTED]
+  src/Admin.tsx → src/lib/api.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (174 total, 54 thin omitted)
+## Communities (165 total, 58 thin omitted)
 
-### Community 0 - "$"
+### Community 0 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.01
-Nodes (134): $, _0, _1, _3, _4(), A0(), a4(), a9() (+126 more)
+Nodes (174): _1, _3, A0(), a3, a6(), AB, add(), aI() (+166 more)
 
-### Community 1 - "HV"
-Cohesion: 0.03
-Nodes (104): al(), HV(), ad(), aV(), aw(), Bb(), bl(), Bn() (+96 more)
+### Community 1 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.04
+Nodes (71): YV(), Bb(), cd(), Cs(), cT(), db(), Ds(), dT() (+63 more)
 
-### Community 2 - ".slice"
+### Community 2 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.05
-Nodes (60): a1(), aa(), aP(), append(), bm(), c6(), cj(), cP() (+52 more)
+Nodes (58): _4(), _8(), Ap(), append(), aR(), B(), cF(), cv() (+50 more)
 
-### Community 4 - "wG"
-Cohesion: 0.05
-Nodes (22): a6, aH(), aI, e9, FV(), g9, Hx(), nI() (+14 more)
+### Community 4 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.04
+Nodes (32): aq, BF(), BS(), cq(), dq, dS, eq(), FS() (+24 more)
 
-### Community 5 - "zP"
-Cohesion: 0.05
-Nodes (9): av(), e8, ov, pR, rI(), _setSettings(), t8, y4() (+1 more)
-
-### Community 6 - ".convertValue"
-Cohesion: 0.05
-Nodes (11): a2, aD, aq(), dm, i2(), i8, jD, Ks (+3 more)
-
-### Community 7 - "l"
-Cohesion: 0.11
-Nodes (51): aC(), bg(), BM(), cl(), Ds(), dw(), eo(), ew() (+43 more)
-
-### Community 8 - ".wt"
+### Community 5 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.06
-Nodes (20): _2(), dq(), eq(), fq(), FS(), gO(), i7(), jc() (+12 more)
+Nodes (58): A(), u(), _c, Ck, B(), d(), F0(), f4() (+50 more)
 
-### Community 9 - "Xw"
+### Community 6 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (25): a7, B6(), Bq, dx(), gq(), h7, he(), hO (+17 more)
+
+### Community 7 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.07
-Nodes (45): Bd(), By(), cC(), Ch(), db(), dC(), dl(), dM() (+37 more)
+Nodes (51): af(), Bk, Ce(), $e(), ft(), L(), Lt(), M() (+43 more)
 
-### Community 10 - "push"
+### Community 8 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.10
+Nodes (52): _0(), alternate(), appendGroup(), calcHeight(), calcSize(), charCount(), checkHeight(), checkLimits() (+44 more)
+
+### Community 9 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (33): BB(), Cc(), cL, closure(), computeRuneClasses(), d6, e5(), e6 (+25 more)
+
+### Community 10 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.05
+Nodes (54): allMatches(), allocTable(), clearCache(), context(), createLookbehindState(), emptyOpContext(), endPos(), execute() (+46 more)
+
+### Community 11 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.09
-Nodes (16): bH(), ef(), g7, Hl, hq(), IO(), k3(), l7 (+8 more)
+Nodes (54): A(), ab(), C(), cb(), cV(), dd(), eC(), fb() (+46 more)
 
-### Community 11 - "LocalAdapter"
+### Community 12 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (47): JV(), s(), s(), oa(), qa(), th(), at(), BV() (+39 more)
+
+### Community 13 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (7): fm, isRed(), J1(), Rs(), sU(), XE(), zP()
+
+### Community 14 - "Firebase Authentication & Storage"
 Cohesion: 0.06
 Nodes (24): go(), markActive(), render(), route(), routes, start(), FirebaseAdapter, todo() (+16 more)
 
-### Community 12 - "parseInternal"
-Cohesion: 0.11
-Nodes (47): alternate(), appendClassWithSign(), appendGroup(), charCount(), cleanAlt(), cleanClass(), collapse(), concat() (+39 more)
+### Community 15 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (12): _5(), B2(), construct(), h5(), iD, jP(), Jt(), L2() (+4 more)
 
-### Community 13 - "Ss"
+### Community 16 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (8): aD, l7, N7, No(), T7, uH(), vD(), w8
+
+### Community 17 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (8): dB, Fi(), fr(), hR(), k6(), Ly(), nI(), UV()
+
+### Community 18 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (43): ak(), t(), Bv(), c3(), cj(), dF(), dN(), ea() (+35 more)
+
+### Community 19 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.07
-Nodes (4): isRed(), kE(), q1(), Ss()
+Nodes (44): sa(), Ad(), Af(), aM(), aw(), bC(), bs(), cw() (+36 more)
 
-### Community 14 - "t"
-Cohesion: 0.08
-Nodes (27): aF(), t(), aN(), B3(), Bt, dO(), dU(), ek() (+19 more)
+### Community 20 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (21): Bz, cO(), color(), dz, GP(), Ht(), Kc, key() (+13 more)
 
-### Community 15 - "constructor"
-Cohesion: 0.09
-Nodes (40): alt(), build(), cap(), cat(), child(), compile(), compileRegexp(), compileSet() (+32 more)
-
-### Community 16 - "sk"
-Cohesion: 0.09
-Nodes (35): BL(), Dt(), fB(), M(), jV(), Ct(), Dt(), Ht() (+27 more)
-
-### Community 17 - "s"
-Cohesion: 0.09
-Nodes (32): ak(), B4(), c9(), d4(), d9(), ev(), f4(), fj() (+24 more)
-
-### Community 18 - ".add"
-Cohesion: 0.08
-Nodes (17): Bq(), cO(), computeRuneClasses(), gq(), h3(), ti(), i6(), lE (+9 more)
-
-### Community 19 - "match"
-Cohesion: 0.09
-Nodes (39): allocTable(), canCheckPrefix(), CH(), clear(), clearCache(), context(), emptyOpContext(), endPos() (+31 more)
-
-### Community 20 - "Yo"
-Cohesion: 0.08
-Nodes (13): BD, initTest(), j7, k7(), nG, as(), pI, q7() (+5 more)
-
-### Community 21 - "index.ts"
+### Community 21 - "Module (content.ts, package.json)"
 Cohesion: 0.07
 Nodes (34): better-sqlite3, dotenv, express, zod, AdminSession, createSession(), destroySession(), Express (+26 more)
 
-### Community 22 - ".get"
+### Community 22 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.06
+Nodes (11): c5(), d7, _fieldsProto(), j7, m7(), O2(), Pm(), Ps() (+3 more)
+
+### Community 23 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.10
+Nodes (9): addInst(), as(), ft(), mm(), Ol(), q5, sH, u5 (+1 more)
+
+### Community 24 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.07
-Nodes (18): _7, Ao(), Bv(), cq(), dk(), Gl, JC(), wb() (+10 more)
+Nodes (13): cz, ez, hG, i6(), iE(), jz, pz, qz (+5 more)
 
-### Community 23 - "n"
+### Community 25 - "Module (package.json, ImageCropperModal.tsx)"
+Cohesion: 0.06
+Nodes (33): name, packageManager, private, scripts, admin:create, build, db:seed, dev (+25 more)
+
+### Community 26 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.09
-Nodes (30): As, Bj(), e(), c0(), D0(), eI(), get(), h9() (+22 more)
+Nodes (35): appendReplacement(), appendReplacementFunc(), appendReplacementInternalJava(), appendReplacementInternalJs(), appendTail(), asBytes(), asCharSequence(), end() (+27 more)
 
-### Community 24 - ".It"
-Cohesion: 0.12
-Nodes (8): addInst(), F8(), i5(), It(), Mt(), Ol(), P8(), za()
+### Community 27 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.10
+Nodes (31): CC(), Dh(), dl(), ew(), Fg(), fV(), gb(), hb() (+23 more)
 
-### Community 25 - "ty"
+### Community 28 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (35): alt(), cap(), cat(), child(), compile(), compileImpl(), compileRegexp(), compileSet() (+27 more)
+
+### Community 29 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.09
+Nodes (28): Ua(), uU(), Xc(), B(), By(), cM(), dC(), ei() (+20 more)
+
+### Community 30 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.07
+Nodes (20): _2(), _7(), d2(), g2(), Ga(), gi(), kB(), l5() (+12 more)
+
+### Community 31 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.13
+Nodes (30): de(), fU, me(), Ag(), ao(), Cr(), EM(), h() (+22 more)
+
+### Community 32 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.08
-Nodes (26): a8, Ae(), eh(), ce(), Di(), ey(), gM(), gn() (+18 more)
+Nodes (5): Ao(), bc, MB(), pH(), rH
 
-### Community 26 - "lv"
-Cohesion: 0.10
-Nodes (7): Ax(), cB, lv, oI, sE(), Wy(), xx()
+### Community 33 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (9): aa(), Gl, GS(), Hl, Nc, T1(), uB, Um (+1 more)
 
-### Community 27 - "executeEngine"
-Cohesion: 0.06
-Nodes (34): allMatches(), createLookbehindState(), doExecuteNFA(), emptyInts(), executeEngine(), findAll(), findAllIndex(), findAllSubmatch() (+26 more)
+### Community 34 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.07
+Nodes (23): advance(), aG(), appendTo(), automaton16(), automaton8(), escapeRune(), escapeRunes(), eval() (+15 more)
 
-### Community 28 - ".substring"
-Cohesion: 0.10
-Nodes (30): appendReplacement(), appendReplacementFunc(), appendReplacementInternalJava(), appendReplacementInternalJs(), appendTail(), end(), exec(), find() (+22 more)
-
-### Community 29 - "Qt"
-Cohesion: 0.06
-Nodes (14): az, B2, cz, ez, jz, kz, lz, oz (+6 more)
-
-### Community 30 - "Lt"
-Cohesion: 0.18
-Nodes (4): Lt(), RE(), tD(), Ys
-
-### Community 31 - "pM"
-Cohesion: 0.15
-Nodes (26): cR(), ao(), Cr(), eh(), gb(), gg(), Hg(), If() (+18 more)
-
-### Community 32 - "package.json"
-Cohesion: 0.06
-Nodes (30): name, packageManager, private, scripts, admin:create, build, db:seed, dev (+22 more)
-
-### Community 33 - "gT"
+### Community 35 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.14
-Nodes (27): $c(), dT(), ei(), FL(), gT(), gy(), hT(), Ir() (+19 more)
+Nodes (23): Nt(), St(), cl(), ed(), eo(), eV(), $f(), Fs() (+15 more)
 
-### Community 34 - "PS"
+### Community 36 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (4): E7, S7, x7, y7()
+
+### Community 37 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (3): AE(), aN(), XR()
+
+### Community 38 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.09
-Nodes (6): e5(), fN, pB(), PS(), r7, toUpperCase()
+Nodes (29): aH(), ca(), rl(), toLowerCase(), Bh(), Cg(), cu(), Dr() (+21 more)
 
-### Community 35 - "u8"
-Cohesion: 0.12
-Nodes (22): ab(), BC(), cd(), da(), eT(), Fu(), Iu(), lT() (+14 more)
-
-### Community 36 - "d"
-Cohesion: 0.15
-Nodes (24): B(), d(), b0(), E0(), e1(), f6(), h6(), ik (+16 more)
-
-### Community 37 - "Admin.tsx"
+### Community 39 - "Admin Dashboard & CMS"
 Cohesion: 0.12
 Nodes (24): emptyPost, postTemplates, AdminState, Block, defaultSettings, defaultTags, deleteFirestorePost(), getFirestoreContacts() (+16 more)
 
-### Community 38 - "Fe"
-Cohesion: 0.08
-Nodes (25): aR(), B1(), ej(), Fe(), G0(), h1(), I1(), ix() (+17 more)
+### Community 40 - "Frontend Application & Pages"
+Cohesion: 0.19
+Nodes (27): About(), App(), ArticleCard(), BackToTopButton(), BlockRenderer(), Blog(), Brand(), Contact() (+19 more)
 
-### Community 39 - "M_"
-Cohesion: 0.11
-Nodes (26): aM(), aT(), au(), Bh(), Fg(), fo(), hM(), ia() (+18 more)
-
-### Community 40 - "tN"
-Cohesion: 0.10
-Nodes (10): bc(), c5, EO, h5, jB(), l5, r5, tN() (+2 more)
-
-### Community 41 - "App.tsx"
-Cohesion: 0.21
-Nodes (25): About(), App(), ArticleCard(), BlockRenderer(), Blog(), Brand(), Contact(), CtaBand() (+17 more)
-
-### Community 42 - "nU"
-Cohesion: 0.22
-Nodes (5): iU(), jl(), nU, $u(), Wd()
-
-### Community 43 - "WE"
-Cohesion: 0.08
-Nodes (3): jk, WE(), zE()
-
-### Community 44 - "o"
-Cohesion: 0.15
-Nodes (24): _6(), _B(), h(), dx, g5(), fb(), rV(), vy() (+16 more)
-
-### Community 45 - ".clearTimeout"
-Cohesion: 0.11
-Nodes (9): BU(), fU(), ha(), el(), ji(), Ka(), m5, nD (+1 more)
-
-### Community 46 - "z3"
+### Community 41 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.13
-Nodes (7): c3(), Cc(), f3(), Hy(), v0(), x3(), z3()
+Nodes (7): a5(), E2(), Ka(), Po(), pq(), qB(), zB()
 
-### Community 48 - ".getDocumentsMatchingQuery"
+### Community 42 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.09
+Nodes (8): az, dI, fz, I5, k2, k5, pA, U2
+
+### Community 43 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (7): B5, fA, ref(), Ro, w2(), xl(), zN()
+
+### Community 44 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.10
+Nodes (7): eE, f2(), g7, h2, lD(), na(), w7
+
+### Community 45 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.14
-Nodes (6): _A(), dA, nj, v5(), wA(), zm()
+Nodes (25): aC(), ah(), Bd(), bg(), BT(), Bw(), d(), da() (+17 more)
 
-### Community 49 - "fO"
+### Community 46 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.09
-Nodes (7): B7, construct(), d5(), emptyPath(), fO(), p5(), Vt
+Nodes (19): BL(), dk, e(), GV(), e(), hk(), HV(), lv() (+11 more)
 
-### Community 50 - "wj"
-Cohesion: 0.09
-Nodes (10): cv(), eE, jj(), kj(), L0(), o3(), r3(), Rm() (+2 more)
+### Community 47 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (5): charClassToString(), rD(), sD, wD(), $i()
 
-### Community 51 - "pN"
+### Community 48 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (9): a4(), clear(), iv(), ix(), jk(), kk, sx(), zk (+1 more)
+
+### Community 49 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.08
+Nodes (8): c7, iz, lz, mz, oz, Sz, xz, yt()
+
+### Community 50 - "Admin Dashboard & CMS"
+Cohesion: 0.14
+Nodes (21): PostEditor(), addBlock(), drop(), handleCoverCropped(), handleCoverUpload(), insertBlockAfter(), moveBlockDown(), moveBlockUp() (+13 more)
+
+### Community 51 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (10): B7(), D0(), EO(), gm(), i7, C(), t(), TD (+2 more)
+
+### Community 52 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.12
-Nodes (9): dR, Ga(), gU, l4(), lx(), o4, pN(), pU() (+1 more)
+Nodes (18): a1(), B4, pN(), r1(), SB(), sN(), Sv(), tP() (+10 more)
 
-### Community 52 - ".field"
-Cohesion: 0.14
-Nodes (6): dB(), Fi(), _fieldsProto(), iA, z8, Zl()
+### Community 53 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.17
+Nodes (6): fq, lI(), oG, uG(), v6(), xG()
 
-### Community 53 - "api"
+### Community 54 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.12
+Nodes (6): build(), ik, lN(), xU(), yR, zy()
+
+### Community 56 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.10
+Nodes (17): aj(), cB(), ej(), fj(), Fy(), g1(), i3(), ij() (+9 more)
+
+### Community 57 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.11
+Nodes (4): gz, hD, hz, kz
+
+### Community 58 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.18
+Nodes (4): $m, parse(), Print(), qt
+
+### Community 59 - "Frontend Application & Pages"
 Cohesion: 0.20
 Nodes (21): AdminApp(), logout(), refresh(), AdminNav(), DomainSettings(), add(), refresh(), remove() (+13 more)
 
-### Community 54 - "PostEditor"
-Cohesion: 0.16
-Nodes (18): PostEditor(), addBlock(), drop(), handleCoverUpload(), insertBlockAfter(), moveBlockDown(), moveBlockUp(), patch() (+10 more)
+### Community 60 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.17
+Nodes (4): q(), r7, sO(), u7
 
-### Community 55 - ".I"
-Cohesion: 0.20
-Nodes (20): B(), cV(), dV(), Eb(), eV(), gV(), jh(), mV() (+12 more)
-
-### Community 57 - "rs"
-Cohesion: 0.10
-Nodes (7): gz, hz, mD, q8, rs(), uz, W8
-
-### Community 58 - "._toProto"
-Cohesion: 0.10
-Nodes (3): At(), hI, rA
-
-### Community 60 - "hG"
+### Community 61 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.12
-Nodes (17): cG(), cI(), dG(), _G(), g6, hG, Mm(), p6() (+9 more)
+Nodes (18): av, B1(), B3(), cR(), hB(), j9(), Y(), k9() (+10 more)
 
-### Community 61 - ".isEqual"
+### Community 62 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.13
+Nodes (3): Kl, rc(), Ve
+
+### Community 64 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.33
+Nodes (4): jl(), k3(), oU, Wu()
+
+### Community 65 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.18
+Nodes (11): Ac(), canonicalString(), e(), i2(), isValidIdentifier(), quoteReplacement(), r2, sE() (+3 more)
+
+### Community 67 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.14
+Nodes (10): e8(), Mt(), nl(), Nt(), oh(), Sl(), xt(), m() (+2 more)
+
+### Community 68 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.11
-Nodes (10): B5(), Dc(), gi(), hO(), lO(), Ma, RB, ref() (+2 more)
+Nodes (11): eF(), hc(), $k(), O1(), q0(), tE, tF(), Vk() (+3 more)
 
-### Community 62 - ".p"
-Cohesion: 0.16
-Nodes (15): ca(), cN(), e(), ea(), cu(), _I, parse(), $R() (+7 more)
-
-### Community 63 - "Ut"
-Cohesion: 0.10
-Nodes (9): _5, color(), f5(), fz, key(), left(), right(), Ut() (+1 more)
-
-### Community 64 - "compilerOptions"
+### Community 70 - "Module (tsconfig.json)"
 Cohesion: 0.11
 Nodes (17): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+9 more)
 
-### Community 66 - "d2"
-Cohesion: 0.11
-Nodes (3): d2(), u7, xz
-
-### Community 67 - "L"
-Cohesion: 0.12
-Nodes (6): dj, e(), L(), mi, pj, zq()
-
-### Community 68 - ".Vt"
-Cohesion: 0.15
-Nodes (5): fA, fD, Hm(), rO, To
-
-### Community 69 - "gk"
-Cohesion: 0.18
-Nodes (16): Bk(), ck, fk, gk, hk, lG(), Mk, qN (+8 more)
-
-### Community 70 - "qo"
-Cohesion: 0.12
-Nodes (6): h4(), hU, qo, u4(), uU, vx()
-
-### Community 71 - "Qd"
-Cohesion: 0.15
-Nodes (3): n8, Qd, wS()
-
-### Community 72 - "isByteArray"
-Cohesion: 0.12
-Nodes (18): asBytes(), asCharSequence(), compileImpl(), genMatch(), getEncoding(), isByteArray(), isUTF16Encoding(), isUTF8Encoding() (+10 more)
-
-### Community 73 - "qm"
-Cohesion: 0.14
-Nodes (4): B8(), ME, o8(), qm()
-
-### Community 74 - "BN"
-Cohesion: 0.14
-Nodes (3): BN(), dN(), t4()
-
-### Community 75 - "tI"
-Cohesion: 0.12
-Nodes (8): e6(), iI(), n6(), o6(), s6(), sI(), t6(), tI()
-
-### Community 77 - "o"
-Cohesion: 0.15
-Nodes (8): el(), il(), na(), o(), Qc(), sa(), R(), Zi()
-
-### Community 78 - ".yt"
-Cohesion: 0.16
-Nodes (9): app(), c8, Cs(), fromServerFormat(), g2(), h8, Ki(), sG (+1 more)
-
-### Community 79 - ".info"
-Cohesion: 0.12
-Nodes (11): c4, eN(), Ep(), iR(), j3, jG(), jN(), kG() (+3 more)
-
-### Community 80 - "gR"
-Cohesion: 0.17
-Nodes (4): gR(), uD(), vO(), z2()
-
-### Community 83 - ".Ri"
-Cohesion: 0.19
-Nodes (3): tS(), v8, y8
-
-### Community 84 - "test"
-Cohesion: 0.14
-Nodes (9): aj(), e(), aa(), nv(), PF, rv(), sj(), sR() (+1 more)
-
-### Community 85 - "appendRange"
+### Community 71 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.21
-Nodes (15): appendClass(), appendFoldedClass(), appendFoldedRange(), appendLiteral(), appendNegatedClass(), appendNegatedTable(), appendRange(), appendTable() (+7 more)
+Nodes (17): appendClass(), appendClassWithSign(), appendFoldedClass(), appendFoldedRange(), appendLiteral(), appendNegatedClass(), appendNegatedTable(), appendRange() (+9 more)
 
-### Community 88 - "dependencies"
+### Community 73 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.17
+Nodes (4): Bj(), gj(), iH, xI()
+
+### Community 74 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.12
+Nodes (3): LB, Ot, RA()
+
+### Community 75 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.16
+Nodes (3): gc, m8, Pe()
+
+### Community 76 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.13
+Nodes (3): e3(), M0(), s3
+
+### Community 79 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.15
+Nodes (11): _6(), _9(), a9(), f9(), i9(), index(), jx, NB() (+3 more)
+
+### Community 81 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.19
+Nodes (6): f1(), Fl, Mr(), o3(), vR, x1()
+
+### Community 82 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.16
+Nodes (14): c6(), cI(), h6(), l6(), m6(), o6, oI(), Pc() (+6 more)
+
+### Community 83 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.21
+Nodes (3): Dc(), ek(), m3()
+
+### Community 84 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.16
+Nodes (5): dL(), jR, e(), qj(), Wl
+
+### Community 85 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.22
+Nodes (5): gN(), Km(), W(), W(), x0()
+
+### Community 86 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.23
+Nodes (6): BH, dH, fH(), nH, Qx(), sG()
+
+### Community 87 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.17
+Nodes (4): BO, kj(), uj(), yj
+
+### Community 89 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.26
+Nodes (10): el(), ha(), il(), o(), wI, Wt(), xo(), $y (+2 more)
+
+### Community 91 - "Module (package.json)"
 Cohesion: 0.15
 Nodes (13): dependencies, better-sqlite3, @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities, dotenv, express, framer-motion (+5 more)
 
-### Community 89 - ".apply"
-Cohesion: 0.20
-Nodes (4): Sg(), p7, t(), g()
-
-### Community 90 - "BO"
-Cohesion: 0.16
-Nodes (7): BO(), GB, HB, jm(), Kl(), Tc(), Um
-
-### Community 91 - ".zc"
-Cohesion: 0.14
-Nodes (4): Bz, dz, mz, pz
-
-### Community 93 - "fr"
+### Community 92 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.18
-Nodes (3): fr(), Oy(), tv
+Nodes (3): Cs(), dP(), yr()
 
-### Community 94 - "qa"
+### Community 93 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.17
+Nodes (3): eD(), L(), nD()
+
+### Community 94 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.18
-Nodes (7): ih(), lu(), Kc(), lU, nl(), qa(), Sl()
+Nodes (5): eh(), gF(), mF(), xP(), ZE()
 
-### Community 95 - "compilerOptions"
+### Community 95 - "Module (tsconfig.server.json)"
 Cohesion: 0.17
 Nodes (11): compilerOptions, allowImportingTsExtensions, esModuleInterop, module, moduleResolution, noEmit, skipLibCheck, strict (+3 more)
 
-### Community 97 - "Wm"
-Cohesion: 0.15
-Nodes (4): iz, nz, rz, Wm
+### Community 96 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.20
+Nodes (7): A2(), Cp, f5(), oc(), q2(), w5, x2()
 
-### Community 99 - "rR"
-Cohesion: 0.22
-Nodes (6): a3, D1(), g1(), l1(), rR(), y3()
+### Community 97 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.25
+Nodes (4): B8, p8(), Pe(), v8()
 
-### Community 100 - "Wo"
-Cohesion: 0.15
-Nodes (7): add(), $c(), growCaps(), _f(), Ja(), Mo(), Wo()
-
-### Community 101 - "em"
+### Community 99 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.18
-Nodes (3): bs, em, yr()
+Nodes (4): c8, JE(), uE, zc()
 
-### Community 102 - "devDependencies"
+### Community 100 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.18
+Nodes (9): cE, dG(), eG(), gG(), mG(), nG(), pG(), tG() (+1 more)
+
+### Community 101 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.27
+Nodes (4): Iy(), P0(), sq(), YS()
+
+### Community 103 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.18
+Nodes (3): g5, m5, p5
+
+### Community 107 - "Module (package.json)"
 Cohesion: 0.18
 Nodes (11): devDependencies, prettier, tsx, @types/better-sqlite3, @types/express, @types/node, @types/react, @types/react-dom (+3 more)
 
-### Community 103 - "Master AI Build Prompt — BaiNest Studio"
-Cohesion: 0.20
-Nodes (9): Blog domains, Deliverables, Engineering quality, Local-first backend and Firebase later, Master AI Build Prompt — BaiNest Studio, Motion and interaction, Public site and navigation, Separate admin CMS (+1 more)
-
-### Community 104 - "canonicalString"
-Cohesion: 0.15
-Nodes (5): canonicalString(), isValidIdentifier(), j5(), rc(), Rn()
-
-### Community 105 - ".Vl"
-Cohesion: 0.28
-Nodes (3): f1(), inorderTraversal(), nq
-
-### Community 107 - "vr"
-Cohesion: 0.17
-Nodes (12): cb(), cy(), d(), dy(), fh(), fT(), hV(), mg() (+4 more)
-
-### Community 110 - "lq"
-Cohesion: 0.21
-Nodes (4): aG(), BR, lq(), oq()
-
-### Community 113 - "xc"
-Cohesion: 0.24
-Nodes (9): cL(), Cm(), e2(), Fm(), GS(), n2(), SO(), uc() (+1 more)
-
-### Community 114 - ".error"
-Cohesion: 0.20
-Nodes (5): componentDidCatch(), IP(), rD, s8, x5
-
-### Community 118 - "MB"
-Cohesion: 0.18
-Nodes (6): Jh(), MB, qB, Qr(), uF(), y5()
-
-### Community 119 - ".on"
-Cohesion: 0.21
-Nodes (4): jq(), kq(), qq(), yq
-
-### Community 120 - ".compareTo"
-Cohesion: 0.24
-Nodes (6): f2(), mP(), Oo, q5(), Xd(), yB()
-
-### Community 122 - "oN"
-Cohesion: 0.18
-Nodes (4): N1(), oN(), Wl, Yt()
-
-### Community 123 - "Vc"
-Cohesion: 0.18
-Nodes (6): j6, qj(), rG(), tx(), Vc(), y1()
-
-### Community 125 - "_8"
+### Community 108 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.22
-Nodes (7): _8(), _getEmulatorOptions(), _getSettings(), Pm(), sq, uj(), wI()
+Nodes (3): Ba(), T2, xN()
 
-### Community 126 - "eD"
-Cohesion: 0.20
-Nodes (5): bE(), eD(), eU, Gm, s5
-
-### Community 127 - ".sort"
+### Community 109 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.24
-Nodes (5): bp(), closure(), EB, s7(), sortRanges()
+Nodes (4): c0(), fB(), mU, RB()
 
-### Community 130 - "xm"
-Cohesion: 0.25
-Nodes (3): BF(), cF(), xm()
+### Community 111 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.20
+Nodes (4): cU, gU(), pU, qo
 
-### Community 136 - "hasAnyString"
+### Community 112 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.20
+Nodes (3): d3(), iB(), kR()
+
+### Community 113 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.36
+Nodes (3): dR(), p7(), sc()
+
+### Community 118 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.28
+Nodes (3): dU, tl(), _U()
+
+### Community 119 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.28
+Nodes (3): j4(), k4(), kN()
+
+### Community 122 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.29
-Nodes (8): advance(), automaton16(), automaton8(), eval(), hasAnyString(), hasString(), searchUTF16(), searchUTF8()
+Nodes (3): d5, jm(), z8()
 
-### Community 138 - "gD"
+### Community 126 - "Module (index-CmPURCT4.js)"
+Cohesion: 0.32
+Nodes (4): data(), Nk(), qE(), sk()
+
+### Community 129 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.25
-Nodes (3): gD(), Qz, wz
+Nodes (3): jc(), k8(), nx()
 
-### Community 139 - "oB"
-Cohesion: 0.25
-Nodes (6): _j(), o1(), oB(), Sm(), vj(), Xq()
-
-### Community 142 - "GV"
-Cohesion: 0.29
-Nodes (3): FH(), GV(), h()
-
-### Community 143 - "BaiNest Studio — Implementation Plan"
-Cohesion: 0.29
-Nodes (6): Approved scope and architecture, BaiNest Studio — Implementation Plan, Design direction, Implementation boundaries, Project structure, Routes and page behavior
-
-### Community 145 - "Po"
+### Community 138 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.33
-Nodes (6): kB(), n7, pA, Po(), q4(), uB()
+Nodes (4): gD(), q8, s5(), y8
 
-### Community 147 - "toString"
-Cohesion: 0.40
-Nodes (6): appendTo(), escapeRune(), escapeRunes(), isPrint(), quoteIfHyphen(), toString()
-
-### Community 149 - "rq"
-Cohesion: 0.33
-Nodes (4): d8(), _freezeSettings(), qH, rq
-
-### Community 152 - "BaiNest Studio"
-Cohesion: 0.33
-Nodes (5): Admin security, BaiNest Studio, Domain mappings, Future Firebase connection, Requirements
-
-### Community 153 - "import-tags.ts"
+### Community 142 - "Module (import-tags.ts)"
 Cohesion: 0.33
 Nodes (3): firebaseConfig, firestore, tags
 
-### Community 154 - "TODO — BaiNest Studio"
-Cohesion: 0.33
-Nodes (5): Admin access and publishing backend, Custom domains, local operation, and handoff, Public identity, navigation, and design, Public pages and blog reading, TODO — BaiNest Studio
-
-### Community 159 - "checkLimits"
+### Community 146 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.40
-Nodes (5): calcHeight(), calcSize(), checkHeight(), checkLimits(), checkSize()
+Nodes (5): doExecuteNFA(), emptyInts(), init(), put(), submatches()
 
-### Community 160 - "cD"
+### Community 148 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.40
-Nodes (3): cD(), k8(), YH()
+Nodes (3): _freezeSettings(), jq(), pD()
 
-### Community 161 - "Im"
+### Community 149 - "Module (index-CmPURCT4.js)"
 Cohesion: 0.50
-Nodes (4): e4(), Im(), Nm(), s4()
+Nodes (5): fromRE2(), maxBitStateLen(), numInst(), reset(), shouldBacktrack()
 
 ## Knowledge Gaps
 - **8 isolated node(s):** `@types/better-sqlite3`, `@types/express`, `@types/node`, `@types/react`, `@types/react-dom` (+3 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 915 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **54 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 883 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **58 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `$` connect `$` to `HV`, `.slice`, `sU`, `wG`, `zP`, `.convertValue`, `l`, `.wt`, `Xw`, `push`, `parseInternal`, `Ss`, `t`, `constructor`, `sk`, `s`, `.add`, `match`, `Yo`, `.get`, `n`, `.It`, `ty`, `lv`, `executeEngine`, `.substring`, `Qt`, `Lt`, `pM`, `gT`, `PS`, `u8`, `d`, `Fe`, `M_`, `tN`, `nU`, `WE`, `o`, `.clearTimeout`, `z3`, `t3`, `.getDocumentsMatchingQuery`, `fO`, `wj`, `pN`, `.field`, `.I`, `.asBoolean`, `rs`, `._toProto`, `.resolve`, `hG`, `.isEqual`, `.p`, `Ut`, `d7`, `d2`, `L`, `.Vt`, `gk`, `qo`, `Qd`, `isByteArray`, `qm`, `BN`, `tI`, `dD`, `o`, `.yt`, `.info`, `gR`, `Gt`, `lD`, `.Ri`, `test`, `appendRange`, `.toString`, `.Un`, `.apply`, `BO`, `.zc`, `w7`, `fr`, `qa`, `iE`, `Wm`, `uk`, `rR`, `Wo`, `em`, `canonicalString`, `.Vl`, `._create`, `vr`, `v7`, `.In`, `lq`, `cU`, `DI`, `xc`, `.error`, `y7`, `hD`, `.oe`, `MB`, `.on`, `.compareTo`, `.Vn`, `oN`, `Vc`, `.In`, `_8`, `eD`, `.sort`, `gc`, `kR`, `xm`, `Ko`, `._parse`, `jO`, `wt`, `o2`, `hasAnyString`, `f7`, `gD`, `oB`, `a5`, `aU`, `GV`, `pk`, `Po`, `z5`, `toString`, `c2`, `rq`, `GF`, `l8`, `.ji`, `rU`, `u2`, `Ym`, `checkLimits`, `cD`, `Im`, `e7`, `xl`, `ac`, `k5`, `pD`, `yI`, `sB`, `x`, `_N`, `Yd`?**
-  _High betweenness centrality (0.772) - this node is a cross-community bridge._
-- **Are the 26 inferred relationships involving `$` (e.g. with `Ae()` and `al()`) actually correct?**
-  _`$` has 26 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `YV()` connect `Module (index-CmPURCT4.js)` to `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`?**
+  _High betweenness centrality (0.168) - this node is a cross-community bridge._
+- **Are the 42 inferred relationships involving `YV()` (e.g. with `al()` and `$e()`) actually correct?**
+  _`YV()` has 42 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `@types/better-sqlite3`, `@types/express`, `@types/node` to the rest of the system?**
   _8 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `$` be split into smaller, more focused modules?**
-  _Cohesion score 0.012035837651122625 - nodes in this community are weakly interconnected._
-- **Why does `HV()` connect `HV` to `$`, `.slice`, `Ko`, `l`, `f7`, `push`, `Xw`, `parseInternal`, `Ss`, `t`, `sk`, `s`, `.add`, `.get`, `n`, `.It`, `ty`, `pM`, `gT`, `PS`, `u8`, `d`, `M_`, `o`, `.clearTimeout`, `.I`, `.resolve`, `.p`, `d7`, `.Vt`, `test`, `.toString`, `.Un`, `.apply`, `qa`, `Wo`, `em`, `vr`, `.In`, `.error`?**
-  _High betweenness centrality (0.188) - this node is a cross-community bridge._
-- **Are the 46 inferred relationships involving `HV()` (e.g. with `.Ja()` and `.Ya()`) actually correct?**
-  _`HV()` has 46 INFERRED edges - model-reasoned connections that need verification._
-- **Should `HV` be split into smaller, more focused modules?**
-  _Cohesion score 0.02836637047163363 - nodes in this community are weakly interconnected._
+- **Should `Module (index-CmPURCT4.js)` be split into smaller, more focused modules?**
+  _Cohesion score 0.009543568464730291 - nodes in this community are weakly interconnected._
+- **Why does `$N` connect `Module (index-CmPURCT4.js)` to `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`, `Module (index-CmPURCT4.js)`?**
+  _High betweenness centrality (0.121) - this node is a cross-community bridge._
+- **Are the 60 inferred relationships involving `t()` (e.g. with `index-CmPURCT4.js` and `_8()`) actually correct?**
+  _`t()` has 60 INFERRED edges - model-reasoned connections that need verification._
+- **Should `Module (index-CmPURCT4.js)` be split into smaller, more focused modules?**
+  _Cohesion score 0.0364656381486676 - nodes in this community are weakly interconnected._

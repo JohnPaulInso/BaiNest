@@ -1,0 +1,24 @@
+C:\Users\Lenovo\Desktop\BaiNest\.github\workflows\deploy.yml
+C:\Users\Lenovo\Desktop\BaiNest\AI_BUILD_PROMPT.md
+C:\Users\Lenovo\Desktop\BaiNest\README.md
+C:\Users\Lenovo\Desktop\BaiNest\TODO.md
+C:\Users\Lenovo\Desktop\BaiNest\docs\404.html
+C:\Users\Lenovo\Desktop\BaiNest\docs\index.html
+C:\Users\Lenovo\Desktop\BaiNest\index.html
+C:\Users\Lenovo\Desktop\BaiNest\old\buzzspot_template copy.html
+C:\Users\Lenovo\Desktop\BaiNest\old\buzzspot_template.html
+C:\Users\Lenovo\Desktop\BaiNest\old\design.html
+C:\Users\Lenovo\Desktop\BaiNest\old\index - Copy.html
+C:\Users\Lenovo\Desktop\BaiNest\old\minimice.html
+C:\Users\Lenovo\Desktop\BaiNest\old\newspot copy.html
+C:\Users\Lenovo\Desktop\BaiNest\old\newspot.html
+C:\Users\Lenovo\Desktop\BaiNest\plan.md
+C:\Users\Lenovo\Desktop\BaiNest\pnpm-workspace.yaml
+C:\Users\Lenovo\Desktop\BaiNest\BaiNest Logo.jpg
+C:\Users\Lenovo\Desktop\BaiNest\docs\BaiNest Logo.jpg
+C:\Users\Lenovo\Desktop\BaiNest\docs\bainest-logo.jpg
+C:\Users\Lenovo\Desktop\BaiNest\docs\logo.svg
+C:\Users\Lenovo\Desktop\BaiNest\logo.svg
+C:\Users\Lenovo\Desktop\BaiNest\public\BaiNest Logo.jpg
+C:\Users\Lenovo\Desktop\BaiNest\public\bainest-logo.jpg
+C:\Users\Lenovo\Desktop\BaiNest\public\logo.svg
