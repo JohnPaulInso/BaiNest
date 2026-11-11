@@ -1033,26 +1033,36 @@ function Overview({ posts }: { posts: Post[] }) {
           </div>
         </div>
 
-        {/* (2026-07-13) Modernized smooth spline & dual bar charts. Prev: polyline */}
-        <div className="svg-chart-container" onMouseLeave={() => setHoveredPointIdx(null)}>
+        {/* (2026-07-13) Clean dot-free spline curve with crisp HTML tooltip. Prev: stretched SVG text */}
+        <div
+          className="svg-chart-container relative-chart-container"
+          onMouseLeave={() => setHoveredPointIdx(null)}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const pct = Math.max(0, Math.min(1, (mouseX - paddingX) / usableW));
+            const idx = Math.max(0, Math.min(mappedPoints.length - 1, Math.round(pct * (mappedPoints.length - 1))));
+            setHoveredPointIdx(idx);
+          }}
+        >
           <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="analytics-svg-chart" preserveAspectRatio="none">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.32" />
-                <stop offset="40%" stopColor="#006654" stopOpacity="0.12" />
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
+                <stop offset="50%" stopColor="#006654" stopOpacity="0.08" />
                 <stop offset="100%" stopColor="#006654" stopOpacity="0.0" />
               </linearGradient>
               <linearGradient id="chartStrokeGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#0d9488" />
-                <stop offset="60%" stopColor="#006654" />
-                <stop offset="100%" stopColor="#059669" />
+                <stop offset="50%" stopColor="#006654" />
+                <stop offset="100%" stopColor="#10b981" />
               </linearGradient>
               <linearGradient id="chartBarGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" />
                 <stop offset="100%" stopColor="#006654" />
               </linearGradient>
               <filter id="chartGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#006654" floodOpacity="0.22" />
+                <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#006654" floodOpacity="0.2" />
               </filter>
             </defs>
 
@@ -1061,7 +1071,7 @@ function Overview({ posts }: { posts: Post[] }) {
               const y = paddingY + ratio * usableH;
               return (
                 <g key={idx}>
-                  <line x1={paddingX} y1={y} x2={chartWidth - paddingX} y2={y} stroke="rgba(226, 232, 240, 0.8)" strokeDasharray="3 3" />
+                  <line x1={paddingX} y1={y} x2={chartWidth - paddingX} y2={y} stroke="rgba(226, 232, 240, 0.75)" strokeDasharray="3 3" />
                 </g>
               );
             })}
@@ -1119,7 +1129,7 @@ function Overview({ posts }: { posts: Post[] }) {
                 {/* Smooth Gradient Area Fill */}
                 <path d={smoothAreaPath} fill="url(#chartGradient)" />
 
-                {/* Smooth Spline Stroke with Glow */}
+                {/* Pure Clean Spline Stroke with Glow — Zero static dots */}
                 <path
                   d={smoothCurvePath}
                   fill="none"
@@ -1130,7 +1140,7 @@ function Overview({ posts }: { posts: Post[] }) {
                   filter="url(#chartGlow)"
                 />
 
-                {/* Interactive vertical crosshair and hover pulse */}
+                {/* Interactive cursor line and active point dot only when hovering */}
                 {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
                   <g>
                     <line
@@ -1146,63 +1156,38 @@ function Overview({ posts }: { posts: Post[] }) {
                     <circle
                       cx={mappedPoints[hoveredPointIdx].x}
                       cy={mappedPoints[hoveredPointIdx].y}
-                      r="9"
+                      r="8"
                       fill="#10b981"
                       opacity="0.25"
                     />
+                    <circle
+                      cx={mappedPoints[hoveredPointIdx].x}
+                      cy={mappedPoints[hoveredPointIdx].y}
+                      r="4.5"
+                      fill="#ffffff"
+                      stroke="#006654"
+                      strokeWidth="2.5"
+                      filter="drop-shadow(0 1px 3px rgba(0,0,0,0.2))"
+                    />
                   </g>
                 )}
-
-                {/* Refined Nodes with Hover triggers */}
-                {mappedPoints.map((p, i) => {
-                  const isHovered = hoveredPointIdx === i;
-                  return (
-                    <g
-                      key={i}
-                      className="chart-node-interactive"
-                      onMouseEnter={() => setHoveredPointIdx(i)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r={isHovered ? 6 : 3.5}
-                        fill="#ffffff"
-                        stroke="#006654"
-                        strokeWidth={isHovered ? 3 : 2}
-                        filter="drop-shadow(0 1px 2px rgba(0,0,0,0.15))"
-                      />
-                      {/* Floating tooltip badge on hover */}
-                      {isHovered && (
-                        <g transform={`translate(${Math.min(Math.max(p.x, 50), chartWidth - 50)}, ${Math.max(p.y - 34, 15)})`}>
-                          <rect
-                            x="-42"
-                            y="-16"
-                            width="84"
-                            height="24"
-                            rx="6"
-                            fill="#0f172a"
-                            filter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"
-                          />
-                          <text
-                            x="0"
-                            y="0"
-                            textAnchor="middle"
-                            fill="#ffffff"
-                            fontSize="11"
-                            fontWeight="700"
-                            dominantBaseline="central"
-                          >
-                            {p.pt.val.toLocaleString()} {activeMetric === "views" ? "views" : "hits"}
-                          </text>
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
               </>
             )}
           </svg>
+
+          {/* Crisp HTML Floating Tooltip — Never horizontally stretched */}
+          {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
+            <div
+              className="chart-crisp-html-tooltip"
+              style={{
+                left: `${(mappedPoints[hoveredPointIdx].x / chartWidth) * 100}%`,
+                top: `${(mappedPoints[hoveredPointIdx].y / chartHeight) * 100}%`,
+              }}
+            >
+              <b>{mappedPoints[hoveredPointIdx].pt.val.toLocaleString()}</b>
+              <span>{activeMetric === "views" ? "views" : activeMetric === "clicks" ? "clicks" : "impressions"}</span>
+            </div>
+          )}
         </div>
         <div className="chart-legend-row">
           <span>Initial ({timeframe})</span>

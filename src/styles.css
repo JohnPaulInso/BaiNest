@@ -7475,3 +7475,48 @@ img {
 .impressions-legend .dot {
   background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
 }
+
+/* (2026-07-13) Crisp HTML chart tooltip without SVG distortion. Prev: SVG text */
+.relative-chart-container {
+  position: relative;
+  overflow: visible;
+}
+.chart-crisp-html-tooltip {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -125%);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.28);
+  z-index: 20;
+  transition: left 0.08s ease-out, top 0.08s ease-out;
+  line-height: 1;
+}
+.chart-crisp-html-tooltip b {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 13px;
+}
+.chart-crisp-html-tooltip span {
+  color: #94a3b8;
+  font-size: 11px;
+  text-transform: lowercase;
+}
+.chart-crisp-html-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
