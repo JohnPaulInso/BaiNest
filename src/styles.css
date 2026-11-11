@@ -6615,6 +6615,96 @@ img {
   }
 }
 
+/* (2026-07-13) Sitemap directory grid and card styles. Prev: none */
+.sitemap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  margin-top: 20px;
+  margin-bottom: 60px;
+}
+.sitemap-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.sitemap-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.sitemap-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.sitemap-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e6f6f4;
+  color: var(--teal-dark, #0d766e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sitemap-card-header h3 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy, #0f172a);
+}
+.sitemap-link-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sitemap-link-list li a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  text-decoration: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.sitemap-link-list li a:hover {
+  color: var(--teal-dark, #0d766e);
+  transform: translateX(3px);
+}
+.sitemap-link-desc {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+  margin-top: 3px;
+  margin-left: 21px;
+  line-height: 1.45;
+}
+.footer-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.footer-bottom-sitemap-link {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.footer-bottom-sitemap-link:hover {
+  color: #ffffff;
+}
 .service-card:active,
 .contact-pillar-card:active,
 .value-card:active,
