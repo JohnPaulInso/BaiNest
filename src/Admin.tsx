@@ -769,34 +769,53 @@ function Overview({ posts }: { posts: Post[] }) {
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) + "%" : "8.7%";
   const avgPosition = timeframe === "7d" ? "3.2" : timeframe === "28d" ? "3.6" : timeframe === "3m" ? "4.1" : "4.8";
 
-  // Deterministic SVG chart curve data points
+  {/* (2026-07-13) Dates, scales and accurate coordinates. Prev: generic 12 pts */}
   const chartPoints = useMemo(() => {
     const baseVal = activeMetric === "views" ? totalViews : activeMetric === "clicks" ? totalClicks : totalImpressions;
-    const count = 12;
-    const curveMultipliers = [0.65, 0.72, 0.68, 0.85, 0.92, 0.78, 0.95, 1.12, 1.05, 1.25, 1.18, 1.34];
-    return curveMultipliers.map((m, idx) => ({
-      idx,
-      label: `T-${count - idx}`,
-      val: Math.round((baseVal / count) * m),
-    }));
-  }, [activeMetric, totalViews, totalClicks, totalImpressions]);
+    const count = 14;
+    const curveMultipliers = [0.65, 0.72, 0.68, 0.85, 0.92, 0.82, 0.96, 1.12, 1.05, 1.25, 1.18, 1.35, 1.30, 1.42];
+    const totalDays = timeframe === "7d" ? 7 : timeframe === "28d" ? 28 : timeframe === "3m" ? 90 : 365;
+    const now = new Date(2026, 10, 11);
+
+    return curveMultipliers.map((m, idx) => {
+      const daysAgo = Math.round(((count - 1 - idx) / (count - 1)) * totalDays);
+      const pointDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+      const shortDate = pointDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const fullDate = pointDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+      const ptVal = Math.round((baseVal / count) * m);
+      const ptClicks = Math.round(ptVal * (activeMetric === "clicks" ? 1 : 0.42));
+      const ptImpressions = Math.round(ptVal * (activeMetric === "impressions" ? 1 : 4.8));
+      const ptCtr = ptImpressions > 0 ? ((ptClicks / ptImpressions) * 100).toFixed(1) + "%" : "8.7%";
+
+      return {
+        idx,
+        val: ptVal,
+        shortDate,
+        fullDate,
+        clicks: ptClicks,
+        impressions: ptImpressions,
+        ctr: ptCtr,
+      };
+    });
+  }, [activeMetric, totalViews, totalClicks, totalImpressions, timeframe]);
 
   const maxVal = Math.max(...chartPoints.map((p) => p.val), 1);
-  const chartWidth = 720;
-  const chartHeight = 200;
-  const paddingX = 36;
-  const paddingY = 24;
-  const usableW = chartWidth - paddingX * 2;
-  const usableH = chartHeight - paddingY * 2;
+  const chartWidth = 960;
+  const chartHeight = 260;
+  const paddingLeft = 58;
+  const paddingRight = 24;
+  const paddingTop = 22;
+  const paddingBottom = 38;
+  const usableW = chartWidth - paddingLeft - paddingRight;
+  const usableH = chartHeight - paddingTop - paddingBottom;
 
-  // (2026-07-13) Smooth Catmull-Rom Bezier spline calculations. Prev: polyline
   const mappedPoints = useMemo(() => {
     return chartPoints.map((pt, i) => {
-      const x = paddingX + (i / (chartPoints.length - 1)) * usableW;
-      const y = paddingY + (1 - pt.val / maxVal) * usableH;
+      const x = paddingLeft + (i / (chartPoints.length - 1)) * usableW;
+      const y = paddingTop + (1 - pt.val / maxVal) * usableH;
       return { x, y, pt };
     });
-  }, [chartPoints, paddingX, usableW, paddingY, usableH, maxVal]);
+  }, [chartPoints, paddingLeft, usableW, paddingTop, usableH, maxVal]);
 
   const smoothCurvePath = useMemo(() => {
     if (mappedPoints.length < 2) return "";
@@ -819,9 +838,9 @@ function Overview({ posts }: { posts: Post[] }) {
     if (!smoothCurvePath || mappedPoints.length === 0) return "";
     const last = mappedPoints[mappedPoints.length - 1];
     const first = mappedPoints[0];
-    const bY = chartHeight - paddingY;
+    const bY = chartHeight - paddingBottom;
     return `${smoothCurvePath} L ${last.x.toFixed(1)},${bY} L ${first.x.toFixed(1)},${bY} Z`;
-  }, [smoothCurvePath, mappedPoints, chartHeight, paddingY]);
+  }, [smoothCurvePath, mappedPoints, chartHeight, paddingBottom]);
 
   const topQueries = [
     { query: "bainest digital marketing agency", clicks: Math.round(totalClicks * 0.36), impressions: Math.round(totalImpressions * 0.34), ctr: "9.4%", pos: "2.6" },
@@ -1033,19 +1052,29 @@ function Overview({ posts }: { posts: Post[] }) {
           </div>
         </div>
 
-        {/* (2026-07-13) Clean dot-free spline curve with crisp HTML tooltip. Prev: stretched SVG text */}
+        {/* (2026-07-13) Add scales, dates & rich tooltip to line chart. Prev: stretched */}
         <div
           className="svg-chart-container relative-chart-container"
           onMouseLeave={() => setHoveredPointIdx(null)}
           onMouseMove={(e) => {
+            if (mappedPoints.length === 0) return;
             const rect = e.currentTarget.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
-            const pct = Math.max(0, Math.min(1, (mouseX - paddingX) / usableW));
-            const idx = Math.max(0, Math.min(mappedPoints.length - 1, Math.round(pct * (mappedPoints.length - 1))));
-            setHoveredPointIdx(idx);
+            const relativeX = Math.max(0, Math.min(1, mouseX / rect.width));
+            const targetSvgX = relativeX * chartWidth;
+            let closestIdx = 0;
+            let minDiff = Infinity;
+            for (let i = 0; i < mappedPoints.length; i++) {
+              const diff = Math.abs(mappedPoints[i].x - targetSvgX);
+              if (diff < minDiff) {
+                minDiff = diff;
+                closestIdx = i;
+              }
+            }
+            setHoveredPointIdx(closestIdx);
           }}
         >
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="analytics-svg-chart" preserveAspectRatio="none">
+          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="analytics-svg-chart">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
@@ -1066,24 +1095,79 @@ function Overview({ posts }: { posts: Post[] }) {
               </filter>
             </defs>
 
-            {/* Horizontal Grid lines with scale */}
-            {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-              const y = paddingY + ratio * usableH;
+            {/* Y-Axis Horizontal Grid lines with numerical values on the left */}
+            {[1, 0.75, 0.5, 0.25, 0].map((ratio, idx) => {
+              const y = paddingTop + (1 - ratio) * usableH;
+              const tickVal = Math.round(maxVal * ratio);
+              const label = tickVal >= 1000 ? `${(tickVal / 1000).toFixed(1)}k` : tickVal.toString();
               return (
                 <g key={idx}>
-                  <line x1={paddingX} y1={y} x2={chartWidth - paddingX} y2={y} stroke="rgba(226, 232, 240, 0.75)" strokeDasharray="3 3" />
+                  <line
+                    x1={paddingLeft}
+                    y1={y}
+                    x2={chartWidth - paddingRight}
+                    y2={y}
+                    stroke="rgba(226, 232, 240, 0.85)"
+                    strokeDasharray="4 4"
+                  />
+                  <text
+                    x={paddingLeft - 10}
+                    y={y + 4}
+                    textAnchor="end"
+                    fontSize="11"
+                    fontWeight="600"
+                    fill="#64748b"
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* X-Axis Baseline & Chronological Date Labels */}
+            <line
+              x1={paddingLeft}
+              y1={chartHeight - paddingBottom}
+              x2={chartWidth - paddingRight}
+              y2={chartHeight - paddingBottom}
+              stroke="#cbd5e1"
+              strokeWidth="1.2"
+            />
+            {mappedPoints.map((mp, i) => {
+              const showLabel = i === 0 || i === mappedPoints.length - 1 || i % 3 === 0;
+              if (!showLabel) return null;
+              return (
+                <g key={i}>
+                  <line
+                    x1={mp.x}
+                    y1={chartHeight - paddingBottom}
+                    x2={mp.x}
+                    y2={chartHeight - paddingBottom + 5}
+                    stroke="#94a3b8"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={mp.x}
+                    y={chartHeight - paddingBottom + 18}
+                    textAnchor={i === 0 ? "start" : i === mappedPoints.length - 1 ? "end" : "middle"}
+                    fontSize="11"
+                    fontWeight="600"
+                    fill="#64748b"
+                  >
+                    {mp.pt.shortDate}
+                  </text>
                 </g>
               );
             })}
 
             {chartType === "bar" ? (
               <g>
-                {chartPoints.map((pt, i) => {
-                  const slotW = usableW / chartPoints.length;
-                  const barW = Math.max(Math.min(slotW - 14, 36), 16);
-                  const x = paddingX + i * slotW + (slotW - barW) / 2;
-                  const barH = Math.max((pt.val / maxVal) * usableH, 4);
-                  const y = chartHeight - paddingY - barH;
+                {mappedPoints.map((mp, i) => {
+                  const slotW = usableW / mappedPoints.length;
+                  const barW = Math.max(Math.min(slotW - 12, 38), 16);
+                  const x = paddingLeft + i * slotW + (slotW - barW) / 2;
+                  const barH = Math.max((mp.pt.val / maxVal) * usableH, 6);
+                  const y = chartHeight - paddingBottom - barH;
                   const isHovered = hoveredPointIdx === i;
                   return (
                     <g
@@ -1094,11 +1178,11 @@ function Overview({ posts }: { posts: Post[] }) {
                     >
                       <rect
                         x={x}
-                        y={paddingY}
+                        y={paddingTop}
                         width={barW}
                         height={usableH}
                         rx="6"
-                        fill="rgba(241, 245, 249, 0.7)"
+                        fill="rgba(241, 245, 249, 0.6)"
                       />
                       <rect
                         x={x}
@@ -1118,7 +1202,7 @@ function Overview({ posts }: { posts: Post[] }) {
                         fontWeight="700"
                         fill={isHovered ? "#006654" : "#475569"}
                       >
-                        {pt.val >= 1000 ? `${(pt.val / 1000).toFixed(1)}k` : pt.val}
+                        {mp.pt.val >= 1000 ? `${(mp.pt.val / 1000).toFixed(1)}k` : mp.pt.val}
                       </text>
                     </g>
                   );
@@ -1145,9 +1229,9 @@ function Overview({ posts }: { posts: Post[] }) {
                   <g>
                     <line
                       x1={mappedPoints[hoveredPointIdx].x}
-                      y1={paddingY}
+                      y1={paddingTop}
                       x2={mappedPoints[hoveredPointIdx].x}
-                      y2={chartHeight - paddingY}
+                      y2={chartHeight - paddingBottom}
                       stroke="#006654"
                       strokeWidth="1.5"
                       strokeDasharray="3 3"
@@ -1171,28 +1255,60 @@ function Overview({ posts }: { posts: Post[] }) {
                     />
                   </g>
                 )}
+
+                {/* Transparent hit areas for instant hover detection across every column */}
+                {mappedPoints.map((mp, i) => {
+                  const colW = usableW / (mappedPoints.length - 1);
+                  const colX = mp.x - colW / 2;
+                  return (
+                    <rect
+                      key={`hit-${i}`}
+                      x={Math.max(paddingLeft, colX)}
+                      y={paddingTop}
+                      width={colW}
+                      height={usableH}
+                      fill="transparent"
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={() => setHoveredPointIdx(i)}
+                    />
+                  );
+                })}
               </>
             )}
           </svg>
 
-          {/* Crisp HTML Floating Tooltip — Never horizontally stretched */}
+          {/* Crisp HTML Floating Tooltip with dates & telemetry details */}
           {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
             <div
               className="chart-crisp-html-tooltip"
               style={{
-                left: `${(mappedPoints[hoveredPointIdx].x / chartWidth) * 100}%`,
-                top: `${(mappedPoints[hoveredPointIdx].y / chartHeight) * 100}%`,
+                left: `${Math.max(12, Math.min(88, (mappedPoints[hoveredPointIdx].x / chartWidth) * 100))}%`,
+                top: `${Math.max(15, (mappedPoints[hoveredPointIdx].y / chartHeight) * 100)}%`,
               }}
             >
-              <b>{mappedPoints[hoveredPointIdx].pt.val.toLocaleString()}</b>
-              <span>{activeMetric === "views" ? "views" : activeMetric === "clicks" ? "clicks" : "impressions"}</span>
+              <div className="chart-tooltip-date">{mappedPoints[hoveredPointIdx].pt.fullDate}</div>
+              <div className="chart-tooltip-metric">
+                <b>{mappedPoints[hoveredPointIdx].pt.val.toLocaleString()}</b>
+                <span>{activeMetric === "views" ? "page views" : activeMetric === "clicks" ? "search clicks" : "impressions"}</span>
+              </div>
+              <div className="chart-tooltip-details">
+                <span><b>{mappedPoints[hoveredPointIdx].pt.clicks}</b> clicks</span>
+                <span><b>{mappedPoints[hoveredPointIdx].pt.impressions.toLocaleString()}</b> imp.</span>
+                <span><b>{mappedPoints[hoveredPointIdx].pt.ctr}</b> CTR</span>
+              </div>
             </div>
           )}
         </div>
-        <div className="chart-legend-row">
-          <span>Initial ({timeframe})</span>
-          <span>Mid-interval</span>
-          <span>Peak Velocity (Now)</span>
+        <div className="chart-legend-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "#64748b", padding: "0 6px" }}>
+          <span>
+            <b>Start:</b> {chartPoints[0]?.fullDate}
+          </span>
+          <span>
+            <b>Telemetry:</b> {timeframe === "7d" ? "7 Days" : timeframe === "28d" ? "28 Days" : timeframe === "3m" ? "3 Months" : "12 Months"} organic tracking
+          </span>
+          <span>
+            <b>Peak:</b> {Math.max(...chartPoints.map((p) => p.val)).toLocaleString()} {activeMetric} ({chartPoints[chartPoints.length - 1]?.shortDate})
+          </span>
         </div>
       </section>
 
@@ -1388,7 +1504,8 @@ function Overview({ posts }: { posts: Post[] }) {
         <section className="admin-panel">
           <div className="panel-head">
             <div>
-              <h2>Audience & Channels (Pie Charts)</h2>
+              {/* (2026-07-13) Remove (Pie Charts) from heading. Prev: (Pie Charts) */}
+              <h2>Audience & Channels</h2>
               <p>Visualizing acquisition channels and device breakdown.</p>
             </div>
             <span className="gsc-source-tag"><PieChart size={12} /> Donut</span>
