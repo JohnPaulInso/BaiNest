@@ -828,36 +828,63 @@ function CtaBand() {
     </section>
   );
 }
+/* (2026-07-13) Render live editable About page content. Prev: hardcoded */
 function About() {
+  const settings = useSettings();
+  const heroLabel = settings.aboutHeroLabel || "About BaiNest";
+  const heroTitle = settings.aboutHeroTitle || "Thoughtful partners for your next chapter.";
+  const heroCopy = settings.aboutHeroCopy || "We bring the right questions, clear strategy, and considered creative to help your business move forward.";
+  const quote = settings.aboutQuote || "“Good work should feel clear from the first conversation to the final detail.”";
+  const storyEyebrow = settings.aboutStoryEyebrow || "Our point of view";
+  const storyTitle = settings.aboutStoryTitle || "Strategy and making, working as one.";
+  const storyBody1 = settings.aboutStoryBody1 || "BaiNest is an independent digital studio for businesses ready to grow with intention. We connect the dots between what you stand for, what you make, and how people experience it.";
+  const storyBody2 = settings.aboutStoryBody2 || "We believe the strongest work is generous with clarity, ambitious with purpose, and practical enough to make a real difference.";
+  const valuesEyebrow = settings.aboutValuesEyebrow || "What guides us";
+  const valuesTitle = settings.aboutValuesTitle || "Good work is good partnership.";
+
+  const values = [
+    {
+      icon: ShieldCheck,
+      title: settings.aboutValue1Title || "Care in the details",
+      copy: settings.aboutValue1Copy || "Thoughtful craft earns trust one useful decision at a time.",
+    },
+    {
+      icon: Layers3,
+      title: settings.aboutValue2Title || "Connected thinking",
+      copy: settings.aboutValue2Copy || "Strategy and execution belong in the same conversation.",
+    },
+    {
+      icon: ArrowUpRight,
+      title: settings.aboutValue3Title || "Momentum over noise",
+      copy: settings.aboutValue3Copy || "We choose meaningful progress over busywork and buzzwords.",
+    },
+  ];
+
   return (
     <PageFrame>
       <PageHeading
-        label="About BaiNest"
-        title="Thoughtful partners for your next chapter."
-        copy="We bring the right questions, clear strategy, and considered creative to help your business move forward."
+        label={heroLabel}
+        title={heroTitle}
+        copy={heroCopy}
       />
       <section className="section">
         <div className="wrap about-story">
           <div className="about-quote">
-            “Good work should feel clear from the first conversation to the
-            final detail.”
+            {quote}
           </div>
           <div>
-            <Eyebrow>Our point of view</Eyebrow>
+            <Eyebrow>{storyEyebrow}</Eyebrow>
             <h2>
-              Strategy and making,
-              <br />
-              <em>working as one.</em>
+              {storyTitle}
             </h2>
             <p>
-              BaiNest is an independent digital studio for businesses ready to
-              grow with intention. We connect the dots between what you stand
-              for, what you make, and how people experience it.
+              {storyBody1}
             </p>
-            <p>
-              We believe the strongest work is generous with clarity, ambitious
-              with purpose, and practical enough to make a real difference.
-            </p>
+            {storyBody2 && (
+              <p>
+                {storyBody2}
+              </p>
+            )}
             <Link className="text-link" to="/services">
               See how we can help <ArrowRight size={14} />
             </Link>
@@ -867,30 +894,12 @@ function About() {
       <section className="section section-soft">
         <div className="wrap values-grid">
           <div>
-            <Eyebrow>What guides us</Eyebrow>
+            <Eyebrow>{valuesEyebrow}</Eyebrow>
             <h2>
-              Good work is
-              <br />
-              <em>good partnership.</em>
+              {valuesTitle}
             </h2>
           </div>
-          {[
-            {
-              icon: ShieldCheck,
-              title: "Care in the details",
-              copy: "Thoughtful craft earns trust one useful decision at a time.",
-            },
-            {
-              icon: Layers3,
-              title: "Connected thinking",
-              copy: "Strategy and execution belong in the same conversation.",
-            },
-            {
-              icon: ArrowUpRight,
-              title: "Momentum over noise",
-              copy: "We choose meaningful progress over busywork and buzzwords.",
-            },
-          ].map((v) => (
+          {values.map((v) => (
             <article className="value-card" key={v.title}>
               <v.icon />
               <h3>{v.title}</h3>

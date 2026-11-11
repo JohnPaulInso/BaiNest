@@ -65,6 +65,23 @@ export type SiteSettings = {
   instagram: string;
   youtube: string;
   tags?: string[];
+  /* (2026-07-13) Add About page content fields to SiteSettings. Prev: none */
+  aboutHeroLabel?: string;
+  aboutHeroTitle?: string;
+  aboutHeroCopy?: string;
+  aboutQuote?: string;
+  aboutStoryEyebrow?: string;
+  aboutStoryTitle?: string;
+  aboutStoryBody1?: string;
+  aboutStoryBody2?: string;
+  aboutValuesEyebrow?: string;
+  aboutValuesTitle?: string;
+  aboutValue1Title?: string;
+  aboutValue1Copy?: string;
+  aboutValue2Title?: string;
+  aboutValue2Copy?: string;
+  aboutValue3Title?: string;
+  aboutValue3Copy?: string;
 };
 /* (2026-07-13) Master tags imported from database reference. Prev: none */
 export const defaultTags: string[] = [
@@ -128,6 +145,23 @@ export const defaultSettings: SiteSettings = {
   instagram: "https://instagram.com/bainestdigital",
   youtube: "https://youtube.com/@bainestdigital",
   tags: defaultTags,
+  /* (2026-07-13) Default content for About page. Prev: static inline in App */
+  aboutHeroLabel: "About BaiNest",
+  aboutHeroTitle: "Thoughtful partners for your next chapter.",
+  aboutHeroCopy: "We bring the right questions, clear strategy, and considered creative to help your business move forward.",
+  aboutQuote: "“Good work should feel clear from the first conversation to the final detail.”",
+  aboutStoryEyebrow: "Our point of view",
+  aboutStoryTitle: "Strategy and making, working as one.",
+  aboutStoryBody1: "BaiNest is an independent digital studio for businesses ready to grow with intention. We connect the dots between what you stand for, what you make, and how people experience it.",
+  aboutStoryBody2: "We believe the strongest work is generous with clarity, ambitious with purpose, and practical enough to make a real difference.",
+  aboutValuesEyebrow: "What guides us",
+  aboutValuesTitle: "Good work is good partnership.",
+  aboutValue1Title: "Care in the details",
+  aboutValue1Copy: "Thoughtful craft earns trust one useful decision at a time.",
+  aboutValue2Title: "Connected thinking",
+  aboutValue2Copy: "Strategy and execution belong in the same conversation.",
+  aboutValue3Title: "Momentum over noise",
+  aboutValue3Copy: "We choose meaningful progress over busywork and buzzwords.",
 };
 export type AdminState = {
   authenticated: boolean;

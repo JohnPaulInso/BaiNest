@@ -519,11 +519,12 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
 }
 function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   const loc = useLocation();
-  // (2026-07-13) Rename Posts to Blogs in admin nav. Prev: Posts
+  // (2026-07-13) Add About page editor link to admin navigation. Prev: no about
   const items = [
     ["Overview", "/admin", LayoutDashboard],
     ["Blogs", "/admin/posts", FileText],
     ["Inbox", "/admin/inbox", Inbox],
+    ["About page", "/admin/about", BookOpen],
     ["Domains & settings", "/admin/settings", Settings],
   ] as const;
   return (
@@ -2215,6 +2216,286 @@ function InboxPage() {
     </>
   );
 }
+
+/* (2026-07-13) Manage live editable About page content in Firestore. Prev: none */
+function AboutPageEditor() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    api<SiteSettings>("/api/admin/settings")
+      .then((s) => setSettings(s || defaultSettings))
+      .catch(() => {});
+  }, []);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api("/api/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify(settings),
+      });
+      setToast({ message: "About page updated successfully!", type: "success" });
+      setTimeout(() => setToast(null), 3500);
+    } catch (err) {
+      setToast({
+        message: err instanceof Error ? err.message : "Failed to update About page.",
+        type: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      {toast && (
+        <div className={`admin-toast-badge toast-${toast.type}`}>
+          <span className="toast-icon">
+            <Check size={16} />
+          </span>
+          <span className="toast-text">{toast.message}</span>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToast(null)}
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <div className="admin-page-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+        <div>
+          <span className="admin-kicker">Content & Story</span>
+          <h1>Edit About Page</h1>
+          <p>Update hero message, company point of view, quotes, and guiding values on the public /about page.</p>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Link to="/about" target="_blank" rel="noopener noreferrer" className="admin-light" style={{ textDecoration: "none" }}>
+            <Eye size={15} /> View live page <ArrowUpRight size={14} />
+          </Link>
+          <button
+            type="button"
+            className="admin-primary"
+            onClick={(e) => handleSave(e as any)}
+            disabled={saving}
+          >
+            <Save size={15} /> {saving ? "Saving..." : "Save changes"}
+          </button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+        {/* Section 1: Hero Banner */}
+        <section className="admin-panel settings-panel">
+          <div className="panel-head">
+            <div>
+              <h2>Hero Banner</h2>
+              <p>The first headline and introduction visitors see at the top of the About page.</p>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 16 }}>
+            <label>
+              Hero eyebrow tag
+              <input
+                value={settings.aboutHeroLabel ?? "About BaiNest"}
+                onChange={(e) => setSettings({ ...settings, aboutHeroLabel: e.target.value })}
+                placeholder="About BaiNest"
+              />
+            </label>
+            <label>
+              Hero headline
+              <input
+                value={settings.aboutHeroTitle ?? "Thoughtful partners for your next chapter."}
+                onChange={(e) => setSettings({ ...settings, aboutHeroTitle: e.target.value })}
+                placeholder="Thoughtful partners for your next chapter."
+              />
+            </label>
+            <label>
+              Hero introduction copy
+              <textarea
+                rows={3}
+                value={settings.aboutHeroCopy ?? "We bring the right questions, clear strategy, and considered creative to help your business move forward."}
+                onChange={(e) => setSettings({ ...settings, aboutHeroCopy: e.target.value })}
+                placeholder="We bring the right questions, clear strategy, and considered creative..."
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Section 2: Story & Point of View */}
+        <section className="admin-panel settings-panel">
+          <div className="panel-head">
+            <div>
+              <h2>Point of View & Story</h2>
+              <p>The central quote and narrative explaining how BaiNest approaches work.</p>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 16 }}>
+            <label>
+              Highlight callout quote
+              <textarea
+                rows={2}
+                value={settings.aboutQuote ?? "“Good work should feel clear from the first conversation to the final detail.”"}
+                onChange={(e) => setSettings({ ...settings, aboutQuote: e.target.value })}
+                placeholder="“Good work should feel clear from the first conversation to the final detail.”"
+              />
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+              <label>
+                Section eyebrow
+                <input
+                  value={settings.aboutStoryEyebrow ?? "Our point of view"}
+                  onChange={(e) => setSettings({ ...settings, aboutStoryEyebrow: e.target.value })}
+                  placeholder="Our point of view"
+                />
+              </label>
+              <label>
+                Story headline
+                <input
+                  value={settings.aboutStoryTitle ?? "Strategy and making, working as one."}
+                  onChange={(e) => setSettings({ ...settings, aboutStoryTitle: e.target.value })}
+                  placeholder="Strategy and making, working as one."
+                />
+              </label>
+            </div>
+            <label>
+              Story paragraph 1
+              <textarea
+                rows={3}
+                value={settings.aboutStoryBody1 ?? "BaiNest is an independent digital studio for businesses ready to grow with intention. We connect the dots between what you stand for, what you make, and how people experience it."}
+                onChange={(e) => setSettings({ ...settings, aboutStoryBody1: e.target.value })}
+                placeholder="First narrative paragraph..."
+              />
+            </label>
+            <label>
+              Story paragraph 2
+              <textarea
+                rows={3}
+                value={settings.aboutStoryBody2 ?? "We believe the strongest work is generous with clarity, ambitious with purpose, and practical enough to make a real difference."}
+                onChange={(e) => setSettings({ ...settings, aboutStoryBody2: e.target.value })}
+                placeholder="Second narrative paragraph..."
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Section 3: Guiding Values */}
+        <section className="admin-panel settings-panel">
+          <div className="panel-head">
+            <div>
+              <h2>Guiding Values ("What Guides Us")</h2>
+              <p>The three core principles displayed in the cards section of the About page.</p>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+              <label>
+                Values section eyebrow
+                <input
+                  value={settings.aboutValuesEyebrow ?? "What guides us"}
+                  onChange={(e) => setSettings({ ...settings, aboutValuesEyebrow: e.target.value })}
+                  placeholder="What guides us"
+                />
+              </label>
+              <label>
+                Values section headline
+                <input
+                  value={settings.aboutValuesTitle ?? "Good work is good partnership."}
+                  onChange={(e) => setSettings({ ...settings, aboutValuesTitle: e.target.value })}
+                  placeholder="Good work is good partnership."
+                />
+              </label>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+              {/* Value 1 */}
+              <div style={{ background: "#f8fafc", padding: 16, borderRadius: 10, border: "1px solid #e2e8f0", display: "grid", gap: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.06em" }}>Value 01</span>
+                <label>
+                  Title
+                  <input
+                    value={settings.aboutValue1Title ?? "Care in the details"}
+                    onChange={(e) => setSettings({ ...settings, aboutValue1Title: e.target.value })}
+                    placeholder="Care in the details"
+                  />
+                </label>
+                <label>
+                  Description
+                  <textarea
+                    rows={2}
+                    value={settings.aboutValue1Copy ?? "Thoughtful craft earns trust one useful decision at a time."}
+                    onChange={(e) => setSettings({ ...settings, aboutValue1Copy: e.target.value })}
+                    placeholder="Value description..."
+                  />
+                </label>
+              </div>
+
+              {/* Value 2 */}
+              <div style={{ background: "#f8fafc", padding: 16, borderRadius: 10, border: "1px solid #e2e8f0", display: "grid", gap: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.06em" }}>Value 02</span>
+                <label>
+                  Title
+                  <input
+                    value={settings.aboutValue2Title ?? "Connected thinking"}
+                    onChange={(e) => setSettings({ ...settings, aboutValue2Title: e.target.value })}
+                    placeholder="Connected thinking"
+                  />
+                </label>
+                <label>
+                  Description
+                  <textarea
+                    rows={2}
+                    value={settings.aboutValue2Copy ?? "Strategy and execution belong in the same conversation."}
+                    onChange={(e) => setSettings({ ...settings, aboutValue2Copy: e.target.value })}
+                    placeholder="Value description..."
+                  />
+                </label>
+              </div>
+
+              {/* Value 3 */}
+              <div style={{ background: "#f8fafc", padding: 16, borderRadius: 10, border: "1px solid #e2e8f0", display: "grid", gap: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.06em" }}>Value 03</span>
+                <label>
+                  Title
+                  <input
+                    value={settings.aboutValue3Title ?? "Momentum over noise"}
+                    onChange={(e) => setSettings({ ...settings, aboutValue3Title: e.target.value })}
+                    placeholder="Momentum over noise"
+                  />
+                </label>
+                <label>
+                  Description
+                  <textarea
+                    rows={2}
+                    value={settings.aboutValue3Copy ?? "We choose meaningful progress over busywork and buzzwords."}
+                    onChange={(e) => setSettings({ ...settings, aboutValue3Copy: e.target.value })}
+                    placeholder="Value description..."
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+          <button
+            type="submit"
+            className="admin-primary"
+            disabled={saving}
+          >
+            <Save size={16} /> {saving ? "Saving..." : "Save About Page"}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}
+
 export function AdminApp() {
   const [session, setSession] = useState<AdminState | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -2385,6 +2666,8 @@ export function AdminApp() {
             />
           ) : path === "/admin/inbox" ? (
             <InboxPage />
+          ) : path === "/admin/about" ? (
+            <AboutPageEditor />
           ) : path === "/admin/settings" ? (
             <DomainSettings />
           ) : (
