@@ -1788,15 +1788,10 @@ function Contact() {
       setBusy(false);
     }
   }
-  /* (2026-07-13) Dynamic editable Contact page content & updated info. Prev: static */
+  /* (2026-07-13) Remove page-hero from contact page. Prev: PageHeading */
   return (
     <PageFrame>
-      <PageHeading
-        label={settings.contactHeroLabel || "Contact"}
-        title={settings.contactHeroTitle || "Tell us what you’re working toward."}
-        copy={settings.contactHeroCopy || "A good conversation can make the next step clearer. Share a little about your idea and we’ll take it from there."}
-      />
-      <section className="section">
+      <section className="section contact-page-section">
         <div className="wrap contact-grid">
           <div className="contact-aside">
             <Eyebrow>{settings.contactSidebarEyebrow || "Start here"}</Eyebrow>

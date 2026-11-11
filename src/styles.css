@@ -1534,6 +1534,10 @@ img {
   font: 800 clamp(36px, 5vw, 55px)/1.15 "Manrope";
   letter-spacing: -0.05em;
 }
+/* (2026-07-13) Set top spacing for standalone contact page. Prev: page-hero */
+.contact-page-section {
+  padding-top: 56px;
+}
 .contact-grid {
   display: grid;
   grid-template-columns: 0.72fr 1.28fr;
