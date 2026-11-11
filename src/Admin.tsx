@@ -1640,6 +1640,7 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
         </div>
         {visible.map((p) => (
           <div className="post-table-row post-table-row-extended" key={p.id}>
+            {/* (2026-07-13) Fix post row title overflow & truncation. Prev: inline flex wrap */}
             <button
               className="post-row-title"
               onClick={() => navigate(`/admin/posts/${p.id}`)}
@@ -1647,14 +1648,14 @@ function PostList({ posts, refresh }: { posts: Post[]; refresh: () => void }) {
               <span className="recent-post-icon">
                 <FileText size={17} />
               </span>
-              <span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                  <b>{p.title || "Untitled"}</b>
+              <span className="post-row-text-group">
+                <span className="post-row-title-line">
+                  <b title={p.title}>{p.title || "Untitled"}</b>
                   <span className={`placement-chip placement-${getPostPlacement(p).toLowerCase()}`}>
                     {getPostPlacement(p)}
                   </span>
                 </span>
-                <small>/{p.slug}</small>
+                <small className="post-row-slug">/{p.slug}</small>
               </span>
             </button>
             <span className="post-metric-pill views-pill">
@@ -2318,54 +2319,7 @@ function PostEditor({
           )}
         </div>
       </div>
-      {/* (2026-07-13) Professional story template picker for new posts. Prev: none */}
-      {!id && (
-        <div className="template-picker">
-          <div className="template-picker-head">
-            <span className="template-picker-title">
-              ✨ Professional Story Templates
-            </span>
-            <span className="template-picker-hint">
-              Click any template to auto-populate layout, or write from scratch
-            </span>
-          </div>
-          {/* (2026-07-13) Template cards with distinct icons. Prev: text only */}
-          <div className="template-cards-grid">
-            {postTemplates.map((tpl) => {
-              const IconComponent = tpl.icon;
-              return (
-                <button
-                  key={tpl.name}
-                  type="button"
-                  className="template-card-btn"
-                  onClick={() => applyTemplate(tpl)}
-                >
-                  <div className="template-icon-wrap">
-                    <IconComponent size={18} />
-                  </div>
-                  <b>{tpl.name}</b>
-                  <small>{tpl.desc}</small>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              className="template-card-btn"
-              onClick={() => {
-                setForm({ ...emptyPost, blocks: [] });
-                setTags("");
-                setNotice("Reset to blank story.");
-              }}
-            >
-              <div className="template-icon-wrap">
-                <PlusCircle size={18} />
-              </div>
-              <b>Blank Canvas</b>
-              <small>Start with a clean title and empty block editor</small>
-            </button>
-          </div>
-        </div>
-      )}
+      {/* (2026-07-13) Remove story templates. Prev: template-picker */}
       <div className="editor-layout">
         <div className="editor-main">
           <div className="editor-surface">

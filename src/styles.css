@@ -6561,7 +6561,7 @@ img {
   cursor: pointer;
 }
 
-/* (2026-07-13) Sticky bottom-right back to top button. Prev: page-relative */
+/* (2026-07-13) Set back to top button to theme color. Prev: #2563eb */
 .back-to-top-blue-btn {
   position: fixed !important;
   bottom: 28px !important;
@@ -6570,13 +6570,13 @@ img {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #2563eb;
+  background: #006654;
   color: #ffffff;
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 102, 84, 0.4);
   cursor: pointer;
   pointer-events: auto !important;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
@@ -6585,9 +6585,9 @@ img {
 /* (2026-07-13) Wrap back-to-top hover in hover query with active state. Prev: raw */
 @media (hover: hover) {
   .back-to-top-blue-btn:hover {
-    background: #1d4ed8;
+    background: #004d3f;
     transform: translateY(-3px) scale(1.06);
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+    box-shadow: 0 10px 24px rgba(0, 102, 84, 0.5);
   }
 }
 .back-to-top-blue-btn:active {
@@ -7296,11 +7296,46 @@ img {
   font-size: 11.5px;
   color: #64748b;
 }
+/* (2026-07-13) Fix table column overflow and text truncation. Prev: overlapping */
 .post-table-head-extended {
-  grid-template-columns: 2.2fr 100px 100px 100px 110px 180px !important;
+  grid-template-columns: minmax(0, 1.8fr) 85px 110px 95px 95px 185px !important;
 }
 .post-table-row-extended {
-  grid-template-columns: 2.2fr 100px 100px 100px 110px 180px !important;
+  grid-template-columns: minmax(0, 1.8fr) 85px 110px 95px 95px 185px !important;
+}
+.post-table-row-extended .post-row-title {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.post-row-text-group {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.post-row-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+.post-row-title-line b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.post-row-slug {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 @keyframes spinSlow {
   from { transform: rotate(0deg); }

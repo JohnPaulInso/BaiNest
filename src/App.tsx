@@ -705,9 +705,10 @@ function Home() {
                     <div className="project-orbit" />
                   </div>
                   <div className="project-content">
-                    <span className="project-type">{p.category || "Case Study"}</span>
+                    {/* (2026-07-13) Replace Case Study badge with WORK. Prev: Case Study */}
+                    <span className="project-type">{(!p.category || p.category.toLowerCase().includes("case study")) ? "WORK" : p.category}</span>
                     <h3>{p.title}</h3>
-                    <p>{p.excerpt || "View this client case study."}</p>
+                    <p>{p.excerpt || "View this client work."}</p>
                     <ArrowUpRight className="project-arrow" size={20} />
                   </div>
                 </Link>
@@ -1039,7 +1040,8 @@ function Portfolio() {
                         <span>{p.title.slice(0, 2).toUpperCase()}</span>
                       </div>
                     )}
-                    <span className="portfolio-badge-pill">{p.category || "Case Study"}</span>
+                    {/* (2026-07-13) Set portfolio badge to WORK. Prev: Case Study */}
+                    <span className="portfolio-badge-pill">{(!p.category || p.category.toLowerCase().includes("case study")) ? "WORK" : p.category}</span>
                   </Link>
                   <div className="portfolio-card-content">
                     <div className="portfolio-card-meta">
@@ -1059,7 +1061,7 @@ function Portfolio() {
                     {p.excerpt && <p className="portfolio-card-excerpt">{p.excerpt}</p>}
                     {/* (2026-07-13) Removed tag chips from portfolio cards. Prev: tags rendered */}
                     <Link to={`/blog/${p.slug}`} className="portfolio-card-cta">
-                      Explore case study <ArrowRight size={14} />
+                      Explore work <ArrowRight size={14} />
                     </Link>
                   </div>
                 </article>
