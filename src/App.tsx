@@ -245,56 +245,64 @@ function Header() {
                     </NavLink>
                     {recentOpen && recentPosts.length > 0 && (
                       <div className="recent-posts-mega">
-                        {/* (2026-07-13) Header for blog dropdown. Prev: bare grid */}
+                        {/* (2026-07-13) Redesign blog dropdown into sleek row list. Prev: box grid */}
                         <div className="recent-posts-top">
-                          <span className="recent-posts-top-label">RECENT STORIES</span>
+                          <span className="recent-posts-top-label">Featured stories</span>
                           <Link to="/blog" className="recent-posts-view-all" onClick={() => setRecentOpen(false)}>
                             All stories &rarr;
                           </Link>
                         </div>
-                        <div className="recent-posts-grid">
-                          {recentPosts.map((rp) => (
+                        <div className="recent-posts-list">
+                          {recentPosts.slice(0, 3).map((rp) => (
                             <Link
                               key={rp.id}
                               to={`/blog/${rp.slug}`}
-                              className="recent-mega-card"
+                              className="recent-post-row"
                               onClick={() => setRecentOpen(false)}
                             >
-                              <div className="recent-mega-thumb">
+                              <div className="recent-row-thumb">
                                 {rp.cover_image ? (
                                   <img src={rp.cover_image} alt={rp.title} />
                                 ) : (
-                                  <div className="recent-mega-ph">
+                                  <div className="recent-row-ph">
                                     <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
                                   </div>
                                 )}
                               </div>
-                              {/* (2026-07-13) Add post excerpt & category to mega dropdown. Prev: title only */}
-                              <h4 className="recent-mega-title">{rp.title}</h4>
-                              <p className="recent-mega-desc">
-                                {rp.excerpt && rp.excerpt.trim()
-                                  ? rp.excerpt
-                                  : rp.slug?.toLowerCase().includes("aton") || rp.title?.toLowerCase().includes("aton")
-                                  ? "A trusted partner in legal excellence in Bogo City, building modern digital solutions."
-                                  : rp.slug?.toLowerCase().includes("bainest") || rp.title?.toLowerCase().includes("bainest")
-                                  ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu."
-                                  : "Strategic insights and creative digital execution for ambitious brands."}
-                              </p>
-                              <div className="recent-mega-meta">
-                                <span className="recent-mega-cat">{rp.category || "Story"}</span>
-                                <span className="recent-mega-dot" />
-                                <span className="recent-mega-date">
-                                  {rp.published_at
-                                    ? new Date(rp.published_at).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })
-                                    : "Recent"}
-                                </span>
+                              <div className="recent-row-body">
+                                <div className="recent-row-meta">
+                                  <span className="recent-row-badge">{rp.category || "Story"}</span>
+                                  <span className="recent-row-date">
+                                    {rp.published_at
+                                      ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                        })
+                                      : "Recent"}
+                                  </span>
+                                </div>
+                                <h4 className="recent-row-title">{rp.title}</h4>
+                                <p className="recent-row-desc">
+                                  {rp.excerpt && rp.excerpt.trim()
+                                    ? rp.excerpt
+                                    : rp.slug?.toLowerCase().includes("aton") || rp.title?.toLowerCase().includes("aton")
+                                    ? "A trusted partner in legal excellence in Bogo City, building modern digital solutions."
+                                    : rp.slug?.toLowerCase().includes("bainest") || rp.title?.toLowerCase().includes("bainest")
+                                    ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu."
+                                    : "Strategic insights and creative digital execution for ambitious brands."}
+                                </p>
+                              </div>
+                              <div className="recent-row-arrow">
+                                <ArrowUpRight size={15} />
                               </div>
                             </Link>
                           ))}
+                        </div>
+                        <div className="recent-posts-footer">
+                          <Link to="/blog" className="recent-footer-link" onClick={() => setRecentOpen(false)}>
+                            <span>Explore all case studies & insights</span>
+                            <ArrowRight size={13} />
+                          </Link>
                         </div>
                       </div>
                     )}
