@@ -696,11 +696,11 @@ function Home() {
                 >
                   <div className="project-art">
                     {p.cover_image ? (
+                      /* (2026-07-13) Remove inline cover crop from project img. Prev: cover */
                       <img
                         src={p.cover_image}
                         alt={p.title}
                         className="project-cover-img"
-                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "14px" }}
                       />
                     ) : (
                       <span>{p.title.slice(0, 2).toUpperCase()}</span>
