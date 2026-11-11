@@ -3065,8 +3065,9 @@ img {
     left: 17px;
     bottom: 18px;
   }
+  /* (2026-07-13) Reduce mobile section padding to eliminate dead gaps. Prev: 64px */
   .section {
-    padding: 64px 0;
+    padding: 28px 0 40px;
   }
   .intro-grid,
   .why-grid,
@@ -3153,14 +3154,50 @@ img {
     grid-template-columns: 1fr;
     gap: 7px;
   }
+  /* (2026-07-13) Compact mobile page hero and tight section spacing. Prev: 60px/53px */
   .page-hero {
-    padding: 60px 0 53px;
+    padding: 28px 0 12px;
   }
   .page-hero h1 {
-    font-size: clamp(36px, 10vw, 52px);
+    font-size: clamp(26px, 7.5vw, 38px);
+    margin: 8px 0 8px;
+    line-height: 1.15;
   }
   .page-hero p {
-    font-size: 13px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    max-width: 100%;
+  }
+  .page-hero + .section,
+  .page-hero + section,
+  .page-hero + .services-page-section {
+    padding-top: 14px;
+  }
+  .portfolio-gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 6px;
+    margin-bottom: 28px;
+  }
+  .category-chips-bar {
+    gap: 6px;
+    margin-top: 0;
+    margin-bottom: 14px;
+  }
+  .category-chip {
+    padding: 5px 12px;
+    font-size: 11.5px;
+  }
+  .about-story {
+    gap: 20px;
+  }
+  .about-quote {
+    padding: 12px 0 12px 16px;
+    font-size: 18px;
+    line-height: 1.4;
+  }
+  .contact-grid {
+    gap: 20px;
   }
   .portfolio-art {
     height: 210px;
@@ -3170,7 +3207,8 @@ img {
   }
   .blog-toolbar {
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 16px;
     flex-direction: column;
   }
   .search-field,
@@ -3180,10 +3218,10 @@ img {
   .cta-inner {
     align-items: flex-start;
     flex-direction: column;
-    gap: 22px;
+    gap: 20px;
   }
   .cta-band {
-    padding: 54px 0;
+    padding: 38px 0;
   }
   .footer-grid {
     grid-template-columns: 1fr 1fr;
@@ -4174,10 +4212,13 @@ img {
   gap: 10px;
   color: #0f766e;
 }
+/* (2026-07-13) Compact gallery grid margins on small mobile. Prev: default */
 @media (max-width: 640px) {
   .portfolio-gallery-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 18px;
+    margin-top: 4px;
+    margin-bottom: 24px;
   }
 }
 
