@@ -522,13 +522,14 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
 }
 function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   const loc = useLocation();
-  // (2026-07-13) Add About & Services page editor links. Prev: no services
+  // (2026-07-13) Add About, Services & Contact page editor links. Prev: no contact
   const items = [
     ["Overview", "/admin", LayoutDashboard],
     ["Blogs", "/admin/posts", FileText],
     ["Inbox", "/admin/inbox", Inbox],
     ["About page", "/admin/about", BookOpen],
     ["Services page", "/admin/services", Briefcase],
+    ["Contact page", "/admin/contact", Mail],
     ["Domains & settings", "/admin/settings", Settings],
   ] as const;
   return (
@@ -2971,6 +2972,273 @@ function ServicesPageEditor() {
   );
 }
 
+/* (2026-07-13) Contact page editor with editable details. Prev: no contact editor */
+function ContactPageEditor() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    api<SiteSettings>("/api/admin/settings")
+      .then((s) => {
+        if (s) setSettings(s);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api("/api/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify(settings),
+      });
+      setToast({ message: "Contact page & details updated successfully!", type: "success" });
+      setTimeout(() => setToast(null), 3500);
+    } catch (err) {
+      setToast({
+        message: err instanceof Error ? err.message : "Failed to update Contact page.",
+        type: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      {toast && (
+        <div className={`admin-toast-badge toast-${toast.type}`}>
+          <span className="toast-icon">
+            <Check size={16} />
+          </span>
+          <span className="toast-text">{toast.message}</span>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToast(null)}
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <div className="about-page-editor-container">
+        <div className="admin-page-title about-editor-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <span className="admin-kicker">Contact & Inquiries</span>
+            <h1>Edit Contact Page</h1>
+            <p>Update direct email, phone number, headline, and guidance pillars for visitors on /contact.</p>
+          </div>
+          <div className="about-editor-header-actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Link to="/contact" target="_blank" rel="noopener noreferrer" className="admin-light" style={{ textDecoration: "none" }}>
+              <Eye size={15} /> View live page <ArrowUpRight size={14} />
+            </Link>
+            <button
+              type="button"
+              className="admin-primary"
+              onClick={(e) => handleSave(e as any)}
+              disabled={saving}
+            >
+              <Save size={15} /> {saving ? "Saving..." : "Save changes"}
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+          {/* Section 1: Direct Contact Info (Email & Phone) */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Direct Contact Details</h2>
+                <p>These details appear in the direct inquiry card and across the site footer.</p>
+              </div>
+            </div>
+            <div className="about-editor-row">
+              <div className="about-editor-field">
+                <label>
+                  Contact email address
+                  <input
+                    type="email"
+                    value={settings.email ?? "bainestph@gmail.com"}
+                    onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                    placeholder="bainestph@gmail.com"
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Phone / mobile number
+                  <input
+                    value={settings.phone ?? "09622302015"}
+                    onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                    placeholder="09622302015"
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Hero Banner */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Hero Section</h2>
+                <p>The top headline and introduction on the Contact page.</p>
+              </div>
+            </div>
+            <div className="about-editor-fields">
+              <div className="about-editor-field">
+                <label>
+                  Eyebrow tag
+                  <input
+                    value={settings.contactHeroLabel ?? "Contact"}
+                    onChange={(e) => setSettings({ ...settings, contactHeroLabel: e.target.value })}
+                    placeholder="Contact"
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Headline
+                  <input
+                    value={settings.contactHeroTitle ?? "Tell us what you’re working toward."}
+                    onChange={(e) => setSettings({ ...settings, contactHeroTitle: e.target.value })}
+                    placeholder="Tell us what you’re working toward."
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Introduction copy
+                  <textarea
+                    rows={2}
+                    value={settings.contactHeroCopy ?? "A good conversation can make the next step clearer. Share a little about your idea and we’ll take it from there."}
+                    onChange={(e) => setSettings({ ...settings, contactHeroCopy: e.target.value })}
+                    placeholder="A good conversation can make the next step clearer..."
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 3: Sidebar Greeting & Value Pillars */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Sidebar Greeting & Value Pillars</h2>
+                <p>The message and two reassurance pillars positioned next to the contact form.</p>
+              </div>
+            </div>
+            <div className="about-editor-fields">
+              <div className="about-editor-row">
+                <div className="about-editor-field">
+                  <label>
+                    Sidebar eyebrow
+                    <input
+                      value={settings.contactSidebarEyebrow ?? "Start here"}
+                      onChange={(e) => setSettings({ ...settings, contactSidebarEyebrow: e.target.value })}
+                      placeholder="Start here"
+                    />
+                  </label>
+                </div>
+                <div className="about-editor-field">
+                  <label>
+                    Sidebar headline
+                    <input
+                      value={settings.contactSidebarTitle ?? "Good things start\nwith a hello."}
+                      onChange={(e) => setSettings({ ...settings, contactSidebarTitle: e.target.value })}
+                      placeholder="Good things start&#10;with a hello."
+                    />
+                  </label>
+                </div>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Sidebar description
+                  <textarea
+                    rows={2}
+                    value={settings.contactSidebarCopy ?? "Use the form to tell us a bit about your goals, timing, or the question you’re trying to answer."}
+                    onChange={(e) => setSettings({ ...settings, contactSidebarCopy: e.target.value })}
+                    placeholder="Use the form to tell us a bit about your goals..."
+                  />
+                </label>
+              </div>
+
+              <div className="about-editor-row" style={{ marginTop: 8 }}>
+                {/* Pillar 1 */}
+                <div className="about-value-card-editor" style={{ flex: 1 }}>
+                  <span className="about-value-badge">Pillar 01</span>
+                  <div className="about-editor-field">
+                    <label>
+                      Pillar 1 title
+                      <input
+                        value={settings.contactPillar1Title ?? "Built around your goals."}
+                        onChange={(e) => setSettings({ ...settings, contactPillar1Title: e.target.value })}
+                        placeholder="Built around your goals."
+                      />
+                    </label>
+                  </div>
+                  <div className="about-editor-field">
+                    <label>
+                      Pillar 1 description
+                      <textarea
+                        rows={3}
+                        value={settings.contactPillar1Text ?? "We take time to understand your brand, audience, and business objectives."}
+                        onChange={(e) => setSettings({ ...settings, contactPillar1Text: e.target.value })}
+                        placeholder="We take time to understand your brand..."
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Pillar 2 */}
+                <div className="about-value-card-editor" style={{ flex: 1 }}>
+                  <span className="about-value-badge">Pillar 02</span>
+                  <div className="about-editor-field">
+                    <label>
+                      Pillar 2 title
+                      <input
+                        value={settings.contactPillar2Title ?? "Strategy starts with a conversation."}
+                        onChange={(e) => setSettings({ ...settings, contactPillar2Title: e.target.value })}
+                        placeholder="Strategy starts with a conversation."
+                      />
+                    </label>
+                  </div>
+                  <div className="about-editor-field">
+                    <label>
+                      Pillar 2 description
+                      <textarea
+                        rows={3}
+                        value={settings.contactPillar2Text ?? "Tell us what you need. We'll help you explore the right solutions for your business."}
+                        onChange={(e) => setSettings({ ...settings, contactPillar2Text: e.target.value })}
+                        placeholder="Tell us what you need..."
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <button
+              type="submit"
+              className="admin-primary"
+              disabled={saving}
+              style={{ minWidth: 160 }}
+            >
+              <Save size={16} /> {saving ? "Saving..." : "Save Contact Page"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
 export function AdminApp() {
   const [session, setSession] = useState<AdminState | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -3145,6 +3413,8 @@ export function AdminApp() {
             <AboutPageEditor />
           ) : path === "/admin/services" ? (
             <ServicesPageEditor />
+          ) : path === "/admin/contact" ? (
+            <ContactPageEditor />
           ) : path === "/admin/settings" ? (
             <DomainSettings />
           ) : (

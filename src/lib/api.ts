@@ -96,6 +96,17 @@ export type SiteSettings = {
   servicesCtaEyebrow?: string;
   servicesCtaTitle?: string;
   servicesCtaCopy?: string;
+  /* (2026-07-13) Editable Contact page fields and updated info. Prev: mock data */
+  contactHeroLabel?: string;
+  contactHeroTitle?: string;
+  contactHeroCopy?: string;
+  contactSidebarEyebrow?: string;
+  contactSidebarTitle?: string;
+  contactSidebarCopy?: string;
+  contactPillar1Title?: string;
+  contactPillar1Text?: string;
+  contactPillar2Title?: string;
+  contactPillar2Text?: string;
 };
 export type ServiceItemSetting = {
   no: string;
@@ -218,8 +229,8 @@ export const defaultTags: string[] = [
 // (2026-07-13) Rebrand default siteName to bainest. Prev: BaiNest
 export const defaultSettings: SiteSettings = {
   siteName: "bainest",
-  email: "contact@bainestdigital.com",
-  phone: "+63 900 000 0000",
+  email: "bainestph@gmail.com",
+  phone: "09622302015",
   facebook: "https://facebook.com/bainestdigital",
   twitter: "https://twitter.com/bainestdigital",
   instagram: "https://instagram.com/bainestdigital",
@@ -249,6 +260,16 @@ export const defaultSettings: SiteSettings = {
   servicesCtaEyebrow: "BAINEST DIGITAL MARKETING SERVICES",
   servicesCtaTitle: "MORE THAN JUST\nDIGITAL MARKETING.",
   servicesCtaCopy: "We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter.",
+  contactHeroLabel: "Contact",
+  contactHeroTitle: "Tell us what you’re working toward.",
+  contactHeroCopy: "A good conversation can make the next step clearer. Share a little about your idea and we’ll take it from there.",
+  contactSidebarEyebrow: "Start here",
+  contactSidebarTitle: "Good things start\nwith a hello.",
+  contactSidebarCopy: "Use the form to tell us a bit about your goals, timing, or the question you’re trying to answer.",
+  contactPillar1Title: "Built around your goals.",
+  contactPillar1Text: "We take time to understand your brand, audience, and business objectives.",
+  contactPillar2Title: "Strategy starts with a conversation.",
+  contactPillar2Text: "Tell us what you need. We'll help you explore the right solutions for your business.",
 };
 export type AdminState = {
   authenticated: boolean;
@@ -280,7 +301,11 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
   try {
     const snap = await getDoc(doc(firestore, "settings", "global"));
     if (snap.exists()) {
-      return { ...defaultSettings, ...(snap.data() as Partial<SiteSettings>) };
+      const data = snap.data() as Partial<SiteSettings>;
+      const merged = { ...defaultSettings, ...data };
+      if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
+      if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
+      return merged;
     }
     await setDoc(doc(firestore, "settings", "global"), defaultSettings);
     return defaultSettings;
@@ -288,7 +313,11 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
     const raw = localStorage.getItem("bainenest_settings");
     if (raw) {
       try {
-        return { ...defaultSettings, ...JSON.parse(raw) };
+        const parsed = JSON.parse(raw);
+        const merged = { ...defaultSettings, ...parsed };
+        if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
+        if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
+        return merged;
       } catch {}
     }
     return defaultSettings;
@@ -316,10 +345,11 @@ export function subscribeToSettings(
       doc(firestore, "settings", "global"),
       (snap) => {
         if (snap.exists()) {
-          callback({
-            ...defaultSettings,
-            ...(snap.data() as Partial<SiteSettings>),
-          });
+          const data = snap.data() as Partial<SiteSettings>;
+          const merged = { ...defaultSettings, ...data };
+          if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
+          if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
+          callback(merged);
         } else {
           callback(defaultSettings);
         }

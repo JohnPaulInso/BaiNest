@@ -1781,25 +1781,32 @@ function Contact() {
       setBusy(false);
     }
   }
+  /* (2026-07-13) Dynamic editable Contact page content & updated info. Prev: static */
   return (
     <PageFrame>
       <PageHeading
-        label="Contact"
-        title="Tell us what you’re working toward."
-        copy="A good conversation can make the next step clearer. Share a little about your idea and we’ll take it from there."
+        label={settings.contactHeroLabel || "Contact"}
+        title={settings.contactHeroTitle || "Tell us what you’re working toward."}
+        copy={settings.contactHeroCopy || "A good conversation can make the next step clearer. Share a little about your idea and we’ll take it from there."}
       />
       <section className="section">
         <div className="wrap contact-grid">
           <div className="contact-aside">
-            <Eyebrow>Start here</Eyebrow>
+            <Eyebrow>{settings.contactSidebarEyebrow || "Start here"}</Eyebrow>
             <h2>
-              Good things start
-              <br />
-              with a <em>hello.</em>
+              {settings.contactSidebarTitle ? (
+                renderWithLinebreaks(settings.contactSidebarTitle)
+              ) : (
+                <>
+                  Good things start
+                  <br />
+                  with a <em>hello.</em>
+                </>
+              )}
             </h2>
             <p>
-              Use the form to tell us a bit about your goals, timing, or the
-              question you’re trying to answer.
+              {settings.contactSidebarCopy ||
+                "Use the form to tell us a bit about your goals, timing, or the question you’re trying to answer."}
             </p>
 
             {/* Requested Pillars with improved icons */}
@@ -1809,10 +1816,10 @@ function Contact() {
                 <span className="pillar-num-tag">01</span>
               </div>
               <div className="pillar-body">
-                <h4>Built around your goals.</h4>
+                <h4>{settings.contactPillar1Title || "Built around your goals."}</h4>
                 <p>
-                  We take time to understand your brand, audience, and business
-                  objectives.
+                  {settings.contactPillar1Text ||
+                    "We take time to understand your brand, audience, and business objectives."}
                 </p>
               </div>
             </div>
@@ -1823,10 +1830,10 @@ function Contact() {
                 <span className="pillar-num-tag">02</span>
               </div>
               <div className="pillar-body">
-                <h4>Strategy starts with a conversation.</h4>
+                <h4>{settings.contactPillar2Title || "Strategy starts with a conversation."}</h4>
                 <p>
-                  Tell us what you need. We'll help you explore the right
-                  solutions for your business.
+                  {settings.contactPillar2Text ||
+                    "Tell us what you need. We'll help you explore the right solutions for your business."}
                 </p>
               </div>
             </div>
@@ -1834,12 +1841,12 @@ function Contact() {
             {/* (2026-07-13) Upgrade direct contact links with icons. Prev: plain text */}
             <div className="contact-direct-card">
               <h5>Direct Inquiries</h5>
-              <a href={`mailto:${settings.email}`} className="direct-link">
-                <Mail size={16} /> <span>{settings.email}</span>
+              <a href={`mailto:${settings.email || "bainestph@gmail.com"}`} className="direct-link">
+                <Mail size={16} /> <span>{settings.email || "bainestph@gmail.com"}</span>
               </a>
-              {settings.phone && (
-                <a href={`tel:${settings.phone}`} className="direct-link">
-                  <Phone size={16} /> <span>{settings.phone}</span>
+              {(settings.phone || "09622302015") && (
+                <a href={`tel:${settings.phone || "09622302015"}`} className="direct-link">
+                  <Phone size={16} /> <span>{settings.phone || "09622302015"}</span>
                 </a>
               )}
             </div>
