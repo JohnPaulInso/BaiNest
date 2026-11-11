@@ -175,18 +175,19 @@ img {
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
 }
+/* (2026-07-13) Reduce header nav left/right gaps. Prev: gap 20px */
 .nav-inner {
   height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: flex-start;
+  gap: 12px;
 }
 .main-nav {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 .main-nav a {
   height: 100%;
@@ -197,7 +198,7 @@ img {
   font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.05em;
-  padding: 0 4px;
+  padding: 0 3px;
   transition: color 0.18s ease;
 }
 .main-nav a:after {
@@ -3293,13 +3294,15 @@ img {
     border-bottom: 1px solid #e2e8f0;
     box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.07);
   }
+  /* (2026-07-13) Tighter mobile nav gaps & edges. Prev: space-between & 4px */
   .nav-inner {
     height: 42px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    width: 100%;
-    padding: 0 4px;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 2px !important;
     box-sizing: border-box;
     border-top: 1px solid #f1f5f9;
   }
@@ -3314,8 +3317,8 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: clamp(2px, 1.4vw, 8px) !important;
-    justify-content: space-between !important;
+    gap: clamp(1px, 1.2vw, 5px) !important;
+    justify-content: space-evenly !important;
     width: 100% !important;
     align-items: center !important;
     box-sizing: border-box !important;
