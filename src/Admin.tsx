@@ -613,7 +613,7 @@ export function getPostImpressions(p: Post): number {
   return Math.round(getPostClicks(p) * 11.5);
 }
 
-// (2026-07-13) Modernized interactive SVG Donut Pie chart. Prev: basic circles
+// (2026-07-13) Responsive compact SVG Donut Pie chart. Prev: oversized 120px
 function SvgPieChart({
   slices,
   centerLabel,
@@ -624,15 +624,15 @@ function SvgPieChart({
   centerSub?: string;
 }) {
   const [activeSlice, setActiveSlice] = useState<number | null>(null);
-  const r = 42;
+  const r = 36;
   const c = 2 * Math.PI * r;
   let accumulated = 0;
 
   return (
     <div className="svg-pie-wrapper" onMouseLeave={() => setActiveSlice(null)}>
       <div className="svg-pie-graphic">
-        <svg viewBox="0 0 120 120" className="donut-svg">
-          <circle cx="60" cy="60" r={r} fill="none" stroke="#f1f5f9" strokeWidth="15" />
+        <svg viewBox="0 0 100 100" className="donut-svg">
+          <circle cx="50" cy="50" r={r} fill="none" stroke="#f1f5f9" strokeWidth="12" />
           {slices.map((s, idx) => {
             const dash = Math.max((s.pct / 100) * c, 2);
             const offset = -(accumulated / 100) * c;
@@ -641,20 +641,20 @@ function SvgPieChart({
             return (
               <circle
                 key={idx}
-                cx="60"
-                cy="60"
+                cx="50"
+                cy="50"
                 r={r}
                 fill="none"
                 stroke={s.color}
-                strokeWidth={isHovered ? 18 : 15}
+                strokeWidth={isHovered ? 15 : 12}
                 strokeDasharray={`${dash} ${c - dash}`}
                 strokeDashoffset={offset}
                 strokeLinecap="round"
-                transform="rotate(-90 60 60)"
+                transform="rotate(-90 50 50)"
                 style={{
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
-                  filter: isHovered ? "drop-shadow(0 2px 5px rgba(0,0,0,0.2))" : "none",
+                  filter: isHovered ? "drop-shadow(0 2px 4px rgba(0,0,0,0.18))" : "none",
                 }}
                 onMouseEnter={() => setActiveSlice(idx)}
               />
@@ -674,11 +674,21 @@ function SvgPieChart({
               key={idx}
               className={`pie-legend-item ${isHovered ? "active-legend" : ""}`}
               onMouseEnter={() => setActiveSlice(idx)}
-              style={{ cursor: "pointer", padding: "4px 8px", borderRadius: "6px", transition: "all 0.15s ease", background: isHovered ? "rgba(241, 245, 249, 0.9)" : "transparent" }}
+              style={{
+                cursor: "pointer",
+                padding: "4px 8px",
+                borderRadius: "6px",
+                transition: "all 0.15s ease",
+                background: isHovered ? "rgba(241, 245, 249, 0.9)" : "transparent",
+              }}
             >
-              <span className="legend-dot" style={{ background: s.color, width: 9, height: 9, borderRadius: "50%" }} />
-              <span className="legend-name" style={{ fontWeight: isHovered ? 700 : 500 }}>{s.label}</span>
-              <b className="legend-pct" style={{ color: s.color }}>{s.pct}%</b>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0, flex: 1 }}>
+                <span className="legend-dot" style={{ background: s.color, width: 8, height: 8, borderRadius: "50%", flexShrink: 0 }} />
+                <span className="legend-name" style={{ fontWeight: isHovered ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {s.label}
+                </span>
+              </div>
+              <b className="legend-pct" style={{ color: s.color, marginLeft: "8px" }}>{s.pct}%</b>
             </div>
           );
         })}
@@ -1200,8 +1210,7 @@ function Overview({ posts }: { posts: Post[] }) {
         </div>
       </section>
 
-      {/* Modernized Dedicated Dual Bar Chart: Weekly Clicks vs Impressions */}
-      {/* Modernized dual column bar chart with ghost tracks and scale */}
+      {/* (2026-07-13) Unified content table & fixed bar chart headroom. Prev: clipped */}
       <section className="admin-panel analytics-chart-card">
         <div className="panel-head" style={{ flexWrap: "wrap", gap: "12px" }}>
           <div>
@@ -1217,8 +1226,8 @@ function Overview({ posts }: { posts: Post[] }) {
             </span>
           </div>
         </div>
-        <div className="svg-chart-container" style={{ height: "200px" }} onMouseLeave={() => setHoveredBarIdx(null)}>
-          <svg viewBox="0 0 720 200" className="analytics-svg-chart" preserveAspectRatio="none">
+        <div className="svg-chart-container" style={{ height: "230px" }} onMouseLeave={() => setHoveredBarIdx(null)}>
+          <svg viewBox="0 0 720 230" className="analytics-svg-chart" preserveAspectRatio="none">
             <defs>
               <linearGradient id="barClicksGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" />
@@ -1232,11 +1241,11 @@ function Overview({ posts }: { posts: Post[] }) {
 
             {/* Subtle horizontal gridlines with scale markers */}
             {[
-              { val: "200", y: 25 },
-              { val: "150", y: 60 },
-              { val: "100", y: 95 },
-              { val: "50", y: 130 },
-              { val: "0", y: 165 },
+              { val: "200", y: 45 },
+              { val: "150", y: 80 },
+              { val: "100", y: 115 },
+              { val: "50", y: 150 },
+              { val: "0", y: 185 },
             ].map((g, idx) => (
               <g key={idx}>
                 <text x="26" y={g.y + 3} textAnchor="end" fontSize="9.5" fill="#94a3b8" fontWeight="600">
@@ -1255,15 +1264,15 @@ function Overview({ posts }: { posts: Post[] }) {
               { day: "Sat", clicks: Math.round(totalClicks * 0.06), imp: Math.round((totalImpressions * 0.09) / 10) },
               { day: "Sun", clicks: Math.round(totalClicks * 0.04), imp: Math.round((totalImpressions * 0.07) / 10) },
             ].map((col, idx) => {
-              const maxWeekly = Math.round(totalClicks * 0.28) || 200;
+              const maxWeekly = Math.round(totalClicks * 0.28) || 220;
               const slotW = (720 - 72) / 7;
               const barW = 15;
               const xBase = 44 + idx * slotW + (slotW - barW * 2 - 8) / 2;
-              const usableBarH = 140;
+              const usableBarH = 135;
               const clickH = Math.max((col.clicks / maxWeekly) * usableBarH, 6);
               const impH = Math.max((col.imp / maxWeekly) * usableBarH, 6);
-              const clickY = 165 - clickH;
-              const impY = 165 - impH;
+              const clickY = 185 - clickH;
+              const impY = 185 - impH;
               const isHovered = hoveredBarIdx === idx;
 
               return (
@@ -1275,9 +1284,9 @@ function Overview({ posts }: { posts: Post[] }) {
                   {/* Modern ghost track column container */}
                   <rect
                     x={xBase - 6}
-                    y={25}
+                    y={42}
                     width={barW * 2 + 18}
-                    height={140}
+                    height={145}
                     rx="8"
                     fill={isHovered ? "rgba(241, 245, 249, 0.95)" : "rgba(248, 250, 252, 0.6)"}
                     stroke={isHovered ? "rgba(0, 102, 84, 0.18)" : "transparent"}
@@ -1309,7 +1318,7 @@ function Overview({ posts }: { posts: Post[] }) {
                   {/* Value badges floating above */}
                   <text
                     x={xBase + barW / 2}
-                    y={clickY - 6}
+                    y={clickY - 7}
                     textAnchor="middle"
                     fontSize="9.5"
                     fontWeight="700"
@@ -1319,7 +1328,7 @@ function Overview({ posts }: { posts: Post[] }) {
                   </text>
                   <text
                     x={xBase + barW + 6 + barW / 2}
-                    y={impY - 6}
+                    y={impY - 7}
                     textAnchor="middle"
                     fontSize="9.5"
                     fontWeight="700"
@@ -1331,7 +1340,7 @@ function Overview({ posts }: { posts: Post[] }) {
                   {/* Day label */}
                   <text
                     x={xBase + barW + 3}
-                    y="186"
+                    y="208"
                     textAnchor="middle"
                     fontSize="11"
                     fontWeight="700"
@@ -1428,33 +1437,34 @@ function Overview({ posts }: { posts: Post[] }) {
         </section>
       </div>
 
-      {/* Top Performing Stories / Blogs Table */}
-      {/* Top performing stories ranking table */}
+      {/* (2026-07-13) Unified stories performance table. Prev: duplicate panels */}
       <section className="admin-panel">
         <div className="panel-head">
           <div>
-            <h2>Top Performing Stories</h2>
-            <p>Highest engagement, Google search clicks, and reader shares.</p>
+            <h2>Stories & Content Performance</h2>
+            <p>Live audience readership, Google Search clicks, CTR, and reader engagement.</p>
           </div>
-          <Link to="/admin/posts">
-            View all stories <ArrowUpRight size={14} />
+          <Link to="/admin/posts" className="admin-light small-btn">
+            Manage all blogs ({posts.length}) <ArrowUpRight size={14} />
           </Link>
         </div>
         <div className="gsc-table-wrapper">
-          <table className="analytics-table">
+          <table className="analytics-table stories-unified-table">
             <thead>
               <tr>
-                <th style={{ textAlign: "left" }}>Story</th>
+                <th style={{ textAlign: "left" }}>Story & Slug</th>
                 <th>Type</th>
                 <th>Views</th>
                 <th>Search Clicks</th>
                 <th>CTR</th>
                 <th>Shares</th>
                 <th>Status</th>
+                <th>Updated</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {posts.slice(0, 6).map((p) => {
+              {posts.slice(0, 8).map((p) => {
                 const views = getPostViews(p);
                 const clicks = getPostClicks(p);
                 const impressions = getPostImpressions(p);
@@ -1463,9 +1473,12 @@ function Overview({ posts }: { posts: Post[] }) {
                 return (
                   <tr key={p.id}>
                     <td className="query-col">
-                      <Link to={`/admin/posts/${p.id}`} style={{ fontWeight: 600, color: "inherit", textDecoration: "none" }}>
-                        {p.title || "Untitled"}
-                      </Link>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <Link to={`/admin/posts/${p.id}`} className="story-title-link">
+                          <b>{p.title || "Untitled"}</b>
+                        </Link>
+                        <small style={{ color: "var(--muted)", fontSize: "11px" }}>/{p.slug}</small>
+                      </div>
                     </td>
                     <td>
                       <span className={`placement-chip placement-${getPostPlacement(p).toLowerCase()}`} style={{ fontSize: "9px" }}>
@@ -1487,60 +1500,32 @@ function Overview({ posts }: { posts: Post[] }) {
                     <td>
                       <span className={`status-pill ${p.status}`}>{p.status}</span>
                     </td>
+                    <td className="num-col" style={{ fontSize: "11.5px", color: "var(--muted)" }}>
+                      {new Date(p.updated_at).toLocaleDateString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <div style={{ display: "inline-flex", gap: "6px" }}>
+                        <Link to={`/admin/posts/${p.id}`} className="admin-light small-btn" title="Edit story">
+                          <PenTool size={12} /> Edit
+                        </Link>
+                        <Link to={`/blog/${p.slug}`} target="_blank" className="admin-light small-btn" title="View live story">
+                          <Eye size={12} /> View
+                        </Link>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
               {!posts.length && (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: "center", padding: "28px", color: "var(--muted)" }}>
-                    No stories yet. Create a draft to begin.
+                  <td colSpan={9} style={{ textAlign: "center", padding: "36px", color: "var(--muted)" }}>
+                    No stories yet. Click Write a post to create your first draft.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </section>
-
-      {/* Quick Recent Stories Cards */}
-      <section className="admin-panel">
-        <div className="panel-head">
-          <div>
-            <h2>Recent stories</h2>
-            <p>What you’ve been working on lately.</p>
-          </div>
-          <Link to="/admin/posts">
-            All blogs <ArrowUpRight size={14} />
-          </Link>
-        </div>
-        {posts.slice(0, 5).map((p) => (
-          <Link className="recent-post" key={p.id} to={`/admin/posts/${p.id}`}>
-            <span className="recent-post-icon">
-              <FileText size={17} />
-            </span>
-            <span className="recent-post-main">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                <b>{p.title || "Untitled"}</b>
-                <span className={`placement-chip placement-${getPostPlacement(p).toLowerCase()}`} style={{ fontSize: "8.5px", padding: "1px 6px" }}>
-                  {getPostPlacement(p)}
-                </span>
-              </span>
-              <small>/{p.slug}</small>
-            </span>
-            <span className="post-metric-pill views-pill" style={{ margin: "0 10px" }}>
-              <Eye size={11} /> {getPostViews(p).toLocaleString()} views
-            </span>
-            <span className={`status-pill ${p.status}`}>{p.status}</span>
-            <span className="recent-date">
-              {new Date(p.updated_at).toLocaleDateString()}
-            </span>
-          </Link>
-        ))}
-        {!posts.length && (
-          <div className="admin-empty">
-            No stories yet. Create a draft to begin.
-          </div>
-        )}
       </section>
     </>
   );

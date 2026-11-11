@@ -7126,10 +7126,12 @@ img {
   margin-top: 8px;
   padding: 0 36px;
 }
+/* (2026-07-13) Overview UI polish: layout, pie spacing, stories table. Prev: basic */
 .analytics-two-col {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 20px;
+  align-items: stretch;
   margin-bottom: 24px;
 }
 @media (max-width: 900px) {
@@ -7341,16 +7343,18 @@ img {
 .pie-section-block {
   width: 100%;
 }
+/* (2026-07-13) Svg pie layout & stories unified table styling. Prev: cramped */
 .svg-pie-wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 100px 1fr;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   margin-top: 10px;
 }
 .svg-pie-graphic {
   position: relative;
-  width: 116px;
-  height: 116px;
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
 }
 .donut-svg {
@@ -7369,12 +7373,12 @@ img {
   line-height: 1.1;
 }
 .pie-center-text b {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
 }
 .pie-center-text small {
-  font-size: 10px;
+  font-size: 9.5px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -7382,12 +7386,14 @@ img {
 .pie-legend-col {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 .pie-legend-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   font-size: 12px;
 }
@@ -7400,11 +7406,29 @@ img {
 .pie-legend-item .legend-name {
   color: #475569;
   flex: 1;
+  min-width: 0;
 }
 .pie-legend-item .legend-pct {
   color: #0f172a;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.stories-unified-table th {
+  padding: 12px 14px;
+}
+.stories-unified-table td {
+  padding: 14px;
+}
+.story-title-link {
+  color: #0f172a;
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: color 0.15s ease;
+}
+.story-title-link:hover {
+  color: #006654;
+  text-decoration: underline;
 }
 
 /* (2026-07-13) Modernized chart aesthetics and glow effects. Prev: basic cards */
