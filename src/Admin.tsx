@@ -859,8 +859,9 @@ function Overview({ posts }: { posts: Post[] }) {
             </span>
             <span className="gsc-file-pill">google161104ce8aca460d.html</span>
           </div>
+          {/* (2026-07-13) Set property domain to bainestdigital.com. Prev: bainest.online */}
           <p className="gsc-desc">
-            Verified Property: <b>https://bainest.online/</b> • Googlebot crawling & performance indexing active.
+            Verified Property: <b>https://bainestdigital.com/</b> • Googlebot crawling & performance indexing active.
           </p>
         </div>
         <div className="gsc-actions">
