@@ -3084,12 +3084,21 @@ img {
   .hero-visual {
     min-height: 300px;
   }
+  /* (2026-07-13) Remove rotation & backdrop blur for crisp mobile text. Prev: blur */
   .visual-panel {
     max-width: 390px;
     min-height: 290px;
+    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(16, 38, 64, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    -webkit-font-smoothing: antialiased;
   }
   .floating-note {
     right: 0;
+    transform: none !important;
+    -webkit-font-smoothing: antialiased;
   }
   .hero-scroll {
     left: 17px;
