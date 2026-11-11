@@ -3873,15 +3873,15 @@ img {
 .recent-posts-dropdown.open .recent-posts-trigger {
   color: #0d9488;
 }
-/* (2026-07-13) Fix blog dropdown sizing & card flex. Prev: 860px grid */
+/* (2026-07-13) Left-align blog mega menu with card description. Prev: centered */
 .recent-posts-mega {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   width: max-content;
-  min-width: 220px;
-  max-width: min(840px, 92vw);
+  min-width: 240px;
+  max-width: min(880px, 92vw);
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
@@ -3891,8 +3891,8 @@ img {
   animation: fadeInDown 0.22s ease-out;
 }
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .recent-posts-top {
   display: flex;
@@ -3919,26 +3919,26 @@ img {
   color: #0f766e;
   text-decoration: underline;
 }
-/* (2026-07-13) Symmetrical dropdown blog cards scaled by screen size. Prev: 170px */
+/* (2026-07-13) Left-aligned dropdown cards with description & meta. Prev: center */
 .recent-posts-grid {
   display: flex;
   gap: 12px;
   align-items: stretch;
 }
 .recent-mega-card {
-  width: 175px;
-  min-height: 195px;
+  width: 205px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   text-decoration: none;
   color: inherit;
-  border-radius: 8px;
-  padding: 8px;
-  background: #fafbfc;
-  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-sizing: border-box;
+  text-align: left;
   transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 /* (2026-07-13) Mega card hover in media query with active touch feedback. Prev: static */
@@ -3990,21 +3990,53 @@ img {
   letter-spacing: 0.05em;
 }
 .recent-mega-title {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.35;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 6px 0;
-  height: 33px;
+  margin: 4px 0 4px 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-align: left;
+}
+.recent-mega-desc {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #64748b;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: left;
+}
+.recent-mega-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 4px;
+  text-align: left;
+}
+.recent-mega-cat {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #0d9488;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.recent-mega-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #cbd5e1;
 }
 .recent-mega-date {
-  font-size: 11px;
+  font-size: 10.5px;
   color: #94a3b8;
-  margin-top: auto;
+  text-align: left;
 }
 /* Responsive card count depending on screen size */
 .recent-posts-grid .recent-mega-card:nth-child(n + 6) {
@@ -4013,6 +4045,12 @@ img {
 @media (max-width: 1200px) {
   .recent-posts-grid .recent-mega-card:nth-child(n + 5) {
     display: none;
+  }
+}
+@media (max-width: 1080px) {
+  .recent-posts-mega {
+    left: auto;
+    right: 0;
   }
 }
 @media (max-width: 992px) {

@@ -266,16 +266,30 @@ function Header() {
                                   </div>
                                 )}
                               </div>
+                              {/* (2026-07-13) Add post excerpt & category to mega dropdown. Prev: title only */}
                               <h4 className="recent-mega-title">{rp.title}</h4>
-                              <span className="recent-mega-date">
-                                {rp.published_at
-                                  ? new Date(rp.published_at).toLocaleDateString("en-US", {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    })
-                                  : "Recent"}
-                              </span>
+                              <p className="recent-mega-desc">
+                                {rp.excerpt && rp.excerpt.trim()
+                                  ? rp.excerpt
+                                  : rp.slug?.toLowerCase().includes("aton") || rp.title?.toLowerCase().includes("aton")
+                                  ? "A trusted partner in legal excellence in Bogo City, building modern digital solutions."
+                                  : rp.slug?.toLowerCase().includes("bainest") || rp.title?.toLowerCase().includes("bainest")
+                                  ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu."
+                                  : "Strategic insights and creative digital execution for ambitious brands."}
+                              </p>
+                              <div className="recent-mega-meta">
+                                <span className="recent-mega-cat">{rp.category || "Story"}</span>
+                                <span className="recent-mega-dot" />
+                                <span className="recent-mega-date">
+                                  {rp.published_at
+                                    ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })
+                                    : "Recent"}
+                                </span>
+                              </div>
                             </Link>
                           ))}
                         </div>
