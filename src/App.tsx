@@ -408,18 +408,12 @@ function Footer() {
 function Eyebrow({ children }: { children: string }) {
   return <div className="eyebrow">{children}</div>;
 }
-/* (2026-07-13) Smooth subtle fade in transition when switching pages. Prev: cut */
+/* (2026-07-13) Flicker-free page fade transition. Prev: double motion */
 function PageFrame({ children }: { children: React.ReactNode }) {
   return (
-    <motion.main
-      className="page-transition"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-    >
+    <main className="page-transition">
       {children}
-    </motion.main>
+    </main>
   );
 }
 /* (2026-07-13) Remove subheadings from PageHeading. Prev: <p>{copy}</p> */
@@ -2007,19 +2001,17 @@ export function App() {
           <Header />
         </>
       )}
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<PostDetail />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/admin/*" element={<AdminApp />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AnimatePresence>
+      <Routes key={location.pathname}>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<PostDetail />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/admin/*" element={<AdminApp />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       {!admin && <Footer />}
     </>
   );
