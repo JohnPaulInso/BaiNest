@@ -23,7 +23,6 @@ import {
   ChevronRight,
   Clock,
   Code2,
-  Compass,
   Copy,
   Facebook,
   FileText,
@@ -390,9 +389,6 @@ function Footer() {
                 {label}
               </Link>
             ))}
-            <Link to="/contact">Contact</Link>
-            {/* (2026-07-13) Add Sitemap link to footer Explore. Prev: none */}
-            <Link to="/sitemap">Sitemap</Link>
           </div>
           <div className="footer-links">
             <h4>Connect</h4>
@@ -413,18 +409,13 @@ function Footer() {
             © {new Date().getFullYear()} {settings.siteName || "BaiNest Studio"}. All rights reserved.
           </span>
           <span>Thoughtful strategy. Work that moves you forward.</span>
-          <div className="footer-bottom-actions">
-            <Link to="/sitemap" className="footer-bottom-sitemap-link">
-              Sitemap
-            </Link>
-            <Link
-              className="admin-footer-link"
-              to="/admin/login"
-              aria-label="Admin login"
-            >
-              Admin
-            </Link>
-          </div>
+          <Link
+            className="admin-footer-link"
+            to="/admin/login"
+            aria-label="Admin login"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
@@ -1392,7 +1383,13 @@ function PostDetail() {
         ? `/api/admin/posts/${encodeURIComponent(previewId)}/preview`
         : `/api/posts/${encodeURIComponent(slug)}`;
     api<Post>(endpoint)
-      .then(setPost)
+      .then((p) => {
+        setPost(p);
+        // (2026-07-13) Track post views and shares in PostDetail. Prev: none
+        if (p?.id && !preview) {
+          api(`/api/posts/${p.id}/view`, { method: "POST" }).catch(() => {});
+        }
+      })
       .catch(() => setPost(null))
       .finally(() => setLoading(false));
   }, [slug, preview, previewId]);
@@ -1411,7 +1408,14 @@ function PostDetail() {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
+  function trackShare() {
+    if (post?.id) {
+      api(`/api/posts/${post.id}/share`, { method: "POST" }).catch(() => {});
+    }
+  }
+
   function copyShareLink() {
+    trackShare();
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -1510,6 +1514,7 @@ function PostDetail() {
                 className="share-btn share-fb"
                 title="Share on Facebook"
                 aria-label="Share on Facebook"
+                onClick={trackShare}
               >
                 <Facebook size={16} />
               </a>
@@ -1520,6 +1525,7 @@ function PostDetail() {
                 className="share-btn share-tw"
                 title="Share on Twitter"
                 aria-label="Share on Twitter"
+                onClick={trackShare}
               >
                 <Twitter size={16} />
               </a>
@@ -1530,6 +1536,7 @@ function PostDetail() {
                 className="share-btn share-wa"
                 title="Share on WhatsApp"
                 aria-label="Share on WhatsApp"
+                onClick={trackShare}
               >
                 <MessageCircle size={16} />
               </a>
@@ -1538,6 +1545,7 @@ function PostDetail() {
                 className="share-btn share-em"
                 title="Share via Email"
                 aria-label="Share via Email"
+                onClick={trackShare}
               >
                 <Mail size={16} />
               </a>
@@ -2026,144 +2034,6 @@ function Contact() {
     </PageFrame>
   );
 }
-// (2026-07-13) Dedicated sitemap directory page. Prev: none
-function SitemapPage() {
-  const { posts } = usePosts();
-  const publishedPosts = useMemo(
-    () => posts.filter((p) => p.status === "published"),
-    [posts]
-  );
-
-  return (
-    <PageFrame>
-      <PageHeading
-        label="Directory"
-        title="Sitemap"
-        copy="A clear overview of all pages, services, client case studies, and resources across BaiNest."
-      />
-      <section className="section">
-        <div className="wrap">
-          <div className="sitemap-grid">
-            <div className="sitemap-card">
-              <div className="sitemap-card-header">
-                <div className="sitemap-card-icon">
-                  <Compass size={18} />
-                </div>
-                <h3>Main Pages</h3>
-              </div>
-              <ul className="sitemap-link-list">
-                <li>
-                  <Link to="/">
-                    <ArrowRight size={13} /> Home
-                  </Link>
-                  <span className="sitemap-link-desc">Overview of our studio, services, and featured projects</span>
-                </li>
-                <li>
-                  <Link to="/about">
-                    <ArrowRight size={13} /> About Us
-                  </Link>
-                  <span className="sitemap-link-desc">Our mission, philosophy, point of view, and studio story</span>
-                </li>
-                <li>
-                  <Link to="/services">
-                    <ArrowRight size={13} /> Services
-                  </Link>
-                  <span className="sitemap-link-desc">Strategic and creative capabilities tailored for growing brands</span>
-                </li>
-                <li>
-                  <Link to="/portfolio">
-                    <ArrowRight size={13} /> Portfolio
-                  </Link>
-                  <span className="sitemap-link-desc">Selected work, case studies, and real client results</span>
-                </li>
-                <li>
-                  <Link to="/blog">
-                    <ArrowRight size={13} /> Blog & Stories
-                  </Link>
-                  <span className="sitemap-link-desc">Articles, company news, case studies, and digital insights</span>
-                </li>
-                <li>
-                  <Link to="/contact">
-                    <ArrowRight size={13} /> Contact
-                  </Link>
-                  <span className="sitemap-link-desc">Start a conversation or send an inquiry to our team</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="sitemap-card">
-              <div className="sitemap-card-header">
-                <div className="sitemap-card-icon">
-                  <Layers3 size={18} />
-                </div>
-                <h3>Capabilities & Services</h3>
-              </div>
-              <ul className="sitemap-link-list">
-                <li>
-                  <Link to="/services">
-                    <ArrowRight size={13} /> Brand & Strategy
-                  </Link>
-                  <span className="sitemap-link-desc">Brand identity, positioning, voice, guidelines, and visual systems</span>
-                </li>
-                <li>
-                  <Link to="/services">
-                    <ArrowRight size={13} /> Digital Experiences
-                  </Link>
-                  <span className="sitemap-link-desc">Custom websites, web apps, UI/UX design, and mobile-ready development</span>
-                </li>
-                <li>
-                  <Link to="/services">
-                    <ArrowRight size={13} /> Growth Marketing
-                  </Link>
-                  <span className="sitemap-link-desc">Social media campaigns, SEO, paid acquisition, and local visibility</span>
-                </li>
-                <li>
-                  <Link to="/services">
-                    <ArrowRight size={13} /> Content & Creative
-                  </Link>
-                  <span className="sitemap-link-desc">Graphic design, promotional copy, visual storytelling, and collateral</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="sitemap-card">
-              <div className="sitemap-card-header">
-                <div className="sitemap-card-icon">
-                  <FileText size={18} />
-                </div>
-                <h3>Stories & Case Studies ({publishedPosts.length})</h3>
-              </div>
-              <ul className="sitemap-link-list">
-                {publishedPosts.slice(0, 10).map((p) => (
-                  <li key={p.id}>
-                    <Link to={`/blog/${p.slug}`}>
-                      <ArrowRight size={13} /> {p.title}
-                    </Link>
-                    <span className="sitemap-link-desc">
-                      {p.category || "Case Study"}
-                      {p.published_at && ` · ${new Date(p.published_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`}
-                    </span>
-                  </li>
-                ))}
-                {publishedPosts.length > 10 && (
-                  <li>
-                    <Link to="/blog" style={{ color: "var(--teal-dark, #0d766e)" }}>
-                      <ArrowRight size={13} /> View all {publishedPosts.length} stories &rarr;
-                    </Link>
-                  </li>
-                )}
-                {!publishedPosts.length && (
-                  <li style={{ color: "#94a3b8", fontSize: "13px" }}>No stories published yet.</li>
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-    </PageFrame>
-  );
-}
-
 function NotFound() {
   return (
     <PageFrame>
@@ -2206,8 +2076,6 @@ export function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<PostDetail />} />
         <Route path="/contact" element={<Contact />} />
-        {/* (2026-07-13) Register /sitemap route. Prev: none */}
-        <Route path="/sitemap" element={<SitemapPage />} />
         <Route path="/admin/*" element={<AdminApp />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

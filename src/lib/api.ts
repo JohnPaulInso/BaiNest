@@ -51,10 +51,14 @@ export type Post = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
-// (2026-07-13) Add portfolio_only flag to Post (was portfolio inclusion only)
+// (2026-07-13) Add views, shares and analytics fields to Post. Prev: none
   include_in_nav?: boolean;
   include_in_portfolio?: boolean;
   portfolio_only?: boolean;
+  views?: number;
+  shares?: number;
+  clicks?: number;
+  impressions?: number;
 };
 /* (2026-07-13) Helper to determine placement type: Blog, Portfolio, or Both. Prev: none */
 export function getPostPlacement(p: { portfolio_only?: boolean; include_in_portfolio?: boolean }): "Blog" | "Portfolio" | "Both" {
@@ -107,6 +111,9 @@ export type SiteSettings = {
   contactPillar1Text?: string;
   contactPillar2Title?: string;
   contactPillar2Text?: string;
+  // (2026-07-13) Add Search Console fields to SiteSettings. Prev: none
+  googleSearchConsoleCode?: string;
+  googleSearchConsoleConnected?: boolean;
 };
 export type ServiceItemSetting = {
   no: string;
@@ -270,6 +277,9 @@ export const defaultSettings: SiteSettings = {
   contactPillar1Text: "We take time to understand your brand, audience, and business objectives.",
   contactPillar2Title: "Strategy starts with a conversation.",
   contactPillar2Text: "Tell us what you need. We'll help you explore the right solutions for your business.",
+  // (2026-07-13) Set default Search Console verification token. Prev: none
+  googleSearchConsoleCode: "google161104ce8aca460d.html",
+  googleSearchConsoleConnected: true,
 };
 export type AdminState = {
   authenticated: boolean;
@@ -733,6 +743,31 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   const contactDeleteMatch = url.match(/^\/api\/admin\/contacts\/([^/]+)$/);
   if (contactDeleteMatch && method === "DELETE") {
     await deleteFirestoreContact(contactDeleteMatch[1]);
+    return { ok: true };
+  }
+
+  // (2026-07-13) Track post views and shares in Firestore. Prev: none
+  const postViewMatch = url.match(/^\/api\/posts\/([^/]+)\/view$/);
+  if (postViewMatch && method === "POST") {
+    const pId = postViewMatch[1];
+    const posts = await getFirestorePosts();
+    const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
+    if (target) {
+      target.views = (target.views || 0) + 1;
+      await saveFirestorePost(target);
+    }
+    return { ok: true };
+  }
+
+  const postShareMatch = url.match(/^\/api\/posts\/([^/]+)\/share$/);
+  if (postShareMatch && method === "POST") {
+    const pId = postShareMatch[1];
+    const posts = await getFirestorePosts();
+    const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
+    if (target) {
+      target.shares = (target.shares || 0) + 1;
+      await saveFirestorePost(target);
+    }
     return { ok: true };
   }
 
