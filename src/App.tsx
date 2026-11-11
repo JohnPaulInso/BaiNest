@@ -1232,19 +1232,24 @@ function BlockRenderer({ blocks }: { blocks: Block[] }) {
               ))}
             </ul>
           );
-        if (b.type === "image")
+        // (2026-07-13) Safe image block rendering with failure hiding. Prev: basic
+        if (b.type === "image") {
+          if (!b.src || b.src.startsWith("blob:")) return null;
           return (
-            <figure key={i}>
-              {b.src ? (
-                <img src={b.src} alt={b.alt || ""} />
-              ) : (
-                <div className="inline-image-placeholder">
-                  Image block · add a local image URL in the editor
-                </div>
-              )}
+            <figure key={i} className="post-figure-image">
+              <img
+                src={b.src}
+                alt={b.alt || ""}
+                loading="lazy"
+                onError={(e) => {
+                  const fig = e.currentTarget.closest("figure");
+                  if (fig) fig.style.display = "none";
+                }}
+              />
               {b.caption && <figcaption>{b.caption}</figcaption>}
             </figure>
           );
+        }
         if (b.type === "cta")
           return (
             <div className="post-cta" key={i}>

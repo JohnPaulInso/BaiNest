@@ -7559,3 +7559,26 @@ img {
   border-style: solid;
   border-color: #0f172a transparent transparent transparent;
 }
+
+/* (2026-07-13) Style inline story figure image blocks. Prev: unstyled */
+.post-figure-image {
+  margin: 28px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.post-figure-image img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+.post-figure-image figcaption {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+}

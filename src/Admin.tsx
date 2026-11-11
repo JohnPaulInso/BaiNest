@@ -131,27 +131,37 @@ function SortableBlock({
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
-  function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // (2026-07-13) Direct persistent base64 for block images. Prev: blob URLs
+  async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const previewUrl = URL.createObjectURL(file);
-    onChange(block.id, "src", previewUrl);
-    setCropSrc(previewUrl);
+    setUploading(true);
+    try {
+      const dataUrl = (await compressImage(file, {
+        maxDimension: 1200,
+        quality: 0.78,
+        outputType: "dataUrl",
+      })) as string;
+      onChange(block.id, "src", dataUrl);
+    } catch (err) {
+      console.warn("Image compression failed", err);
+    } finally {
+      setUploading(false);
+    }
   }
 
-  async function handleBlockCropped(croppedFile: File, croppedUrl: string) {
-    onChange(block.id, "src", croppedUrl);
+  async function handleBlockCropped(croppedFile: File, _croppedUrl: string) {
     setCropSrc(null);
     setUploading(true);
     try {
-      const url = await uploadBlogImage(croppedFile, storage, {
-        ref: storageRef,
-        uploadBytes,
-        getDownloadURL,
-      });
-      onChange(block.id, "src", url);
-    } catch {
-      // Retain croppedUrl
+      const dataUrl = (await compressImage(croppedFile, {
+        maxDimension: 1200,
+        quality: 0.78,
+        outputType: "dataUrl",
+      })) as string;
+      onChange(block.id, "src", dataUrl);
+    } catch (err) {
+      console.warn("Cropped compression failed", err);
     } finally {
       setUploading(false);
     }
@@ -2331,6 +2341,30 @@ function PostEditor({
       }
     }
 
+    // (2026-07-13) Guarantee block images are persistent base64. Prev: blob:
+    const sanitizedBlocks = await Promise.all(
+      blocks.map(async (b) => {
+        if (b.type === "list") {
+          return { ...b, items: b.items?.filter(Boolean) };
+        }
+        if (b.type === "image" && b.src && b.src.startsWith("blob:")) {
+          try {
+            const resp = await fetch(b.src);
+            const blob = await resp.blob();
+            const dataUrl = await compressImage(blob, {
+              maxDimension: 1200,
+              quality: 0.78,
+              outputType: "dataUrl",
+            });
+            return { ...b, src: dataUrl as string };
+          } catch {
+            return b;
+          }
+        }
+        return b;
+      })
+    );
+
     const payload = {
       ...form,
       cover_image: finalCover,
@@ -2339,9 +2373,7 @@ function PostEditor({
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
-      blocks: blocks.map((b) =>
-        b.type === "list" ? { ...b, items: b.items?.filter(Boolean) } : b,
-      ),
+      blocks: sanitizedBlocks,
       slug: finalSlug,
     };
     const actionLabel = status === "published" ? "Publishing story..." : "Saving draft...";
