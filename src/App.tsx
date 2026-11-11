@@ -245,64 +245,44 @@ function Header() {
                     </NavLink>
                     {recentOpen && recentPosts.length > 0 && (
                       <div className="recent-posts-mega">
-                        {/* (2026-07-13) Redesign blog dropdown into sleek row list. Prev: box grid */}
+                        {/* (2026-07-13) Blog mega dropdown horizontal 5 cards. Prev: row list */}
                         <div className="recent-posts-top">
                           <span className="recent-posts-top-label">Featured stories</span>
                           <Link to="/blog" className="recent-posts-view-all" onClick={() => setRecentOpen(false)}>
                             All stories &rarr;
                           </Link>
                         </div>
-                        <div className="recent-posts-list">
-                          {recentPosts.slice(0, 3).map((rp) => (
+                        <div className="recent-cards-grid">
+                          {recentPosts.slice(0, 5).map((rp) => (
                             <Link
                               key={rp.id}
                               to={`/blog/${rp.slug}`}
-                              className="recent-post-row"
+                              className="recent-blog-card"
                               onClick={() => setRecentOpen(false)}
                             >
-                              <div className="recent-row-thumb">
+                              <div className="recent-card-thumb">
                                 {rp.cover_image ? (
-                                  <img src={rp.cover_image} alt={rp.title} />
+                                  <img src={rp.cover_image} alt={rp.title} loading="lazy" />
                                 ) : (
-                                  <div className="recent-row-ph">
+                                  <div className="recent-card-ph">
                                     <span>{rp.category?.slice(0, 2).toUpperCase() || "BN"}</span>
                                   </div>
                                 )}
                               </div>
-                              <div className="recent-row-body">
-                                <div className="recent-row-meta">
-                                  <span className="recent-row-badge">{rp.category || "Story"}</span>
-                                  <span className="recent-row-date">
-                                    {rp.published_at
-                                      ? new Date(rp.published_at).toLocaleDateString("en-US", {
-                                          month: "short",
-                                          day: "numeric",
-                                        })
-                                      : "Recent"}
-                                  </span>
-                                </div>
-                                <h4 className="recent-row-title">{rp.title}</h4>
-                                <p className="recent-row-desc">
-                                  {rp.excerpt && rp.excerpt.trim()
-                                    ? rp.excerpt
-                                    : rp.slug?.toLowerCase().includes("aton") || rp.title?.toLowerCase().includes("aton")
-                                    ? "A trusted partner in legal excellence in Bogo City, building modern digital solutions."
-                                    : rp.slug?.toLowerCase().includes("bainest") || rp.title?.toLowerCase().includes("bainest")
-                                    ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu."
-                                    : "Strategic insights and creative digital execution for ambitious brands."}
-                                </p>
-                              </div>
-                              <div className="recent-row-arrow">
-                                <ArrowUpRight size={15} />
-                              </div>
+                              <h4 className="recent-card-title" title={rp.title}>
+                                {rp.title}
+                              </h4>
+                              <span className="recent-card-date">
+                                {rp.published_at
+                                  ? new Date(rp.published_at).toLocaleDateString("en-US", {
+                                      month: "long",
+                                      day: "2-digit",
+                                      year: "numeric",
+                                    })
+                                  : "Recent"}
+                              </span>
                             </Link>
                           ))}
-                        </div>
-                        <div className="recent-posts-footer">
-                          <Link to="/blog" className="recent-footer-link" onClick={() => setRecentOpen(false)}>
-                            <span>Explore all case studies & insights</span>
-                            <ArrowRight size={13} />
-                          </Link>
                         </div>
                       </div>
                     )}

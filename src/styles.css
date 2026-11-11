@@ -175,8 +175,9 @@ img {
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
 }
-/* (2026-07-13) Reduce header nav left/right gaps. Prev: gap 20px */
+/* (2026-07-13) Position nav-inner for mega dropdown. Prev: static */
 .nav-inner {
+  position: relative;
   height: 48px;
   display: flex;
   align-items: center;
@@ -4198,7 +4199,7 @@ img {
 /* (2026-07-13) Attach recent posts dropdown directly to Blog. Prev: separate nav */
 .blog-nav-wrapper,
 .recent-posts-dropdown {
-  position: relative;
+  position: static;
   display: flex;
   align-items: center;
   height: 100%;
@@ -4214,19 +4215,20 @@ img {
 .recent-posts-dropdown.open .recent-posts-trigger {
   color: #0d9488;
 }
-/* (2026-07-13) Redesign blog dropdown into sleek row list. Prev: box grid */
+/* (2026-07-13) Blog mega dropdown horizontal 5-card grid. Prev: row list */
 .recent-posts-mega {
   position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 440px;
-  max-width: min(440px, 94vw);
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  padding: 14px 14px 12px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 20px 48px -10px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-top: none;
+  padding: 18px 24px 22px;
   z-index: 200;
   animation: fadeInDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -4242,9 +4244,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2px 6px 10px;
+  padding: 0 2px 14px;
   border-bottom: 1px solid #f1f5f9;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 .recent-posts-top-label {
   font-size: 11px;
@@ -4263,154 +4265,88 @@ img {
   gap: 4px;
   transition: transform 0.15s ease, color 0.15s ease;
 }
-.recent-posts-view-all:hover {
-  color: #047857;
-  transform: translateX(2px);
+@media (hover: hover) {
+  .recent-posts-view-all:hover {
+    color: #047857;
+    transform: translateX(2px);
+  }
 }
-.recent-posts-list {
+.recent-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+.recent-blog-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-.recent-post-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 10px;
-  border-radius: 12px;
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s ease, transform 0.15s ease;
+  min-width: 0;
+  transition: transform 0.18s ease;
 }
-.recent-post-row:hover {
-  background: #f8fafc;
-  transform: translateX(2px);
+@media (hover: hover) {
+  .recent-blog-card:hover {
+    transform: translateY(-2px);
+  }
 }
-.recent-row-thumb {
-  width: 54px;
-  height: 54px;
-  min-width: 54px;
-  border-radius: 10px;
-  background: #ffffff;
+.recent-card-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  background: #f1f5f9;
   border: 1px solid #e2e8f0;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  position: relative;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
 }
-.recent-row-thumb img {
+.recent-card-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 7px;
-  transition: transform 0.2s ease;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.28s ease;
 }
-.recent-post-row:hover .recent-row-thumb img {
-  transform: scale(1.08);
+@media (hover: hover) {
+  .recent-blog-card:hover .recent-card-thumb img {
+    transform: scale(1.05);
+  }
 }
-.recent-row-ph {
+.recent-card-ph {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #0d9488, #0f766e);
+  background: linear-gradient(135deg, #006654, #047857);
   color: #ffffff;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.recent-row-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.recent-row-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.recent-row-badge {
-  font-size: 9.5px;
-  font-weight: 800;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #0d9488;
-  background: rgba(13, 148, 136, 0.1);
-  padding: 1px 7px;
-  border-radius: 999px;
 }
-.recent-row-date {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 500;
-}
-.recent-row-title {
-  margin: 1px 0;
+.recent-card-title {
+  margin: 10px 0 5px;
   font-family: "Manrope", sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: #0f172a;
-  white-space: nowrap;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.35;
+  min-height: 35px;
   transition: color 0.15s ease;
 }
-.recent-post-row:hover .recent-row-title {
-  color: #0d9488;
-}
-.recent-row-desc {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.4;
-  color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.recent-row-arrow {
-  color: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-.recent-post-row:hover .recent-row-arrow {
-  color: #0d9488;
-  transform: translateX(2px);
-}
-.recent-posts-footer {
-  margin-top: 6px;
-  padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
-  text-align: center;
-}
-.recent-footer-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #64748b;
-  text-decoration: none;
-  padding: 5px 10px;
-  border-radius: 8px;
-  transition: all 0.15s ease;
-}
-.recent-footer-link:hover {
-  color: #0f172a;
-  background: #f8fafc;
-}
-@media (max-width: 1080px) {
-  .recent-posts-mega {
-    left: auto;
-    right: 0;
-    transform: none;
+@media (hover: hover) {
+  .recent-blog-card:hover .recent-card-title {
+    color: var(--teal, #006654);
   }
+}
+.recent-card-date {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 /* Category Chips */
