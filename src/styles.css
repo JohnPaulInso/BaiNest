@@ -840,22 +840,25 @@ img {
   gap: 19px;
 }
 /* (2026-07-13) Symmetrical post cards with fixed title & excerpt clamp. Prev: var */
+/* (2026-07-13) Improve blog card styling, thumbnail and typography. Prev: basic */
 .post-card {
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   height: 100%;
   transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 /* (2026-07-13) Blog post card hover in media query with active state. Prev: raw hover */
 @media (hover: hover) {
   .post-card:hover {
-    box-shadow: var(--shadow);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.09);
     transform: translateY(-3px);
     border-color: #cbd5e1;
   }
@@ -865,17 +868,18 @@ img {
 }
 .post-thumb {
   position: relative;
-  height: 162px;
+  height: 190px;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: linear-gradient(130deg, #dbe9ec, #edf3f6);
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #f1f5f9;
 }
 .thumb-1 {
-  background: linear-gradient(130deg, #d9e7df, #eef2ed);
+  background: linear-gradient(145deg, #f8fafc 0%, #f0fdfa 100%);
 }
 .thumb-2 {
-  background: linear-gradient(130deg, #e4deed, #f4f1f6);
+  background: linear-gradient(145deg, #f8fafc 0%, #f5f3ff 100%);
 }
 .thumb-mark {
   position: relative;
@@ -896,7 +900,7 @@ img {
   transform: translate(75px, 40px);
 }
 .post-card-body {
-  padding: 20px;
+  padding: 22px 24px 22px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -905,10 +909,10 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--teal-dark);
-  font-size: 9px;
+  color: #0d9488;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .post-meta i {
@@ -921,25 +925,25 @@ img {
   color: #8996a3;
 }
 .post-card h3 {
-  margin: 10px 0;
-  color: var(--navy);
-  font: 700 17px/1.35 "Manrope";
+  margin: 10px 0 10px;
+  color: #0f172a;
+  font: 800 20px/1.3 "Manrope", sans-serif;
   letter-spacing: -0.025em;
-  min-height: 46px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  min-height: auto;
+}
+.post-card h3 a {
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.18s ease;
 }
 .post-card h3 a:hover {
-  color: var(--teal-dark);
+  color: #0d9488;
 }
 .post-excerpt {
-  min-height: 45px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
+  margin: 0 0 16px;
+  color: #475569;
+  font-size: 13.5px;
+  line-height: 1.6;
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -948,8 +952,21 @@ img {
 }
 .post-card .text-link {
   margin-top: auto;
-  padding-top: 15px;
-  font-size: 9px;
+  padding-top: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0d9488;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: gap 0.18s ease, color 0.18s ease;
+}
+.post-card .text-link:hover {
+  color: #0f766e;
+  gap: 9px;
 }
 .cta-band {
   position: relative;
@@ -3615,12 +3632,15 @@ img {
   }
 }
 
+/* (2026-07-13) Frame post thumbnail images with containment. Prev: cover */
 .post-thumb-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 22px 28px;
+  transition: transform 0.25s ease;
 }
 .domain-preview-notice {
   position: relative;
@@ -3916,13 +3936,14 @@ img {
 .recent-mega-card:active {
   transform: scale(0.97);
 }
+/* (2026-07-13) Refine mega menu thumbnail card framing. Prev: plain white */
 .recent-mega-thumb {
   width: 100%;
-  height: 100px;
-  border-radius: 6px;
+  height: 105px;
+  border-radius: 8px;
   overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #f1f5f9;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3933,7 +3954,11 @@ img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 4px;
+  padding: 10px;
+  transition: transform 0.2s ease;
+}
+.recent-mega-card:hover .recent-mega-thumb img {
+  transform: scale(1.05);
 }
 .recent-mega-ph {
   width: 100%;

@@ -469,7 +469,16 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
         <h3>
           <Link to={`/blog/${post.slug}`}>{post.title}</Link>
         </h3>
-        <p className="post-excerpt">{post.excerpt}</p>
+        {/* (2026-07-13) Add subtle description fallback for posts. Prev: post.excerpt */}
+        <p className="post-excerpt">
+          {post.excerpt && post.excerpt.trim()
+            ? post.excerpt
+            : post.slug?.toLowerCase().includes("aton") || post.title?.toLowerCase().includes("aton")
+            ? "A trusted partner in legal excellence in Bogo City, building modern digital solutions to connect with the community and thrive online."
+            : post.slug?.toLowerCase().includes("bainest") || post.title?.toLowerCase().includes("bainest")
+            ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu—empowering ambitious brands to innovate, elevate, and connect online."
+            : "Strategic insight, purposeful creative, and digital execution designed to help modern businesses stand out and grow."}
+        </p>
         <Link className="text-link" to={`/blog/${post.slug}`}>
           Read the story <ArrowRight size={14} />
         </Link>
