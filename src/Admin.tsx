@@ -49,6 +49,7 @@ import {
   Share2,
   TrendingUp,
   BarChart2,
+  PieChart,
   MousePointer,
   ShieldCheck,
   RefreshCw,
@@ -612,6 +613,66 @@ export function getPostImpressions(p: Post): number {
   return Math.round(getPostClicks(p) * 11.5);
 }
 
+// (2026-07-13) SVG Donut / Pie chart component. Prev: none
+function SvgPieChart({
+  slices,
+  centerLabel,
+  centerSub,
+}: {
+  slices: { label: string; pct: number; color: string }[];
+  centerLabel?: string;
+  centerSub?: string;
+}) {
+  const r = 40;
+  const c = 2 * Math.PI * r;
+  let accumulated = 0;
+
+  return (
+    <div className="svg-pie-wrapper">
+      <div className="svg-pie-graphic">
+        <svg viewBox="0 0 120 120" className="donut-svg">
+          <circle cx="60" cy="60" r={r} fill="none" stroke="#f1f5f9" strokeWidth="16" />
+          {slices.map((s, idx) => {
+            const dash = (s.pct / 100) * c;
+            const offset = -(accumulated / 100) * c;
+            accumulated += s.pct;
+            return (
+              <circle
+                key={idx}
+                cx="60"
+                cy="60"
+                r={r}
+                fill="none"
+                stroke={s.color}
+                strokeWidth="16"
+                strokeDasharray={`${dash} ${c - dash}`}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                transform="rotate(-90 60 60)"
+              />
+            );
+          })}
+        </svg>
+        {centerLabel && (
+          <div className="pie-center-text">
+            <b>{centerLabel}</b>
+            {centerSub && <small>{centerSub}</small>}
+          </div>
+        )}
+      </div>
+      <div className="pie-legend-col">
+        {slices.map((s, idx) => (
+          <div key={idx} className="pie-legend-item">
+            <span className="legend-dot" style={{ background: s.color }} />
+            <span className="legend-name">{s.label}</span>
+            <b className="legend-pct">{s.pct}%</b>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // (2026-07-13) Google Search Console dashboard & charts. Prev: basic counts
 function Overview({ posts }: { posts: Post[] }) {
   const [counts, setCounts] = useState({
@@ -620,6 +681,7 @@ function Overview({ posts }: { posts: Post[] }) {
   });
   const [timeframe, setTimeframe] = useState<"7d" | "28d" | "3m" | "12m">("28d");
   const [activeMetric, setActiveMetric] = useState<"views" | "clicks" | "impressions">("views");
+  const [chartType, setChartType] = useState<"line" | "bar">("line");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
@@ -865,38 +927,58 @@ function Overview({ posts }: { posts: Post[] }) {
         </article>
       </div>
 
-      {/* SVG Interactive Trendline Performance Chart */}
-      {/* SVG interactive performance trend graph */}
+      {/* SVG Interactive Trendline & Bar Performance Chart */}
+      {/* SVG interactive performance trend graph with line/bar views */}
       <section className="admin-panel analytics-chart-card">
-        <div className="panel-head">
+        <div className="panel-head" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
           <div>
             <h2>
-              Performance Trend: {activeMetric === "views" ? "Total Page Views" : activeMetric === "clicks" ? "Search Clicks" : "Google Impressions"}
+              Performance Trend: {activeMetric === "views" ? "Total Page Views" : activeMetric === "clicks" ? "Search Clicks" : "Google Impressions"} ({chartType === "bar" ? "Bar Chart" : "Line Chart"})
             </h2>
             <p>Visualizing performance velocity over the selected {timeframe === "7d" ? "7 days" : timeframe === "28d" ? "28 days" : timeframe === "3m" ? "3 months" : "12 months"}.</p>
           </div>
-          <div className="chart-metric-switcher">
-            <button
-              type="button"
-              className={activeMetric === "views" ? "current" : ""}
-              onClick={() => setActiveMetric("views")}
-            >
-              <Eye size={13} /> Views
-            </button>
-            <button
-              type="button"
-              className={activeMetric === "clicks" ? "current" : ""}
-              onClick={() => setActiveMetric("clicks")}
-            >
-              <MousePointer size={13} /> Clicks
-            </button>
-            <button
-              type="button"
-              className={activeMetric === "impressions" ? "current" : ""}
-              onClick={() => setActiveMetric("impressions")}
-            >
-              <Search size={13} /> Impressions
-            </button>
+          <div className="chart-mode-toggles" style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+            <div className="chart-metric-switcher">
+              <button
+                type="button"
+                className={chartType === "line" ? "current" : ""}
+                onClick={() => setChartType("line")}
+                title="Line Chart View"
+              >
+                <TrendingUp size={13} /> Line
+              </button>
+              <button
+                type="button"
+                className={chartType === "bar" ? "current" : ""}
+                onClick={() => setChartType("bar")}
+                title="Bar Chart View"
+              >
+                <BarChart2 size={13} /> Bar
+              </button>
+            </div>
+            <div className="chart-metric-switcher">
+              <button
+                type="button"
+                className={activeMetric === "views" ? "current" : ""}
+                onClick={() => setActiveMetric("views")}
+              >
+                <Eye size={13} /> Views
+              </button>
+              <button
+                type="button"
+                className={activeMetric === "clicks" ? "current" : ""}
+                onClick={() => setActiveMetric("clicks")}
+              >
+                <MousePointer size={13} /> Clicks
+              </button>
+              <button
+                type="button"
+                className={activeMetric === "impressions" ? "current" : ""}
+                onClick={() => setActiveMetric("impressions")}
+              >
+                <Search size={13} /> Impressions
+              </button>
+            </div>
           </div>
         </div>
 
@@ -907,28 +989,69 @@ function Overview({ posts }: { posts: Post[] }) {
                 <stop offset="0%" stopColor="#006654" stopOpacity="0.25" />
                 <stop offset="100%" stopColor="#006654" stopOpacity="0.0" />
               </linearGradient>
+              <linearGradient id="chartBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#006654" />
+                <stop offset="100%" stopColor="#0d9488" />
+              </linearGradient>
             </defs>
             {/* Horizontal Grid lines */}
             <line x1={paddingX} y1={paddingY} x2={chartWidth - paddingX} y2={paddingY} stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
             <line x1={paddingX} y1={paddingY + usableH * 0.5} x2={chartWidth - paddingX} y2={paddingY + usableH * 0.5} stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
             <line x1={paddingX} y1={chartHeight - paddingY} x2={chartWidth - paddingX} y2={chartHeight - paddingY} stroke="rgba(0,0,0,0.12)" />
 
-            {/* Gradient Area Fill */}
-            <polygon points={areaString} fill="url(#chartGradient)" />
+            {/* (2026-07-13) Conditional Bar Chart vs Line Chart rendering. Prev: line only */}
+            {chartType === "bar" ? (
+              <g>
+                {chartPoints.map((pt, i) => {
+                  const slotW = usableW / chartPoints.length;
+                  const barW = Math.max(Math.min(slotW - 12, 38), 16);
+                  const x = paddingX + i * slotW + (slotW - barW) / 2;
+                  const barH = Math.max((pt.val / maxVal) * usableH, 4);
+                  const y = chartHeight - paddingY - barH;
+                  return (
+                    <g key={i} className="chart-bar-elem">
+                      <rect
+                        x={x}
+                        y={y}
+                        width={barW}
+                        height={barH}
+                        rx="4"
+                        fill="url(#chartBarGradient)"
+                      />
+                      <text
+                        x={x + barW / 2}
+                        y={y - 6}
+                        textAnchor="middle"
+                        fontSize="9.5"
+                        fontWeight="600"
+                        fill="#334155"
+                      >
+                        {pt.val >= 1000 ? `${(pt.val / 1000).toFixed(1)}k` : pt.val}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            ) : (
+              <>
+                {/* Gradient Area Fill */}
+                <polygon points={areaString} fill="url(#chartGradient)" />
 
-            {/* Trendline Path */}
-            <polyline fill="none" stroke="#006654" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pointsString} />
+                {/* Trendline Path */}
+                <polyline fill="none" stroke="#006654" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pointsString} />
 
-            {/* Plot Circles */}
-            {chartPoints.map((pt, i) => {
-              const x = paddingX + (i / (chartPoints.length - 1)) * usableW;
-              const y = paddingY + (1 - pt.val / maxVal) * usableH;
-              return (
-                <g key={i} className="chart-node">
-                  <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#006654" strokeWidth="2.5" />
-                </g>
-              );
-            })}
+                {/* Plot Circles */}
+                {chartPoints.map((pt, i) => {
+                  const x = paddingX + (i / (chartPoints.length - 1)) * usableW;
+                  const y = paddingY + (1 - pt.val / maxVal) * usableH;
+                  return (
+                    <g key={i} className="chart-node">
+                      <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#006654" strokeWidth="2.5" />
+                    </g>
+                  );
+                })}
+              </>
+            )}
           </svg>
         </div>
         <div className="chart-legend-row">
@@ -938,7 +1061,69 @@ function Overview({ posts }: { posts: Post[] }) {
         </div>
       </section>
 
-      {/* Two-Column Breakdown: Top Queries & Device / Traffic Split */}
+      {/* Dedicated Dual Bar Chart: Weekly Clicks vs Impressions */}
+      {/* Weekly performance dual column bar chart */}
+      <section className="admin-panel analytics-chart-card">
+        <div className="panel-head">
+          <div>
+            <h2>Weekly Search Velocity (Dual Bar Chart)</h2>
+            <p>Comparing Search Clicks and scaled Impressions across active days of the week.</p>
+          </div>
+          <div className="chart-legend-badge-row">
+            <span className="legend-indicator-pill clicks-legend">
+              <span className="dot" style={{ background: "#006654" }} /> Clicks
+            </span>
+            <span className="legend-indicator-pill impressions-legend">
+              <span className="dot" style={{ background: "#0284c7" }} /> Impressions (÷10)
+            </span>
+          </div>
+        </div>
+        <div className="svg-chart-container" style={{ height: "180px" }}>
+          <svg viewBox="0 0 720 180" className="analytics-svg-chart" preserveAspectRatio="none">
+            <line x1="36" y1="20" x2="684" y2="20" stroke="rgba(0,0,0,0.05)" strokeDasharray="4 4" />
+            <line x1="36" y1="80" x2="684" y2="80" stroke="rgba(0,0,0,0.05)" strokeDasharray="4 4" />
+            <line x1="36" y1="140" x2="684" y2="140" stroke="rgba(0,0,0,0.12)" />
+            {[
+              { day: "Mon", clicks: Math.round(totalClicks * 0.12), imp: Math.round((totalImpressions * 0.11) / 10) },
+              { day: "Tue", clicks: Math.round(totalClicks * 0.16), imp: Math.round((totalImpressions * 0.15) / 10) },
+              { day: "Wed", clicks: Math.round(totalClicks * 0.20), imp: Math.round((totalImpressions * 0.19) / 10) },
+              { day: "Thu", clicks: Math.round(totalClicks * 0.24), imp: Math.round((totalImpressions * 0.22) / 10) },
+              { day: "Fri", clicks: Math.round(totalClicks * 0.18), imp: Math.round((totalImpressions * 0.17) / 10) },
+              { day: "Sat", clicks: Math.round(totalClicks * 0.06), imp: Math.round((totalImpressions * 0.09) / 10) },
+              { day: "Sun", clicks: Math.round(totalClicks * 0.04), imp: Math.round((totalImpressions * 0.07) / 10) },
+            ].map((col, idx) => {
+              const maxWeekly = Math.round(totalClicks * 0.28) || 200;
+              const slotW = (720 - 72) / 7;
+              const barW = 16;
+              const xBase = 36 + idx * slotW + (slotW - barW * 2 - 6) / 2;
+              const clickH = Math.max((col.clicks / maxWeekly) * 110, 4);
+              const impH = Math.max((col.imp / maxWeekly) * 110, 4);
+              const clickY = 140 - clickH;
+              const impY = 140 - impH;
+              return (
+                <g key={idx}>
+                  {/* Clicks bar */}
+                  <rect x={xBase} y={clickY} width={barW} height={clickH} rx="3" fill="#006654" />
+                  <text x={xBase + barW / 2} y={clickY - 4} textAnchor="middle" fontSize="9" fontWeight="600" fill="#006654">
+                    {col.clicks}
+                  </text>
+                  {/* Impressions bar */}
+                  <rect x={xBase + barW + 4} y={impY} width={barW} height={impH} rx="3" fill="#0284c7" />
+                  <text x={xBase + barW + 4 + barW / 2} y={impY - 4} textAnchor="middle" fontSize="9" fontWeight="600" fill="#0284c7">
+                    {col.imp}
+                  </text>
+                  {/* Day label */}
+                  <text x={xBase + barW + 2} y="160" textAnchor="middle" fontSize="11" fontWeight="600" fill="#64748b">
+                    {col.day}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </section>
+
+      {/* Two-Column Breakdown: Top Queries & Pie Charts */}
       <div className="analytics-two-col">
         {/* Top Google Search Console Queries */}
         {/* Search queries ranking performance table */}
@@ -979,76 +1164,41 @@ function Overview({ posts }: { posts: Post[] }) {
           </div>
         </section>
 
-        {/* Traffic Channels & Devices */}
-        {/* Traffic channels & device distribution */}
+        {/* Traffic Channels & Devices with Donut / Pie Charts */}
+        {/* Audience and acquisition pie charts */}
         <section className="admin-panel">
           <div className="panel-head">
             <div>
-              <h2>Audience & Channels</h2>
-              <p>Device distribution and traffic acquisition sources.</p>
+              <h2>Audience & Channels (Pie Charts)</h2>
+              <p>Visualizing acquisition channels and device breakdown.</p>
             </div>
+            <span className="gsc-source-tag"><PieChart size={12} /> Donut</span>
           </div>
-          <div className="traffic-dist-body">
-            <div className="dist-group">
+          <div className="pie-charts-container">
+            <div className="pie-section-block">
               <span className="dist-title">Traffic Channels</span>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Google Organic Search</span>
-                  <b>68.4%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "68.4%", background: "#006654" }} />
-                </div>
-              </div>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Direct Navigation</span>
-                  <b>18.2%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "18.2%", background: "#0284c7" }} />
-                </div>
-              </div>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Social & Referrals</span>
-                  <b>13.4%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "13.4%", background: "#f59e0b" }} />
-                </div>
-              </div>
+              <SvgPieChart
+                slices={[
+                  { label: "Google Search", pct: 68.4, color: "#006654" },
+                  { label: "Direct Navigation", pct: 18.2, color: "#0284c7" },
+                  { label: "Social Referrals", pct: 13.4, color: "#f59e0b" },
+                ]}
+                centerLabel="68%"
+                centerSub="Google"
+              />
             </div>
 
-            <div className="dist-group" style={{ marginTop: "20px" }}>
+            <div className="pie-section-block" style={{ marginTop: "22px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
               <span className="dist-title">Device Breakdown</span>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Mobile Handheld</span>
-                  <b>64.2%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "64.2%", background: "#10b981" }} />
-                </div>
-              </div>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Desktop & Laptop</span>
-                  <b>31.8%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "31.8%", background: "#6366f1" }} />
-                </div>
-              </div>
-              <div className="dist-bar-item">
-                <div className="dist-labels">
-                  <span>Tablet Devices</span>
-                  <b>4.0%</b>
-                </div>
-                <div className="dist-progress-track">
-                  <div className="dist-progress-fill" style={{ width: "4.0%", background: "#94a3b8" }} />
-                </div>
-              </div>
+              <SvgPieChart
+                slices={[
+                  { label: "Mobile Handheld", pct: 64.2, color: "#10b981" },
+                  { label: "Desktop & Laptop", pct: 31.8, color: "#6366f1" },
+                  { label: "Tablet Devices", pct: 4.0, color: "#94a3b8" },
+                ]}
+                centerLabel="64%"
+                centerSub="Mobile"
+              />
             </div>
           </div>
         </section>
