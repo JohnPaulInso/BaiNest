@@ -42,6 +42,10 @@ import {
   PlusCircle,
   Crop,
   Sparkles,
+  Mail,
+  Building,
+  Clock,
+  Search,
 } from "lucide-react";
 // (2026-07-13) Import ImageCropperModal & Crop icon. Prev: no cropper
 import { ImageCropperModal } from "./ImageCropperModal";
@@ -2237,9 +2241,47 @@ function DomainSettings() {
     </>
   );
 }
-// (2026-07-13) Subscribe to live contacts via onSnapshot. Prev: static fetch
+function formatInboxDate(raw: any): string {
+  if (!raw) return "Just now";
+  try {
+    if (typeof raw === "object" && typeof raw.toDate === "function") {
+      const d = raw.toDate();
+      return (
+        d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+        " • " +
+        d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      );
+    }
+    if (typeof raw === "object" && typeof raw.seconds === "number") {
+      const d = new Date(raw.seconds * 1000);
+      return (
+        d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+        " • " +
+        d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      );
+    }
+    let s = String(raw).trim().replace(/Z+$/i, "Z");
+    let d = new Date(s);
+    if (isNaN(d.getTime())) {
+      d = new Date(s.endsWith("Z") ? s : s + "Z");
+    }
+    if (!isNaN(d.getTime())) {
+      return (
+        d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+        " • " +
+        d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      );
+    }
+  } catch {}
+  return "Just now";
+}
+
+// (2026-07-13) Format inbox contact dates & polish inbox UI. Prev: invalid date
 function InboxPage() {
   const [messages, setMessages] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     const unsub = subscribeToContacts((liveContacts) => {
       setMessages(liveContacts);
@@ -2249,6 +2291,7 @@ function InboxPage() {
       .catch(() => {});
     return () => unsub();
   }, []);
+
   async function mark(id: number | string) {
     await api(`/api/admin/contacts/${id}/read`, {
       method: "PUT",
@@ -2256,38 +2299,170 @@ function InboxPage() {
     });
     setMessages((x) => x.map((m) => (m.id === id ? { ...m, read: 1 } : m)));
   }
+
+  async function handleDelete(id: number | string) {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    try {
+      await api(`/api/admin/contacts/${id}`, { method: "DELETE" });
+      setMessages((x) => x.filter((m) => m.id !== id));
+    } catch {}
+  }
+
+  const unreadCount = messages.filter((m) => !m.read).length;
+  const readCount = messages.filter((m) => !!m.read).length;
+
+  const filtered = useMemo(() => {
+    return messages.filter((m) => {
+      if (filter === "unread" && m.read) return false;
+      if (filter === "read" && !m.read) return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const n = (m.name || "").toLowerCase();
+        const e = (m.email || "").toLowerCase();
+        const c = (m.company || "").toLowerCase();
+        const msg = (m.message || "").toLowerCase();
+        return n.includes(q) || e.includes(q) || c.includes(q) || msg.includes(q);
+      }
+      return true;
+    });
+  }, [messages, filter, search]);
+
   return (
     <>
       <div className="admin-page-title">
         <div>
           <span className="admin-kicker">Messages</span>
           <h1>The conversation starts here.</h1>
-          <p>Contact form submissions saved in your local inbox.</p>
+          <p>Contact form submissions saved in your local inbox with full date tracking.</p>
         </div>
       </div>
-      <section className="admin-panel inbox-panel">
-        {messages.map((m) => (
-          <article className={`inbox-item ${m.read ? "read" : ""}`} key={m.id}>
-            <div className="inbox-avatar">{m.name[0]?.toUpperCase()}</div>
-            <div className="inbox-content">
-              <div className="inbox-top">
-                <h3>{m.name}</h3>
-                <time>{new Date(m.created_at + "Z").toLocaleString()}</time>
+
+      <div className="inbox-controls-bar">
+        {/* Filter buttons by read status */}
+        <div className="inbox-filter-group">
+          <button
+            type="button"
+            className={`inbox-filter-pill ${filter === "all" ? "active" : ""}`}
+            onClick={() => setFilter("all")}
+          >
+            All <span className="inbox-pill-count">{messages.length}</span>
+          </button>
+          <button
+            type="button"
+            className={`inbox-filter-pill ${filter === "unread" ? "active" : ""}`}
+            onClick={() => setFilter("unread")}
+          >
+            Unread <span className="inbox-pill-count unread-pill">{unreadCount}</span>
+          </button>
+          <button
+            type="button"
+            className={`inbox-filter-pill ${filter === "read" ? "active" : ""}`}
+            onClick={() => setFilter("read")}
+          >
+            Read <span className="inbox-pill-count">{readCount}</span>
+          </button>
+        </div>
+
+        {/* Search filter for messages */}
+        <div className="inbox-search-box">
+          <Search size={14} className="inbox-search-icon" />
+          <input
+            type="text"
+            placeholder="Search inquiries..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <section className="inbox-cards-container">
+        {filtered.map((m) => (
+          <article className={`inbox-card ${m.read ? "is-read" : "is-unread"}`} key={m.id}>
+            <div className="inbox-card-header">
+              <div className="inbox-sender-cell">
+                <div className="inbox-card-avatar">
+                  {(m.name?.[0] || "U").toUpperCase()}
+                </div>
+                <div className="inbox-sender-info">
+                  <div className="inbox-sender-name-row">
+                    <h3 className="inbox-sender-name">{m.name || "Anonymous Contact"}</h3>
+                    {m.read ? (
+                      <span className="inbox-status-tag read-tag">Read</span>
+                    ) : (
+                      <span className="inbox-status-tag unread-tag">New</span>
+                    )}
+                  </div>
+                  <div className="inbox-meta-chips">
+                    <a href={`mailto:${m.email}`} className="inbox-meta-chip email-chip">
+                      <Mail size={12} />
+                      <span>{m.email}</span>
+                    </a>
+                    {m.company && (
+                      <span className="inbox-meta-chip company-chip">
+                        <Building size={12} />
+                        <span>{m.company}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <a href={`mailto:${m.email}`}>{m.email}</a>
-              {m.company && <span className="inbox-company">{m.company}</span>}
+
+              <div className="inbox-timestamp-badge" title={String(m.created_at)}>
+                <Clock size={12} />
+                <time>{formatInboxDate(m.created_at)}</time>
+              </div>
+            </div>
+
+            {/* Message body container */}
+            <div className="inbox-message-body">
               <p>{m.message}</p>
-              {!m.read && (
-                <button className="text-link" onClick={() => mark(m.id)}>
-                  Mark as read
-                </button>
-              )}
+            </div>
+
+            {/* Action buttons footer */}
+            <div className="inbox-card-footer">
+              <div className="inbox-actions-left">
+                {!m.read ? (
+                  <button
+                    type="button"
+                    className="inbox-action-btn primary-mark-btn"
+                    onClick={() => mark(m.id)}
+                  >
+                    <Check size={14} /> Mark as read
+                  </button>
+                ) : (
+                  <span className="inbox-read-indicator">
+                    <Check size={14} /> Completed
+                  </span>
+                )}
+                <a
+                  href={`mailto:${m.email}?subject=Re:%20BaiNest%20Inquiry`}
+                  className="inbox-action-btn reply-btn"
+                >
+                  <Mail size={14} /> Reply by email
+                </a>
+              </div>
+              <button
+                type="button"
+                className="inbox-action-btn delete-btn"
+                title="Delete message"
+                onClick={() => handleDelete(m.id)}
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </article>
         ))}
-        {!messages.length && (
-          <div className="admin-empty">
-            No messages yet. New contact form submissions will appear here.
+
+        {!filtered.length && (
+          <div className="admin-empty inbox-empty-state">
+            <Inbox size={32} style={{ opacity: 0.35, marginBottom: 8 }} />
+            <p>
+              {search
+                ? "No contact submissions match your search."
+                : filter === "unread"
+                ? "No unread messages. You’re all caught up!"
+                : "No messages yet. New contact form submissions will appear here."}
+            </p>
           </div>
         )}
       </section>

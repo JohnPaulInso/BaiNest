@@ -1761,9 +1761,16 @@ function Contact() {
     const refId = `BN-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
+      // (2026-07-13) Add timestamp to contact form submissions. Prev: none
       await api("/api/contact", {
         method: "POST",
-        body: JSON.stringify({ name, email, company, message }),
+        body: JSON.stringify({
+          name,
+          email,
+          company,
+          message,
+          created_at: new Date().toISOString(),
+        }),
       });
       setSubmittedData({
         name,

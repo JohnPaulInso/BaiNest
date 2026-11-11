@@ -409,11 +409,12 @@ async function deleteFirestorePost(id: string | number): Promise<void> {
   } catch {}
 }
 
+// (2026-07-13) Guarantee contact created_at date on save. Prev: none
 async function saveFirestoreContact(body: Record<string, unknown>): Promise<void> {
   try {
     await addDoc(collection(firestore, "contacts"), {
       ...body,
-      created_at: new Date().toISOString(),
+      created_at: (body.created_at as string) || new Date().toISOString(),
     });
   } catch {}
 }
@@ -462,17 +463,41 @@ export function subscribeToPosts(
   }
 }
 
+function normalizeContactDoc(d: { id: string; data: () => any }): any {
+  const data = d.data() || {};
+  let created = data.created_at || data.created;
+  if (created && typeof created === "object" && typeof created.toDate === "function") {
+    created = created.toDate().toISOString();
+  } else if (created && typeof created === "object" && typeof created.seconds === "number") {
+    created = new Date(created.seconds * 1000).toISOString();
+  } else if (typeof created === "string") {
+    created = created.replace(/Z+$/i, "Z");
+  } else if (!created) {
+    created = new Date().toISOString();
+  }
+  return {
+    id: d.id,
+    ...data,
+    created_at: created,
+  };
+}
+
+// (2026-07-13) Normalize contact dates in real-time query. Prev: raw missing
 export function subscribeToContacts(
   callback: (contacts: any[]) => void
 ): () => void {
   try {
     const col = collection(firestore, "contacts");
-    const q = query(col, orderBy("created_at", "desc"));
     return onSnapshot(
-      q,
+      col,
       (snapshot) => {
         const contacts: any[] = [];
-        snapshot.forEach((d) => contacts.push({ id: d.id, ...d.data() }));
+        snapshot.forEach((d) => contacts.push(normalizeContactDoc(d)));
+        contacts.sort((a, b) => {
+          const tA = new Date(a.created_at).getTime() || 0;
+          const tB = new Date(b.created_at).getTime() || 0;
+          return tB - tA;
+        });
         callback(contacts);
       },
       () => callback([])
@@ -486,14 +511,24 @@ export function subscribeToContacts(
 async function getFirestoreContacts(): Promise<any[]> {
   try {
     const col = collection(firestore, "contacts");
-    const q = query(col, orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
+    const snap = await getDocs(col);
     const contacts: any[] = [];
-    snap.forEach((d) => contacts.push({ id: d.id, ...d.data() }));
+    snap.forEach((d) => contacts.push(normalizeContactDoc(d)));
+    contacts.sort((a, b) => {
+      const tA = new Date(a.created_at).getTime() || 0;
+      const tB = new Date(b.created_at).getTime() || 0;
+      return tB - tA;
+    });
     return contacts;
   } catch {
     return [];
   }
+}
+
+async function deleteFirestoreContact(id: string | number): Promise<void> {
+  try {
+    await deleteDoc(doc(firestore, "contacts", String(id)));
+  } catch {}
 }
 
 async function markFirestoreContactRead(id: string | number): Promise<void> {
@@ -687,6 +722,13 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   const contactReadMatch = url.match(/^\/api\/admin\/contacts\/([^/]+)\/read$/);
   if (contactReadMatch) {
     await markFirestoreContactRead(contactReadMatch[1]);
+    return { ok: true };
+  }
+
+  // (2026-07-13) Add contact delete route handler. Prev: mark read only
+  const contactDeleteMatch = url.match(/^\/api\/admin\/contacts\/([^/]+)$/);
+  if (contactDeleteMatch && method === "DELETE") {
+    await deleteFirestoreContact(contactDeleteMatch[1]);
     return { ok: true };
   }
 
