@@ -7406,3 +7406,48 @@ img {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+/* (2026-07-13) Modernized chart aesthetics and glow effects. Prev: basic cards */
+.analytics-chart-card {
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px rgba(15, 23, 42, 0.03);
+  background: #ffffff;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.analytics-chart-card:hover {
+  border-color: rgba(0, 102, 84, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 102, 84, 0.06);
+}
+.chart-mode-toggles {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chart-metric-switcher {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 3px;
+}
+.chart-metric-switcher button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.chart-metric-switcher button.current {
+  background: #ffffff;
+  color: #006654;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.chart-node-interactive circle {
+  transition: r 0.2s cubic-bezier(0.4, 0, 0.2, 1), stroke-width 0.2s ease;
+}
+.clicks-legend .dot {
+  background: linear-gradient(135deg, #10b981, #006654) !important;
+}
+.impressions-legend .dot {
+  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+}

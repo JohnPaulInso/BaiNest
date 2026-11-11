@@ -613,7 +613,7 @@ export function getPostImpressions(p: Post): number {
   return Math.round(getPostClicks(p) * 11.5);
 }
 
-// (2026-07-13) SVG Donut / Pie chart component. Prev: none
+// (2026-07-13) Modernized interactive SVG Donut Pie chart. Prev: basic circles
 function SvgPieChart({
   slices,
   centerLabel,
@@ -623,19 +623,21 @@ function SvgPieChart({
   centerLabel?: string;
   centerSub?: string;
 }) {
-  const r = 40;
+  const [activeSlice, setActiveSlice] = useState<number | null>(null);
+  const r = 42;
   const c = 2 * Math.PI * r;
   let accumulated = 0;
 
   return (
-    <div className="svg-pie-wrapper">
+    <div className="svg-pie-wrapper" onMouseLeave={() => setActiveSlice(null)}>
       <div className="svg-pie-graphic">
         <svg viewBox="0 0 120 120" className="donut-svg">
-          <circle cx="60" cy="60" r={r} fill="none" stroke="#f1f5f9" strokeWidth="16" />
+          <circle cx="60" cy="60" r={r} fill="none" stroke="#f1f5f9" strokeWidth="15" />
           {slices.map((s, idx) => {
-            const dash = (s.pct / 100) * c;
+            const dash = Math.max((s.pct / 100) * c, 2);
             const offset = -(accumulated / 100) * c;
             accumulated += s.pct;
+            const isHovered = activeSlice === idx;
             return (
               <circle
                 key={idx}
@@ -644,30 +646,42 @@ function SvgPieChart({
                 r={r}
                 fill="none"
                 stroke={s.color}
-                strokeWidth="16"
+                strokeWidth={isHovered ? 18 : 15}
                 strokeDasharray={`${dash} ${c - dash}`}
                 strokeDashoffset={offset}
                 strokeLinecap="round"
                 transform="rotate(-90 60 60)"
+                style={{
+                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                  filter: isHovered ? "drop-shadow(0 2px 5px rgba(0,0,0,0.2))" : "none",
+                }}
+                onMouseEnter={() => setActiveSlice(idx)}
               />
             );
           })}
         </svg>
-        {centerLabel && (
-          <div className="pie-center-text">
-            <b>{centerLabel}</b>
-            {centerSub && <small>{centerSub}</small>}
-          </div>
-        )}
+        <div className="pie-center-text">
+          <b>{activeSlice !== null ? `${slices[activeSlice].pct}%` : centerLabel}</b>
+          <small>{activeSlice !== null ? slices[activeSlice].label.split(" ")[0] : centerSub}</small>
+        </div>
       </div>
       <div className="pie-legend-col">
-        {slices.map((s, idx) => (
-          <div key={idx} className="pie-legend-item">
-            <span className="legend-dot" style={{ background: s.color }} />
-            <span className="legend-name">{s.label}</span>
-            <b className="legend-pct">{s.pct}%</b>
-          </div>
-        ))}
+        {slices.map((s, idx) => {
+          const isHovered = activeSlice === idx;
+          return (
+            <div
+              key={idx}
+              className={`pie-legend-item ${isHovered ? "active-legend" : ""}`}
+              onMouseEnter={() => setActiveSlice(idx)}
+              style={{ cursor: "pointer", padding: "4px 8px", borderRadius: "6px", transition: "all 0.15s ease", background: isHovered ? "rgba(241, 245, 249, 0.9)" : "transparent" }}
+            >
+              <span className="legend-dot" style={{ background: s.color, width: 9, height: 9, borderRadius: "50%" }} />
+              <span className="legend-name" style={{ fontWeight: isHovered ? 700 : 500 }}>{s.label}</span>
+              <b className="legend-pct" style={{ color: s.color }}>{s.pct}%</b>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -682,6 +696,8 @@ function Overview({ posts }: { posts: Post[] }) {
   const [timeframe, setTimeframe] = useState<"7d" | "28d" | "3m" | "12m">("28d");
   const [activeMetric, setActiveMetric] = useState<"views" | "clicks" | "impressions">("views");
   const [chartType, setChartType] = useState<"line" | "bar">("line");
+  const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null);
+  const [hoveredBarIdx, setHoveredBarIdx] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
@@ -763,15 +779,39 @@ function Overview({ posts }: { posts: Post[] }) {
   const usableW = chartWidth - paddingX * 2;
   const usableH = chartHeight - paddingY * 2;
 
-  const pointsString = chartPoints
-    .map((pt, i) => {
+  // (2026-07-13) Smooth Catmull-Rom Bezier spline calculations. Prev: polyline
+  const mappedPoints = useMemo(() => {
+    return chartPoints.map((pt, i) => {
       const x = paddingX + (i / (chartPoints.length - 1)) * usableW;
       const y = paddingY + (1 - pt.val / maxVal) * usableH;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+      return { x, y, pt };
+    });
+  }, [chartPoints, paddingX, usableW, paddingY, usableH, maxVal]);
 
-  const areaString = `${paddingX},${chartHeight - paddingY} ${pointsString} ${paddingX + usableW},${chartHeight - paddingY}`;
+  const smoothCurvePath = useMemo(() => {
+    if (mappedPoints.length < 2) return "";
+    let d = `M ${mappedPoints[0].x.toFixed(1)},${mappedPoints[0].y.toFixed(1)}`;
+    for (let i = 0; i < mappedPoints.length - 1; i++) {
+      const p0 = mappedPoints[i === 0 ? 0 : i - 1];
+      const p1 = mappedPoints[i];
+      const p2 = mappedPoints[i + 1];
+      const p3 = mappedPoints[i + 2 < mappedPoints.length ? i + 2 : i + 1];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+    return d;
+  }, [mappedPoints]);
+
+  const smoothAreaPath = useMemo(() => {
+    if (!smoothCurvePath || mappedPoints.length === 0) return "";
+    const last = mappedPoints[mappedPoints.length - 1];
+    const first = mappedPoints[0];
+    const bY = chartHeight - paddingY;
+    return `${smoothCurvePath} L ${last.x.toFixed(1)},${bY} L ${first.x.toFixed(1)},${bY} Z`;
+  }, [smoothCurvePath, mappedPoints, chartHeight, paddingY]);
 
   const topQueries = [
     { query: "bainest digital marketing agency", clicks: Math.round(totalClicks * 0.36), impressions: Math.round(totalImpressions * 0.34), ctr: "9.4%", pos: "2.6" },
@@ -982,49 +1022,80 @@ function Overview({ posts }: { posts: Post[] }) {
           </div>
         </div>
 
-        <div className="svg-chart-container">
+        {/* (2026-07-13) Modernized smooth spline & dual bar charts. Prev: polyline */}
+        <div className="svg-chart-container" onMouseLeave={() => setHoveredPointIdx(null)}>
           <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="analytics-svg-chart" preserveAspectRatio="none">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#006654" stopOpacity="0.25" />
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.32" />
+                <stop offset="40%" stopColor="#006654" stopOpacity="0.12" />
                 <stop offset="100%" stopColor="#006654" stopOpacity="0.0" />
               </linearGradient>
-              <linearGradient id="chartBarGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#006654" />
-                <stop offset="100%" stopColor="#0d9488" />
+              <linearGradient id="chartStrokeGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#0d9488" />
+                <stop offset="60%" stopColor="#006654" />
+                <stop offset="100%" stopColor="#059669" />
               </linearGradient>
+              <linearGradient id="chartBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="100%" stopColor="#006654" />
+              </linearGradient>
+              <filter id="chartGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#006654" floodOpacity="0.22" />
+              </filter>
             </defs>
-            {/* Horizontal Grid lines */}
-            <line x1={paddingX} y1={paddingY} x2={chartWidth - paddingX} y2={paddingY} stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
-            <line x1={paddingX} y1={paddingY + usableH * 0.5} x2={chartWidth - paddingX} y2={paddingY + usableH * 0.5} stroke="rgba(0,0,0,0.06)" strokeDasharray="4 4" />
-            <line x1={paddingX} y1={chartHeight - paddingY} x2={chartWidth - paddingX} y2={chartHeight - paddingY} stroke="rgba(0,0,0,0.12)" />
 
-            {/* (2026-07-13) Conditional Bar Chart vs Line Chart rendering. Prev: line only */}
+            {/* Horizontal Grid lines with scale */}
+            {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+              const y = paddingY + ratio * usableH;
+              return (
+                <g key={idx}>
+                  <line x1={paddingX} y1={y} x2={chartWidth - paddingX} y2={y} stroke="rgba(226, 232, 240, 0.8)" strokeDasharray="3 3" />
+                </g>
+              );
+            })}
+
             {chartType === "bar" ? (
               <g>
                 {chartPoints.map((pt, i) => {
                   const slotW = usableW / chartPoints.length;
-                  const barW = Math.max(Math.min(slotW - 12, 38), 16);
+                  const barW = Math.max(Math.min(slotW - 14, 36), 16);
                   const x = paddingX + i * slotW + (slotW - barW) / 2;
                   const barH = Math.max((pt.val / maxVal) * usableH, 4);
                   const y = chartHeight - paddingY - barH;
+                  const isHovered = hoveredPointIdx === i;
                   return (
-                    <g key={i} className="chart-bar-elem">
+                    <g
+                      key={i}
+                      className="chart-bar-elem"
+                      onMouseEnter={() => setHoveredPointIdx(i)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <rect
+                        x={x}
+                        y={paddingY}
+                        width={barW}
+                        height={usableH}
+                        rx="6"
+                        fill="rgba(241, 245, 249, 0.7)"
+                      />
                       <rect
                         x={x}
                         y={y}
                         width={barW}
                         height={barH}
-                        rx="4"
+                        rx="6"
                         fill="url(#chartBarGradient)"
+                        filter={isHovered ? "url(#chartGlow)" : undefined}
+                        opacity={isHovered ? 1 : 0.9}
                       />
                       <text
                         x={x + barW / 2}
-                        y={y - 6}
+                        y={y - 8}
                         textAnchor="middle"
-                        fontSize="9.5"
-                        fontWeight="600"
-                        fill="#334155"
+                        fontSize="10"
+                        fontWeight="700"
+                        fill={isHovered ? "#006654" : "#475569"}
                       >
                         {pt.val >= 1000 ? `${(pt.val / 1000).toFixed(1)}k` : pt.val}
                       </text>
@@ -1034,19 +1105,87 @@ function Overview({ posts }: { posts: Post[] }) {
               </g>
             ) : (
               <>
-                {/* Gradient Area Fill */}
-                <polygon points={areaString} fill="url(#chartGradient)" />
+                {/* Smooth Gradient Area Fill */}
+                <path d={smoothAreaPath} fill="url(#chartGradient)" />
 
-                {/* Trendline Path */}
-                <polyline fill="none" stroke="#006654" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pointsString} />
+                {/* Smooth Spline Stroke with Glow */}
+                <path
+                  d={smoothCurvePath}
+                  fill="none"
+                  stroke="url(#chartStrokeGradient)"
+                  strokeWidth="3.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#chartGlow)"
+                />
 
-                {/* Plot Circles */}
-                {chartPoints.map((pt, i) => {
-                  const x = paddingX + (i / (chartPoints.length - 1)) * usableW;
-                  const y = paddingY + (1 - pt.val / maxVal) * usableH;
+                {/* Interactive vertical crosshair and hover pulse */}
+                {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
+                  <g>
+                    <line
+                      x1={mappedPoints[hoveredPointIdx].x}
+                      y1={paddingY}
+                      x2={mappedPoints[hoveredPointIdx].x}
+                      y2={chartHeight - paddingY}
+                      stroke="#006654"
+                      strokeWidth="1.5"
+                      strokeDasharray="3 3"
+                      opacity="0.5"
+                    />
+                    <circle
+                      cx={mappedPoints[hoveredPointIdx].x}
+                      cy={mappedPoints[hoveredPointIdx].y}
+                      r="9"
+                      fill="#10b981"
+                      opacity="0.25"
+                    />
+                  </g>
+                )}
+
+                {/* Refined Nodes with Hover triggers */}
+                {mappedPoints.map((p, i) => {
+                  const isHovered = hoveredPointIdx === i;
                   return (
-                    <g key={i} className="chart-node">
-                      <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#006654" strokeWidth="2.5" />
+                    <g
+                      key={i}
+                      className="chart-node-interactive"
+                      onMouseEnter={() => setHoveredPointIdx(i)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r={isHovered ? 6 : 3.5}
+                        fill="#ffffff"
+                        stroke="#006654"
+                        strokeWidth={isHovered ? 3 : 2}
+                        filter="drop-shadow(0 1px 2px rgba(0,0,0,0.15))"
+                      />
+                      {/* Floating tooltip badge on hover */}
+                      {isHovered && (
+                        <g transform={`translate(${Math.min(Math.max(p.x, 50), chartWidth - 50)}, ${Math.max(p.y - 34, 15)})`}>
+                          <rect
+                            x="-42"
+                            y="-16"
+                            width="84"
+                            height="24"
+                            rx="6"
+                            fill="#0f172a"
+                            filter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"
+                          />
+                          <text
+                            x="0"
+                            y="0"
+                            textAnchor="middle"
+                            fill="#ffffff"
+                            fontSize="11"
+                            fontWeight="700"
+                            dominantBaseline="central"
+                          >
+                            {p.pt.val.toLocaleString()} {activeMetric === "views" ? "views" : "hits"}
+                          </text>
+                        </g>
+                      )}
                     </g>
                   );
                 })}
@@ -1061,28 +1200,52 @@ function Overview({ posts }: { posts: Post[] }) {
         </div>
       </section>
 
-      {/* Dedicated Dual Bar Chart: Weekly Clicks vs Impressions */}
-      {/* Weekly performance dual column bar chart */}
+      {/* Modernized Dedicated Dual Bar Chart: Weekly Clicks vs Impressions */}
+      {/* Modernized dual column bar chart with ghost tracks and scale */}
       <section className="admin-panel analytics-chart-card">
-        <div className="panel-head">
+        <div className="panel-head" style={{ flexWrap: "wrap", gap: "12px" }}>
           <div>
             <h2>Weekly Search Velocity (Dual Bar Chart)</h2>
             <p>Comparing Search Clicks and scaled Impressions across active days of the week.</p>
           </div>
           <div className="chart-legend-badge-row">
             <span className="legend-indicator-pill clicks-legend">
-              <span className="dot" style={{ background: "#006654" }} /> Clicks
+              <span className="dot" style={{ background: "linear-gradient(135deg, #10b981, #006654)" }} /> Clicks
             </span>
             <span className="legend-indicator-pill impressions-legend">
-              <span className="dot" style={{ background: "#0284c7" }} /> Impressions (÷10)
+              <span className="dot" style={{ background: "linear-gradient(135deg, #38bdf8, #0284c7)" }} /> Impressions (÷10)
             </span>
           </div>
         </div>
-        <div className="svg-chart-container" style={{ height: "180px" }}>
-          <svg viewBox="0 0 720 180" className="analytics-svg-chart" preserveAspectRatio="none">
-            <line x1="36" y1="20" x2="684" y2="20" stroke="rgba(0,0,0,0.05)" strokeDasharray="4 4" />
-            <line x1="36" y1="80" x2="684" y2="80" stroke="rgba(0,0,0,0.05)" strokeDasharray="4 4" />
-            <line x1="36" y1="140" x2="684" y2="140" stroke="rgba(0,0,0,0.12)" />
+        <div className="svg-chart-container" style={{ height: "200px" }} onMouseLeave={() => setHoveredBarIdx(null)}>
+          <svg viewBox="0 0 720 200" className="analytics-svg-chart" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="barClicksGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="100%" stopColor="#006654" />
+              </linearGradient>
+              <linearGradient id="barImpGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#38bdf8" />
+                <stop offset="100%" stopColor="#0284c7" />
+              </linearGradient>
+            </defs>
+
+            {/* Subtle horizontal gridlines with scale markers */}
+            {[
+              { val: "200", y: 25 },
+              { val: "150", y: 60 },
+              { val: "100", y: 95 },
+              { val: "50", y: 130 },
+              { val: "0", y: 165 },
+            ].map((g, idx) => (
+              <g key={idx}>
+                <text x="26" y={g.y + 3} textAnchor="end" fontSize="9.5" fill="#94a3b8" fontWeight="600">
+                  {g.val}
+                </text>
+                <line x1="36" y1={g.y} x2="684" y2={g.y} stroke="rgba(226, 232, 240, 0.7)" strokeDasharray={idx === 4 ? "none" : "3 3"} />
+              </g>
+            ))}
+
             {[
               { day: "Mon", clicks: Math.round(totalClicks * 0.12), imp: Math.round((totalImpressions * 0.11) / 10) },
               { day: "Tue", clicks: Math.round(totalClicks * 0.16), imp: Math.round((totalImpressions * 0.15) / 10) },
@@ -1094,27 +1257,88 @@ function Overview({ posts }: { posts: Post[] }) {
             ].map((col, idx) => {
               const maxWeekly = Math.round(totalClicks * 0.28) || 200;
               const slotW = (720 - 72) / 7;
-              const barW = 16;
-              const xBase = 36 + idx * slotW + (slotW - barW * 2 - 6) / 2;
-              const clickH = Math.max((col.clicks / maxWeekly) * 110, 4);
-              const impH = Math.max((col.imp / maxWeekly) * 110, 4);
-              const clickY = 140 - clickH;
-              const impY = 140 - impH;
+              const barW = 15;
+              const xBase = 44 + idx * slotW + (slotW - barW * 2 - 8) / 2;
+              const usableBarH = 140;
+              const clickH = Math.max((col.clicks / maxWeekly) * usableBarH, 6);
+              const impH = Math.max((col.imp / maxWeekly) * usableBarH, 6);
+              const clickY = 165 - clickH;
+              const impY = 165 - impH;
+              const isHovered = hoveredBarIdx === idx;
+
               return (
-                <g key={idx}>
-                  {/* Clicks bar */}
-                  <rect x={xBase} y={clickY} width={barW} height={clickH} rx="3" fill="#006654" />
-                  <text x={xBase + barW / 2} y={clickY - 4} textAnchor="middle" fontSize="9" fontWeight="600" fill="#006654">
+                <g
+                  key={idx}
+                  onMouseEnter={() => setHoveredBarIdx(idx)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {/* Modern ghost track column container */}
+                  <rect
+                    x={xBase - 6}
+                    y={25}
+                    width={barW * 2 + 18}
+                    height={140}
+                    rx="8"
+                    fill={isHovered ? "rgba(241, 245, 249, 0.95)" : "rgba(248, 250, 252, 0.6)"}
+                    stroke={isHovered ? "rgba(0, 102, 84, 0.18)" : "transparent"}
+                    strokeWidth="1"
+                  />
+
+                  {/* Clicks bar (Emerald) */}
+                  <rect
+                    x={xBase}
+                    y={clickY}
+                    width={barW}
+                    height={clickH}
+                    rx="5"
+                    fill="url(#barClicksGrad)"
+                    opacity={isHovered ? 1 : 0.92}
+                  />
+
+                  {/* Impressions bar (Sky) */}
+                  <rect
+                    x={xBase + barW + 6}
+                    y={impY}
+                    width={barW}
+                    height={impH}
+                    rx="5"
+                    fill="url(#barImpGrad)"
+                    opacity={isHovered ? 1 : 0.92}
+                  />
+
+                  {/* Value badges floating above */}
+                  <text
+                    x={xBase + barW / 2}
+                    y={clickY - 6}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fontWeight="700"
+                    fill="#006654"
+                  >
                     {col.clicks}
                   </text>
-                  {/* Impressions bar */}
-                  <rect x={xBase + barW + 4} y={impY} width={barW} height={impH} rx="3" fill="#0284c7" />
-                  <text x={xBase + barW + 4 + barW / 2} y={impY - 4} textAnchor="middle" fontSize="9" fontWeight="600" fill="#0284c7">
+                  <text
+                    x={xBase + barW + 6 + barW / 2}
+                    y={impY - 6}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fontWeight="700"
+                    fill="#0284c7"
+                  >
                     {col.imp}
                   </text>
+
                   {/* Day label */}
-                  <text x={xBase + barW + 2} y="160" textAnchor="middle" fontSize="11" fontWeight="600" fill="#64748b">
-                    {col.day}
+                  <text
+                    x={xBase + barW + 3}
+                    y="186"
+                    textAnchor="middle"
+                    fontSize="11"
+                    fontWeight="700"
+                    fill={isHovered ? "#0f172a" : "#64748b"}
+                    letterSpacing="0.04em"
+                  >
+                    {col.day.toUpperCase()}
                   </text>
                 </g>
               );
