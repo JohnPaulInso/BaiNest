@@ -2022,6 +2022,21 @@ img {
   margin: 0 auto;
   padding: 38px 34px 70px;
 }
+/* (2026-07-13) Smooth fade in on admin page navigation. Prev: static mount */
+@keyframes adminPageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.admin-page-fade {
+  animation: adminPageFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  width: 100%;
+}
 .admin-page-title {
   display: flex;
   align-items: end;

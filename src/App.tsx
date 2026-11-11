@@ -808,7 +808,8 @@ function About() {
   const settings = useSettings();
   const heroLabel = settings.aboutHeroLabel || "About BaiNest";
   const heroTitle = settings.aboutHeroTitle || "Thoughtful partners for your next chapter.";
-  const heroCopy = settings.aboutHeroCopy || "We bring the right questions, clear strategy, and considered creative to help your business move forward.";
+  {/* (2026-07-13) Omit default hero copy for about page. Prev: fallback copy */}
+  const heroCopy = settings.aboutHeroCopy || undefined;
   const quote = settings.aboutQuote || "“Good work should feel clear from the first conversation to the final detail.”";
   const storyEyebrow = settings.aboutStoryEyebrow || "Our point of view";
   const storyTitle = settings.aboutStoryTitle || "Strategy and making, working as one.";

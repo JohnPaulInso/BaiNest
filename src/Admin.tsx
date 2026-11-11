@@ -3383,17 +3383,7 @@ function AboutPageEditor() {
                   />
                 </label>
               </div>
-              <div className="about-editor-field">
-                <label>
-                  Hero introduction copy
-                  <textarea
-                    rows={3}
-                    value={settings.aboutHeroCopy ?? "We bring the right questions, clear strategy, and considered creative to help your business move forward."}
-                    onChange={(e) => setSettings({ ...settings, aboutHeroCopy: e.target.value })}
-                    placeholder="We bring the right questions, clear strategy, and considered creative..."
-                  />
-                </label>
-              </div>
+              {/* (2026-07-13) Remove Hero intro copy inputfield. Prev: textarea */}
             </div>
           </section>
 
@@ -4376,39 +4366,42 @@ export function AdminApp() {
             )}
           </div>
         </div>
+        {/* (2026-07-13) Fade in container for admin page navigation. Prev: static view */}
         <div className="admin-content">
-          {path === "/admin" || path === "/admin/" ? (
-            <Overview posts={posts} />
-          ) : path === "/admin/posts" || path === "/admin/posts/" ? (
-            <PostList posts={posts} refresh={() => refresh().catch(() => {})} />
-          ) : path === "/admin/posts/new" ||
-            /^\/admin\/posts\/[^/]+(?:\/)?$/.test(path) ? (
-            // (2026-07-13) Key PostEditor by normalized path for clean state. Prev: no key
-            <PostEditor
-              key={path.replace(/\/+$/, "")}
-              posts={posts}
-              refresh={() => refresh().catch(() => {})}
-              onMetaChange={setActiveMeta}
-              postId={
-                path.replace(/\/+$/, "") !== "/admin/posts/new" &&
-                path.startsWith("/admin/posts/")
-                  ? decodeURIComponent(path.replace(/\/+$/, "").replace("/admin/posts/", ""))
-                  : undefined
-              }
-            />
-          ) : path === "/admin/inbox" ? (
-            <InboxPage />
-          ) : path === "/admin/about" ? (
-            <AboutPageEditor />
-          ) : path === "/admin/services" ? (
-            <ServicesPageEditor />
-          ) : path === "/admin/contact" ? (
-            <ContactPageEditor />
-          ) : path === "/admin/settings" ? (
-            <DomainSettings />
-          ) : (
-            <Overview posts={posts} />
-          )}
+          <div key={path} className="admin-page-fade">
+            {path === "/admin" || path === "/admin/" ? (
+              <Overview posts={posts} />
+            ) : path === "/admin/posts" || path === "/admin/posts/" ? (
+              <PostList posts={posts} refresh={() => refresh().catch(() => {})} />
+            ) : path === "/admin/posts/new" ||
+              /^\/admin\/posts\/[^/]+(?:\/)?$/.test(path) ? (
+              // (2026-07-13) Key PostEditor by normalized path for clean state. Prev: no key
+              <PostEditor
+                key={path.replace(/\/+$/, "")}
+                posts={posts}
+                refresh={() => refresh().catch(() => {})}
+                onMetaChange={setActiveMeta}
+                postId={
+                  path.replace(/\/+$/, "") !== "/admin/posts/new" &&
+                  path.startsWith("/admin/posts/")
+                    ? decodeURIComponent(path.replace(/\/+$/, "").replace("/admin/posts/", ""))
+                    : undefined
+                }
+              />
+            ) : path === "/admin/inbox" ? (
+              <InboxPage />
+            ) : path === "/admin/about" ? (
+              <AboutPageEditor />
+            ) : path === "/admin/services" ? (
+              <ServicesPageEditor />
+            ) : path === "/admin/contact" ? (
+              <ContactPageEditor />
+            ) : path === "/admin/settings" ? (
+              <DomainSettings />
+            ) : (
+              <Overview posts={posts} />
+            )}
+          </div>
         </div>
       </main>
     </div>
