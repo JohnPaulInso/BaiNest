@@ -214,9 +214,9 @@ function Header() {
         <div className="wrap brand-inner">
           <Brand />
           <span className="brand-note">Innovate. Elevate. Connect.</span>
-          {/* (2026-07-13) Move Start a project to top bar replacing Let's talk. Prev: text */}
+          {/* (2026-07-13) Rename CTA to Work with BaiNest. Prev: Start a project */}
           <Link className="header-work header-work-btn" to="/contact">
-            Start a project <ArrowUpRight size={14} />
+            Work with BaiNest <ArrowUpRight size={14} />
           </Link>
         </div>
       </div>
@@ -938,8 +938,9 @@ function Services() {
                   </ul>
                 </div>
                 <div className="service-card-action">
+                  {/* (2026-07-13) Rename CTA to Work with BaiNest. Prev: Start a project */}
                   <Link to="/contact" className="service-card-inquire-btn">
-                    <span>Start a project with this</span>
+                    <span>Work with BaiNest on this</span>
                     <ChevronRight size={14} />
                   </Link>
                 </div>
@@ -975,8 +976,9 @@ function Services() {
               <span>Connect.</span>
             </div>
           </div>
+          {/* (2026-07-13) Rename CTA to Work with BaiNest. Prev: Start a project */}
           <Link className="btn" to="/contact">
-            Start a project <ArrowRight size={15} />
+            Work with BaiNest <ArrowRight size={15} />
           </Link>
         </div>
       </section>
