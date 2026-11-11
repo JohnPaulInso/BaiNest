@@ -3983,15 +3983,22 @@ img {
   }
 }
 
-/* (2026-07-13) Frame post thumbnail images with containment. Prev: cover */
+/* (2026-07-13) Increase post thumbnail zoom size. Prev: padding 22px 28px */
 .post-thumb-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 22px 28px;
+  padding: 8px 12px;
+  transform: scale(1.12);
+  transform-origin: center;
   transition: transform 0.25s ease;
+}
+@media (hover: hover) {
+  .post-card:hover .post-thumb-image {
+    transform: scale(1.18);
+  }
 }
 .domain-preview-notice {
   position: relative;
@@ -5605,6 +5612,29 @@ img {
   align-items: center;
   gap: 12px;
   margin-top: 14px;
+}
+/* (2026-07-13) Style footer Facebook bold link. Prev: icon only */
+.footer-facebook-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.footer-facebook-link b {
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 0.01em;
+}
+@media (hover: hover) {
+  .footer-facebook-link:hover {
+    color: #00b48a;
+  }
+  .footer-facebook-link:hover b {
+    color: #ffffff;
+  }
 }
 .footer-social-row a {
   color: #94a3b8;
