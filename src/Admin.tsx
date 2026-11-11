@@ -247,11 +247,11 @@ function SortableBlock({
               {block.src && (
                 <div className="inline-block-img-preview">
                   <img src={block.src} alt={block.alt || "Preview"} />
-                  {/* (2026-07-13) Add Crop button to block image preview. Prev: view only */}
+                  {/* (2026-07-13) Fix setCropSrc parameter type. Prev: block.src */}
                   <button
                     type="button"
                     className="block-crop-action-btn"
-                    onClick={() => setCropSrc(block.src)}
+                    onClick={() => setCropSrc(block.src || null)}
                   >
                     <Crop size={12} /> Crop to Blog Size
                   </button>
@@ -2813,7 +2813,12 @@ function ServicesPageEditor() {
     try {
       let url = "";
       try {
-        url = await uploadBlogImage(file, storage, { uploadBytes, getDownloadURL, storageRef });
+        // (2026-07-13) Fix storage helper ref prop name. Prev: storageRef
+        url = await uploadBlogImage(file, storage, {
+          ref: storageRef,
+          uploadBytes,
+          getDownloadURL,
+        });
       } catch {
         const compressed = await compressImage(file, { maxDimension: 1200, quality: 0.76, outputType: "dataUrl" });
         url = compressed as string;

@@ -9,7 +9,8 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+// (2026-07-13) Clean framer-motion unused imports. Prev: AnimatePresence
+import { motion } from "framer-motion";
 // (2026-07-13) Import ArrowUp for blue back-to-top button. Prev: ArrowDown
 import {
   ArrowDown,
@@ -129,8 +130,8 @@ const services = [
     ],
   },
 ];
-// (2026-07-13) Purge sample projects for real client showcase. Prev: dummy data
-const projects: { type: string; title: string; text: string; initials: string }[] = [];
+// (2026-07-13) Export projects array. Prev: unexported unused
+export const projects: { type: string; title: string; text: string; initials: string }[] = [];
 
 // (2026-07-13) Auto-detect asset base path. Prev: static BASE_URL
 const assetBase =
