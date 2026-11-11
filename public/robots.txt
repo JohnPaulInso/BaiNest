@@ -3,3 +3,4 @@ Allow: /
 Disallow: /admin
 
 Sitemap: https://bainestdigital.com/sitemap.xml
+
