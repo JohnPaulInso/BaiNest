@@ -6424,3 +6424,127 @@ img {
     text-overflow: ellipsis;
   }
 }
+
+/* (2026-07-13) Responsive styled about editor textareas. Prev: unstyled */
+.about-page-editor-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.about-editor-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.about-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.about-editor-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.about-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.about-editor-field label,
+.settings-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: -0.01em;
+}
+.about-editor-field textarea,
+.about-editor-field input,
+.settings-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.18s ease-in-out;
+  resize: vertical;
+}
+.about-editor-field textarea:hover,
+.about-editor-field input:hover,
+.settings-panel textarea:hover {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+.about-editor-field textarea:focus,
+.about-editor-field input:focus,
+.settings-panel textarea:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.about-editor-field textarea::placeholder,
+.about-editor-field input::placeholder {
+  color: #94a3b8;
+}
+.about-values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.about-value-card-editor {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.about-value-card-editor .about-editor-field input,
+.about-value-card-editor .about-editor-field textarea {
+  background: #ffffff;
+}
+.about-value-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(13, 148, 136, 0.12);
+  color: #0d9488;
+}
+@media (max-width: 960px) {
+  .about-values-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .about-editor-panel {
+    padding: 18px 16px;
+  }
+  .about-editor-row {
+    grid-template-columns: 1fr;
+  }
+  .about-editor-header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .about-editor-header > div:last-child {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
