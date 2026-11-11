@@ -1209,8 +1209,6 @@ function Blog() {
           )}
         </div>
       </section>
-      {/* (2026-07-13) Blue back to top button on blogs listing. Prev: none */}
-      <BackToTopButton />
     </PageFrame>
   );
 }
@@ -1716,8 +1714,6 @@ function PostDetail() {
           {/* (2026-07-13) Remove Main Tags widget from blog sidebar. Prev: tag cloud */}
         </aside>
       </div>
-      {/* (2026-07-13) Blue back to top button on blog post detail. Prev: none */}
-      <BackToTopButton />
     </PageFrame>
   );
 }
@@ -2036,6 +2032,8 @@ export function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!admin && <Footer />}
+      {/* (2026-07-13) Global sticky back to top button in root App. Prev: in page */}
+      {!admin && <BackToTopButton />}
     </>
   );
 }
