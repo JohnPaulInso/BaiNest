@@ -1474,53 +1474,61 @@ function PostDetail() {
             <BlockRenderer blocks={post.blocks || []} />
           </div>
 
-          {/* Social Share Bar */}
+          {/* (2026-07-13) Single-row symmetrical share bar buttons. Prev: wrapped row */}
           <div className="post-share-bar">
-            <span className="share-bar-label">
+            <span className="share-bar-label" title="Share this story">
               <Share2 size={16} />
             </span>
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="share-btn share-fb"
-              title="Share on Facebook"
-            >
-              <Facebook size={15} /> Facebook
-            </a>
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="share-btn share-tw"
-              title="Share on Twitter"
-            >
-              <Twitter size={15} /> Twitter
-            </a>
-            <a
-              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + shareUrl)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="share-btn share-wa"
-              title="Share on WhatsApp"
-            >
-              <MessageCircle size={15} />
-            </a>
-            <a
-              href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(shareUrl)}`}
-              className="share-btn share-em"
-              title="Share via Email"
-            >
-              <Mail size={15} />
-            </a>
-            <button
-              type="button"
-              className="share-btn share-cp"
-              onClick={copyShareLink}
-              title="Copy page link"
-            >
-              <Copy size={15} /> {copied ? "Copied!" : ""}
-            </button>
+            <div className="share-buttons-group">
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="share-btn share-fb"
+                title="Share on Facebook"
+                aria-label="Share on Facebook"
+              >
+                <Facebook size={16} />
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="share-btn share-tw"
+                title="Share on Twitter"
+                aria-label="Share on Twitter"
+              >
+                <Twitter size={16} />
+              </a>
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="share-btn share-wa"
+                title="Share on WhatsApp"
+                aria-label="Share on WhatsApp"
+              >
+                <MessageCircle size={16} />
+              </a>
+              <a
+                href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(shareUrl)}`}
+                className="share-btn share-em"
+                title="Share via Email"
+                aria-label="Share via Email"
+              >
+                <Mail size={16} />
+              </a>
+              <button
+                type="button"
+                className={`share-btn share-cp ${copied ? "copied" : ""}`}
+                onClick={copyShareLink}
+                title={copied ? "Link copied to clipboard!" : "Copy page link"}
+                aria-label="Copy page link"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
+            {copied && <span className="share-copied-notice">Link copied!</span>}
           </div>
 
           {/* You Might Like Section */}
