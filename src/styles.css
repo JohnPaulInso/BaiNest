@@ -77,21 +77,22 @@ img {
   border: 0;
 }
 /* (2026-07-13) Sticky site header on scroll. Prev: relative position */
+/* (2026-07-13) Compact header height & gaps with subtle shadow. Prev: 76px/59px */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 1000;
   background: #fff;
-  box-shadow: 0 4px 20px rgba(10, 25, 45, 0.05);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 }
 .brand-row {
   background: #fff;
 }
 .brand-inner {
-  height: 76px;
+  height: 66px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 /* (2026-07-13) Rebrand brand logo styling & top bar action button. Prev: plain */
 .brand {
@@ -168,34 +169,36 @@ img {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(14px);
-  border-top: 1px solid #f0f3f6;
-  border-bottom: 1px solid rgba(16, 43, 70, 0.09);
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
 }
 .nav-inner {
-  height: 59px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 20px;
 }
 .main-nav {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
 }
 .main-nav a {
   height: 100%;
   display: flex;
   align-items: center;
   position: relative;
-  color: #506172;
-  font-size: 11px;
+  color: #475569;
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  transition: color 0.18s;
+  letter-spacing: 0.05em;
+  padding: 0 4px;
+  transition: color 0.18s ease;
 }
 .main-nav a:after {
   content: "";
@@ -203,14 +206,15 @@ img {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2px;
+  height: 2.5px;
   background: var(--teal);
+  border-radius: 2px 2px 0 0;
   transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.2s;
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .main-nav a.active {
-  color: var(--navy);
+  color: #0f172a;
 }
 .main-nav a.active:after {
   transform: scaleX(1);
@@ -3029,6 +3033,10 @@ img {
   }
   .menu-toggle {
     display: none !important;
+  }
+  .nav-sticky {
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.07);
   }
   .nav-inner {
     height: 42px;
