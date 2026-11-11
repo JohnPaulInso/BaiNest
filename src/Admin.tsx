@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 // (2026-07-13) Import ImageCropperModal & Crop icon. Prev: no cropper
 import { ImageCropperModal } from "./ImageCropperModal";
-import { uploadBlogImage } from "./lib/imageCompressor";
+import { uploadBlogImage, compressImage } from "./lib/imageCompressor";
 import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
 import {
   api,
@@ -54,11 +54,13 @@ import {
   subscribeToContacts,
   defaultSettings,
   defaultTags,
+  defaultServicesList,
   getPostPlacement,
   type AdminState,
   type Block,
   type Post,
   type SiteSettings,
+  type ServiceItemSetting,
 } from "./lib/api";
 
 // (2026-07-13) Add include_in_nav flag to emptyPost. Prev: no include_in_nav
@@ -520,12 +522,13 @@ function Login({ onLogin }: { onLogin: (s: AdminState) => void }) {
 }
 function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
   const loc = useLocation();
-  // (2026-07-13) Add About page editor link to admin navigation. Prev: no about
+  // (2026-07-13) Add About & Services page editor links. Prev: no services
   const items = [
     ["Overview", "/admin", LayoutDashboard],
     ["Blogs", "/admin/posts", FileText],
     ["Inbox", "/admin/inbox", Inbox],
     ["About page", "/admin/about", BookOpen],
+    ["Services page", "/admin/services", Briefcase],
     ["Domains & settings", "/admin/settings", Settings],
   ] as const;
   return (
@@ -2606,6 +2609,368 @@ function AboutPageEditor() {
   );
 }
 
+/* (2026-07-13) Services page editor with image uploads. Prev: no editor */
+function ServicesPageEditor() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [servicesList, setServicesList] = useState<ServiceItemSetting[]>(defaultServicesList);
+  const [saving, setSaving] = useState(false);
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    api<SiteSettings>("/api/admin/settings")
+      .then((s) => {
+        if (s) {
+          setSettings(s);
+          if (s.servicesList && s.servicesList.length > 0) {
+            setServicesList(s.servicesList);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleServiceImageUpload(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIdx(idx);
+    try {
+      let url = "";
+      try {
+        url = await uploadBlogImage(file, storage, { uploadBytes, getDownloadURL, storageRef });
+      } catch {
+        const compressed = await compressImage(file, { maxDimension: 1200, quality: 0.76, outputType: "dataUrl" });
+        url = compressed as string;
+      }
+      const updated = [...servicesList];
+      updated[idx] = { ...updated[idx], image: url };
+      setServicesList(updated);
+      setToast({ message: "Picture uploaded successfully!", type: "success" });
+      setTimeout(() => setToast(null), 3000);
+    } catch {
+      setToast({ message: "Failed to upload picture.", type: "error" });
+    } finally {
+      setUploadingIdx(null);
+    }
+  }
+
+  function removeServiceImage(idx: number) {
+    const updated = [...servicesList];
+    const item = { ...updated[idx] };
+    delete item.image;
+    updated[idx] = item;
+    setServicesList(updated);
+  }
+
+  function updateServiceField(idx: number, field: keyof ServiceItemSetting, val: any) {
+    const updated = [...servicesList];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setServicesList(updated);
+  }
+
+  function updateCapabilities(idx: number, text: string) {
+    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    updateServiceField(idx, "items", lines);
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload: SiteSettings = {
+        ...settings,
+        servicesList,
+      };
+      await api("/api/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+      setSettings(payload);
+      setToast({ message: "Services page updated successfully!", type: "success" });
+      setTimeout(() => setToast(null), 3500);
+    } catch (err) {
+      setToast({
+        message: err instanceof Error ? err.message : "Failed to update Services page.",
+        type: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      {toast && (
+        <div className={`admin-toast-badge toast-${toast.type}`}>
+          <span className="toast-icon">
+            <Check size={16} />
+          </span>
+          <span className="toast-text">{toast.message}</span>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToast(null)}
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      <div className="about-page-editor-container">
+        <div className="admin-page-title about-editor-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <span className="admin-kicker">Capabilities & Offerings</span>
+            <h1>Edit Services Page</h1>
+            <p>Customize the headline, service descriptions, deliverables, and optional pictures on /services.</p>
+          </div>
+          <div className="about-editor-header-actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Link to="/services" target="_blank" rel="noopener noreferrer" className="admin-light" style={{ textDecoration: "none" }}>
+              <Eye size={15} /> View live page <ArrowUpRight size={14} />
+            </Link>
+            <button
+              type="button"
+              className="admin-primary"
+              onClick={(e) => handleSave(e as any)}
+              disabled={saving}
+            >
+              <Save size={15} /> {saving ? "Saving..." : "Save changes"}
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+          {/* Section 1: Hero Banner */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Hero Section</h2>
+                <p>The headline and description at the top of the Services page.</p>
+              </div>
+            </div>
+            <div className="about-editor-fields">
+              <div className="about-editor-field">
+                <label>
+                  Eyebrow label
+                  <input
+                    value={settings.servicesHeroLabel ?? "OUR SERVICES"}
+                    onChange={(e) => setSettings({ ...settings, servicesHeroLabel: e.target.value })}
+                    placeholder="OUR SERVICES"
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Services headline
+                  <input
+                    value={settings.servicesHeroTitle ?? "We bring strategy, creativity, and digital solutions together."}
+                    onChange={(e) => setSettings({ ...settings, servicesHeroTitle: e.target.value })}
+                    placeholder="We bring strategy, creativity, and digital solutions together."
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  Services introduction copy
+                  <textarea
+                    rows={3}
+                    value={settings.servicesHeroCopy ?? "We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online."}
+                    onChange={(e) => setSettings({ ...settings, servicesHeroCopy: e.target.value })}
+                    placeholder="Services introduction copy..."
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Services Offerings & Pictures */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Services & Pictures</h2>
+                <p>Upload optional pictures and adjust titles, descriptions, and deliverables for each service.</p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {servicesList.map((srv, idx) => (
+                <div key={srv.no || idx} className="service-editor-item-card">
+                  <div className="service-editor-item-head">
+                    <span className="service-editor-item-badge">Service {srv.no}</span>
+                    <small style={{ color: "#94a3b8", fontWeight: 600 }}>{srv.title}</small>
+                  </div>
+
+                  <div className="about-editor-row">
+                    <div className="about-editor-field">
+                      <label>
+                        Service title
+                        <input
+                          value={srv.title}
+                          onChange={(e) => updateServiceField(idx, "title", e.target.value)}
+                          placeholder="e.g. Brand & Strategy"
+                        />
+                      </label>
+                    </div>
+                    <div className="about-editor-field">
+                      <label>
+                        Service number tag
+                        <input
+                          value={srv.no}
+                          onChange={(e) => updateServiceField(idx, "no", e.target.value)}
+                          placeholder="e.g. 01"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="about-editor-field">
+                    <label>
+                      Tagline / description
+                      <textarea
+                        rows={2}
+                        value={srv.text}
+                        onChange={(e) => updateServiceField(idx, "text", e.target.value)}
+                        placeholder="A distinct identity. A clear direction..."
+                      />
+                    </label>
+                  </div>
+
+                  {/* Picture Upload Area (Optional) */}
+                  <div className="service-image-field-wrap">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>
+                        Cover Picture <span style={{ color: "#94a3b8", fontWeight: 500 }}>(Optional)</span>
+                      </span>
+                      {srv.image && (
+                        <span style={{ fontSize: "11px", color: "#0d9488", fontWeight: 600 }}>Picture attached</span>
+                      )}
+                    </div>
+
+                    {srv.image ? (
+                      <div className="service-image-preview-box">
+                        <img src={srv.image} alt={srv.title} className="service-image-thumb-preview" />
+                        <div className="service-image-actions">
+                          <label className="service-upload-btn-label">
+                            <Upload size={13} />
+                            {uploadingIdx === idx ? "Uploading..." : "Replace picture"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              disabled={uploadingIdx === idx}
+                              onChange={(e) => handleServiceImageUpload(idx, e)}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="service-remove-img-btn"
+                            onClick={() => removeServiceImage(idx)}
+                          >
+                            <Trash2 size={13} /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                          <label className="service-upload-btn-label">
+                            <Upload size={14} />
+                            {uploadingIdx === idx ? "Uploading..." : "Upload picture from device"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              disabled={uploadingIdx === idx}
+                              onChange={(e) => handleServiceImageUpload(idx, e)}
+                            />
+                          </label>
+                          <span style={{ fontSize: "12px", color: "#94a3b8" }}>or paste picture URL below:</span>
+                        </div>
+                        <input
+                          value={srv.image || ""}
+                          onChange={(e) => updateServiceField(idx, "image", e.target.value)}
+                          placeholder="https://example.com/photo.jpg (Optional)"
+                          style={{ fontSize: "13px" }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="about-editor-field">
+                    <label>
+                      Capabilities & deliverables (one per line)
+                      <textarea
+                        rows={5}
+                        value={(srv.items || []).join("\n")}
+                        onChange={(e) => updateCapabilities(idx, e.target.value)}
+                        placeholder="Brand identity development&#10;Logo and visual branding&#10;Brand positioning and strategy"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section 3: Bottom Call to Action */}
+          <section className="about-editor-panel">
+            <div className="panel-head">
+              <div>
+                <h2>Bottom CTA Band</h2>
+                <p>The call to action section at the bottom of the Services page.</p>
+              </div>
+            </div>
+            <div className="about-editor-fields">
+              <div className="about-editor-field">
+                <label>
+                  CTA Eyebrow
+                  <input
+                    value={settings.servicesCtaEyebrow ?? "BAINEST DIGITAL MARKETING SERVICES"}
+                    onChange={(e) => setSettings({ ...settings, servicesCtaEyebrow: e.target.value })}
+                    placeholder="BAINEST DIGITAL MARKETING SERVICES"
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  CTA Headline
+                  <input
+                    value={settings.servicesCtaTitle ?? "MORE THAN JUST\nDIGITAL MARKETING."}
+                    onChange={(e) => setSettings({ ...settings, servicesCtaTitle: e.target.value })}
+                    placeholder="MORE THAN JUST&#10;DIGITAL MARKETING."
+                  />
+                </label>
+              </div>
+              <div className="about-editor-field">
+                <label>
+                  CTA Description
+                  <textarea
+                    rows={2}
+                    value={settings.servicesCtaCopy ?? "We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter."}
+                    onChange={(e) => setSettings({ ...settings, servicesCtaCopy: e.target.value })}
+                    placeholder="CTA description..."
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <button
+              type="submit"
+              className="admin-primary"
+              disabled={saving}
+              style={{ minWidth: 160 }}
+            >
+              <Save size={16} /> {saving ? "Saving..." : "Save Services Page"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
 export function AdminApp() {
   const [session, setSession] = useState<AdminState | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -2778,6 +3143,8 @@ export function AdminApp() {
             <InboxPage />
           ) : path === "/admin/about" ? (
             <AboutPageEditor />
+          ) : path === "/admin/services" ? (
+            <ServicesPageEditor />
           ) : path === "/admin/settings" ? (
             <DomainSettings />
           ) : (

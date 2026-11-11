@@ -88,7 +88,81 @@ export type SiteSettings = {
   aboutValue2Copy?: string;
   aboutValue3Title?: string;
   aboutValue3Copy?: string;
+  /* (2026-07-13) Add editable Services page types and defaults. Prev: none */
+  servicesHeroLabel?: string;
+  servicesHeroTitle?: string;
+  servicesHeroCopy?: string;
+  servicesList?: ServiceItemSetting[];
+  servicesCtaEyebrow?: string;
+  servicesCtaTitle?: string;
+  servicesCtaCopy?: string;
 };
+export type ServiceItemSetting = {
+  no: string;
+  title: string;
+  text: string;
+  image?: string;
+  items: string[];
+};
+export const defaultServicesList: ServiceItemSetting[] = [
+  {
+    no: "01",
+    title: "Brand & Strategy",
+    text: "A distinct identity. A clear direction. A brand people recognize and remember.",
+    items: [
+      "Brand identity development",
+      "Logo and visual branding",
+      "Brand positioning and strategy",
+      "Brand guidelines and design systems",
+      "Brand messaging and communication",
+      "Business profile and brand presentation",
+      "Event branding and promotional materials",
+    ],
+  },
+  {
+    no: "02",
+    title: "Digital Experiences",
+    text: "Build a professional digital presence that makes your business easier to discover, understand, and connect with.",
+    items: [
+      "Business website design and development",
+      "Website strategy and structure",
+      "Landing page design",
+      "Website content and copywriting",
+      "Mobile-responsive website experiences",
+      "Facebook Business Page creation and optimization",
+      "Social media profile setup and optimization",
+    ],
+  },
+  {
+    no: "03",
+    title: "Growth Marketing",
+    text: "Turn visibility into meaningful engagement and opportunities for business growth.",
+    items: [
+      "Social media management",
+      "Social media marketing strategy",
+      "Facebook and Instagram advertising",
+      "Paid campaign planning and management",
+      "Content calendar development",
+      "Audience targeting and engagement strategy",
+      "Campaign performance monitoring",
+      "Monthly analytics and reporting",
+    ],
+  },
+  {
+    no: "04",
+    title: "Content & Creative",
+    text: "Create meaningful content and compelling visuals that make your brand stand out.",
+    items: [
+      "Social media graphics and creatives",
+      "Content creation and copywriting",
+      "Social media captions",
+      "Promotional and advertising materials",
+      "Marketing collaterals",
+      "Event posters and digital invitations",
+      "Campaign creatives and visual concepts",
+    ],
+  },
+];
 /* (2026-07-13) Master tags imported from database reference. Prev: none */
 export const defaultTags: string[] = [
   "Affiliate Marketing",
@@ -168,6 +242,13 @@ export const defaultSettings: SiteSettings = {
   aboutValue2Copy: "Strategy and execution belong in the same conversation.",
   aboutValue3Title: "Momentum over noise",
   aboutValue3Copy: "We choose meaningful progress over busywork and buzzwords.",
+  servicesHeroLabel: "OUR SERVICES",
+  servicesHeroTitle: "We bring strategy, creativity, and digital solutions together.",
+  servicesHeroCopy: "We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online.",
+  servicesList: defaultServicesList,
+  servicesCtaEyebrow: "BAINEST DIGITAL MARKETING SERVICES",
+  servicesCtaTitle: "MORE THAN JUST\nDIGITAL MARKETING.",
+  servicesCtaCopy: "We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter.",
 };
 export type AdminState = {
   authenticated: boolean;

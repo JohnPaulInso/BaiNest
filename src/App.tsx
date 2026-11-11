@@ -49,6 +49,7 @@ import {
   subscribeToPosts,
   subscribeToSettings,
   defaultSettings,
+  defaultServicesList,
   type Block,
   type Post,
   type SiteSettings,
@@ -62,6 +63,7 @@ const nav = [
   ["Blog", "/blog"],
   ["Contact", "/contact"],
 ] as const;
+const serviceIconList = [PenTool, Layers3, BarChart3, Code2];
 // (2026-07-13) Restore full services capabilities list. Prev: brief text only
 const services = [
   {
@@ -905,63 +907,84 @@ function About() {
     </PageFrame>
   );
 }
-// (2026-07-13) Restore modern services card grid layout. Prev: flat list
+/* (2026-07-13) Live editable Services page with optional images. Prev: static */
 function Services() {
+  const settings = useSettings();
+  const heroLabel = settings.servicesHeroLabel || "OUR SERVICES";
+  const heroTitle = settings.servicesHeroTitle || "We bring strategy, creativity, and digital solutions together.";
+  const heroCopy = settings.servicesHeroCopy || "We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online.";
+  const servicesList = settings.servicesList && settings.servicesList.length > 0 ? settings.servicesList : defaultServicesList;
+
   return (
     <PageFrame>
       <PageHeading
-        label="OUR SERVICES"
-        title="We bring strategy, creativity, and digital solutions together."
-        copy="We bring strategy, creativity, and digital solutions together to help businesses build stronger brands, connect with their audience, and grow online."
+        label={heroLabel}
+        title={heroTitle}
+        copy={heroCopy}
       />
       <section className="section services-page-section">
         <div className="wrap services-cards-grid">
-          {services.map((s) => (
-            <article className="service-card-revamp" key={s.no}>
-              <div className="service-card-revamp-header">
-                <div className="service-card-badge-wrap">
-                  <span className="service-card-revamp-no">{s.no}</span>
-                  <div className="service-card-revamp-icon">
-                    <s.icon size={20} />
+          {servicesList.map((s, idx) => {
+            const Icon = serviceIconList[idx % serviceIconList.length] || Sparkles;
+            return (
+              <article className="service-card-revamp" key={s.no || idx}>
+                {s.image && (
+                  <div className="service-card-cover-wrap">
+                    <img src={s.image} alt={s.title} className="service-card-cover" loading="lazy" />
                   </div>
+                )}
+                <div className="service-card-revamp-header">
+                  <div className="service-card-badge-wrap">
+                    <span className="service-card-revamp-no">{s.no}</span>
+                    <div className="service-card-revamp-icon">
+                      <Icon size={20} />
+                    </div>
+                  </div>
+                  <h2 className="service-card-revamp-title">{s.title}</h2>
+                  <p className="service-card-revamp-tagline">{s.text}</p>
                 </div>
-                <h2 className="service-card-revamp-title">{s.title}</h2>
-                <p className="service-card-revamp-tagline">{s.text}</p>
-              </div>
-              <div className="service-card-capabilities">
-                <span className="service-capabilities-label">Capabilities & Deliverables</span>
-                <ul className="service-capabilities-list">
-                  {s.items.map((item) => (
-                    <li key={item} className="service-capability-item">
-                      <span className="capability-check-icon">
-                        <Check size={12} />
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="service-card-action">
-                <Link to="/contact" className="service-card-inquire-btn">
-                  <span>Start a project with this</span>
-                  <ChevronRight size={14} />
-                </Link>
-              </div>
-            </article>
-          ))}
+                <div className="service-card-capabilities">
+                  <span className="service-capabilities-label">Capabilities & Deliverables</span>
+                  <ul className="service-capabilities-list">
+                    {s.items?.map((item) => (
+                      <li key={item} className="service-capability-item">
+                        <span className="capability-check-icon">
+                          <Check size={12} />
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="service-card-action">
+                  <Link to="/contact" className="service-card-inquire-btn">
+                    <span>Start a project with this</span>
+                    <ChevronRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
       <section className="cta-band services-cta-revamp">
         <div className="wrap cta-inner">
           <div>
-            <Eyebrow>BAINEST DIGITAL MARKETING SERVICES</Eyebrow>
+            <Eyebrow>{settings.servicesCtaEyebrow || "BAINEST DIGITAL MARKETING SERVICES"}</Eyebrow>
             <h2>
-              MORE THAN JUST
-              <br />
-              <em>DIGITAL MARKETING.</em>
+              {settings.servicesCtaTitle ? (
+                renderWithLinebreaks(settings.servicesCtaTitle)
+              ) : (
+                <>
+                  MORE THAN JUST
+                  <br />
+                  <em>DIGITAL MARKETING.</em>
+                </>
+              )}
             </h2>
             <p>
-              We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter.
+              {settings.servicesCtaCopy ||
+                "We help businesses establish their identity, strengthen their online presence, and create meaningful connections with the people who matter."}
             </p>
             <div className="cta-brand-tagline">
               <span>Innovate.</span>
