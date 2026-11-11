@@ -2952,17 +2952,16 @@ img {
   .wrap {
     width: calc(100% - 34px);
   }
-  /* (2026-07-13) Responsive mobile header with scaled nav items. Prev: clipped */
+  /* (2026-07-13) Fit all mobile nav tabs with space-between. Prev: 15px gap cut */
   .site-header .wrap {
-    width: calc(100% - 20px);
+    width: calc(100% - 16px);
   }
-  /* (2026-07-13) Improve mobile header font sizes and spacing. Prev: 9.5px */
   .brand-inner {
     height: 58px;
     gap: 10px;
   }
   .brand {
-    font-size: 17.5px;
+    font-size: 17px;
     font-weight: 800;
     gap: 9px;
   }
@@ -3000,12 +2999,12 @@ img {
     display: none !important;
   }
   .nav-inner {
-    height: 44px;
+    height: 42px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     width: 100%;
-    padding: 0 4px;
+    padding: 0;
     border-top: 1px solid #f1f5f9;
   }
   .nav-inner::-webkit-scrollbar {
@@ -3019,38 +3018,47 @@ img {
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
-    gap: 15px !important;
-    justify-content: flex-start !important;
-    width: max-content !important;
-    min-width: 100% !important;
+    gap: clamp(4px, 1.8vw, 10px) !important;
+    justify-content: space-between !important;
+    width: 100% !important;
     align-items: center !important;
   }
-  .main-nav a {
+  .main-nav a,
+  .blog-nav-wrapper > a {
     height: 100% !important;
-    padding: 0 4px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.04em !important;
-    color: #475569 !important;
+    padding: 0 1px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.015em !important;
+    color: #334155 !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
   }
-  .main-nav a.active {
+  .main-nav a.active,
+  .blog-nav-wrapper > a.active {
     color: #0f172a !important;
     font-weight: 800 !important;
   }
-  .main-nav a svg {
-    width: 11px !important;
-    height: 11px !important;
-    margin-left: 3px !important;
+  .main-nav a svg,
+  .blog-nav-wrapper > a svg {
+    width: 9.5px !important;
+    height: 9.5px !important;
+    margin-left: 2px !important;
     stroke-width: 2.5;
   }
-  .main-nav a:after {
+  .main-nav a:after,
+  .blog-nav-wrapper > a:after {
     bottom: 0;
     width: 100%;
     height: 2.5px;
     right: 0;
     border-radius: 2px 2px 0 0;
+  }
+  .recent-posts-mega {
+    right: 0 !important;
+    left: auto !important;
+    transform: none !important;
+    max-width: min(320px, 90vw) !important;
   }
   .nav-cta {
     display: none !important;
