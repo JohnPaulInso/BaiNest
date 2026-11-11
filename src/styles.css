@@ -3920,22 +3920,29 @@ img {
 .recent-posts-dropdown.open .recent-posts-trigger {
   color: #0d9488;
 }
-/* (2026-07-13) Left-align blog mega menu with card description. Prev: centered */
+/* (2026-07-13) Symmetrical centered blog dropdown cards. Prev: unaligned */
 .recent-posts-mega {
   position: absolute;
-  top: 100%;
-  left: 0;
-  transform: none;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
   width: max-content;
-  min-width: 240px;
   max-width: min(880px, 92vw);
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
-  border: 1px solid #e2e8f0;
-  padding: 14px 16px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 20px 35px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 16px 18px 18px 18px;
   z-index: 200;
-  animation: fadeInDown 0.22s ease-out;
+  animation: fadeInDown 0.2s ease-out;
+}
+.recent-posts-mega::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 12px;
 }
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-8px); }
@@ -3945,65 +3952,66 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 11px;
 }
 .recent-posts-top-label {
+  font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: #94a3b8;
   text-transform: uppercase;
 }
 .recent-posts-view-all {
   color: #0d9488;
   text-decoration: none;
+  font-size: 12px;
   font-weight: 700;
-  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
 }
 .recent-posts-view-all:hover {
   color: #0f766e;
-  text-decoration: underline;
+  transform: translateX(2px);
 }
-/* (2026-07-13) Left-aligned dropdown cards with description & meta. Prev: center */
 .recent-posts-grid {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 224px);
+  gap: 14px;
   align-items: stretch;
 }
 .recent-mega-card {
-  width: 205px;
-  flex-shrink: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   text-decoration: none;
   color: inherit;
-  border-radius: 10px;
-  padding: 10px;
-  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   box-sizing: border-box;
   text-align: left;
-  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: all 0.18s ease;
 }
-/* (2026-07-13) Mega card hover in media query with active touch feedback. Prev: static */
 @media (hover: hover) {
   .recent-mega-card:hover {
     background: #ffffff;
     border-color: #0d9488;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(13, 148, 136, 0.16);
   }
 }
 .recent-mega-card:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
-/* (2026-07-13) Refine mega menu thumbnail card framing. Prev: plain white */
 .recent-mega-thumb {
   width: 100%;
-  height: 105px;
+  height: 112px;
   border-radius: 8px;
   overflow: hidden;
   background: #ffffff;
@@ -4011,15 +4019,16 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 .recent-mega-thumb img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 10px;
-  transition: transform 0.2s ease;
+  padding: 12px;
+  transition: transform 0.22s ease;
 }
 .recent-mega-card:hover .recent-mega-thumb img {
   transform: scale(1.05);
@@ -4033,26 +4042,26 @@ img {
   background: linear-gradient(135deg, #0d9488, #0f766e);
   color: #ffffff;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0.05em;
 }
 .recent-mega-title {
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.35;
   font-weight: 700;
   color: #0f172a;
-  margin: 4px 0 4px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  margin: 0 0 5px 0;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
   text-align: left;
 }
 .recent-mega-desc {
   font-size: 11px;
   line-height: 1.45;
   color: #64748b;
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  height: 32px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -4062,27 +4071,31 @@ img {
 .recent-mega-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
   text-align: left;
+  font-size: 10.5px;
 }
 .recent-mega-cat {
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight: 700;
   color: #0d9488;
-  letter-spacing: 0.06em;
+  background: rgba(13, 148, 136, 0.09);
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .recent-mega-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #cbd5e1;
+  display: none;
 }
 .recent-mega-date {
   font-size: 10.5px;
+  font-weight: 500;
   color: #94a3b8;
+  text-align: right;
   text-align: left;
 }
 /* Responsive card count depending on screen size */
@@ -4098,6 +4111,7 @@ img {
   .recent-posts-mega {
     left: auto;
     right: 0;
+    transform: none;
   }
 }
 @media (max-width: 992px) {
