@@ -2986,10 +2986,11 @@ function DomainSettings() {
           </label>
           <label>
             Facebook URL
+            {/* (2026-07-13) Set Facebook placeholder to official page. Prev: generic placeholder */}
             <input
               value={settings.facebook}
               onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
-              placeholder="https://facebook.com/yourpage"
+              placeholder="https://www.facebook.com/profile.php?id=61580429522750"
             />
           </label>
           <label>

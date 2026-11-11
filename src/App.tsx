@@ -353,33 +353,16 @@ function Footer() {
               for businesses ready to grow.
             </p>
             <span className="footer-tagline">Innovate. Elevate. Connect.</span>
-            {/* Social media profile links */}
+            {/* (2026-07-13) Facebook as exclusive social link. Prev: multi-network icons */}
             <div className="footer-social-row">
-              {settings.facebook && (
-                <a href={settings.facebook} target="_blank" rel="noreferrer" aria-label="Facebook">
-                  <Facebook size={18} />
-                </a>
-              )}
-              {settings.twitter && (
-                <a href={settings.twitter} target="_blank" rel="noreferrer" aria-label="Twitter">
-                  <Twitter size={18} />
-                </a>
-              )}
-              {settings.instagram && (
-                <a href={settings.instagram} target="_blank" rel="noreferrer" aria-label="Instagram">
-                  <Instagram size={18} />
-                </a>
-              )}
-              {settings.youtube && (
-                <a href={settings.youtube} target="_blank" rel="noreferrer" aria-label="YouTube">
-                  <Youtube size={18} />
-                </a>
-              )}
-              {settings.email && (
-                <a href={`mailto:${settings.email}`} aria-label="Email">
-                  <Mail size={18} />
-                </a>
-              )}
+              <a
+                href={settings.facebook && settings.facebook.includes("facebook.com") ? settings.facebook : "https://www.facebook.com/profile.php?id=61580429522750"}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+              >
+                <Facebook size={18} />
+              </a>
             </div>
           </div>
           <div className="footer-links">

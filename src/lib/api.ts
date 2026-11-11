@@ -238,10 +238,11 @@ export const defaultSettings: SiteSettings = {
   siteName: "bainest",
   email: "bainestph@gmail.com",
   phone: "09622302015",
-  facebook: "https://facebook.com/bainestdigital",
-  twitter: "https://twitter.com/bainestdigital",
-  instagram: "https://instagram.com/bainestdigital",
-  youtube: "https://youtube.com/@bainestdigital",
+  // (2026-07-13) Set Facebook-only default profile. Prev: twitter/ig/yt placeholders
+  facebook: "https://www.facebook.com/profile.php?id=61580429522750",
+  twitter: "",
+  instagram: "",
+  youtube: "",
   tags: defaultTags,
   /* (2026-07-13) Default content for About page. Prev: static inline in App */
   aboutHeroLabel: "About BaiNest",
