@@ -1084,10 +1084,11 @@ img {
 .admin-footer-link:focus-visible {
   color: rgba(255, 255, 255, 0.82);
 }
+/* (2026-07-13) Reduce page-hero padding and hide subheadings. Prev: 83px/74px */
 .page-hero {
   position: relative;
   overflow: hidden;
-  padding: 83px 0 74px;
+  padding: 38px 0 24px;
   background:
     radial-gradient(
       circle at 88% 18%,
@@ -1098,15 +1099,16 @@ img {
 }
 .page-hero h1 {
   max-width: 840px;
-  margin: 17px 0 14px;
+  margin: 12px 0 0;
   font-size: clamp(39px, 5vw, 61px);
 }
 .page-hero p {
-  max-width: 630px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.8;
+  display: none !important;
+}
+.page-hero + .section,
+.page-hero + section,
+.page-hero + .services-page-section {
+  padding-top: 24px;
 }
 .about-story {
   display: grid;
@@ -3218,24 +3220,22 @@ img {
     grid-template-columns: 1fr;
     gap: 7px;
   }
-  /* (2026-07-13) Compact mobile page hero and tight section spacing. Prev: 60px/53px */
+  /* (2026-07-13) Compact page hero & tight section padding. Prev: 28px/12px */
   .page-hero {
-    padding: 28px 0 12px;
+    padding: 18px 0 8px;
   }
   .page-hero h1 {
-    font-size: clamp(26px, 7.5vw, 38px);
-    margin: 8px 0 8px;
+    font-size: clamp(24px, 7vw, 36px);
+    margin: 6px 0 0;
     line-height: 1.15;
   }
   .page-hero p {
-    font-size: 13.5px;
-    line-height: 1.55;
-    max-width: 100%;
+    display: none !important;
   }
   .page-hero + .section,
   .page-hero + section,
   .page-hero + .services-page-section {
-    padding-top: 14px;
+    padding-top: 10px;
   }
   .portfolio-gallery-grid {
     grid-template-columns: 1fr;

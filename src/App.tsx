@@ -422,21 +422,20 @@ function PageFrame({ children }: { children: React.ReactNode }) {
     </motion.main>
   );
 }
+/* (2026-07-13) Remove subheadings from PageHeading. Prev: <p>{copy}</p> */
 function PageHeading({
   label,
   title,
-  copy,
 }: {
   label: string;
   title: string;
-  copy: string;
+  copy?: string;
 }) {
   return (
     <div className="page-hero">
       <div className="wrap">
         <Eyebrow>{label}</Eyebrow>
         <h1>{title}</h1>
-        <p>{copy}</p>
       </div>
     </div>
   );
