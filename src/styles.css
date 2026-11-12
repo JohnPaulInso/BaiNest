@@ -7502,10 +7502,11 @@ img {
   position: relative;
   overflow: visible;
 }
+/* (2026-07-13) Align tooltip arrow 10px above target point. Prev: -115% */
 .chart-crisp-html-tooltip {
   position: absolute;
   pointer-events: none;
-  transform: translate(-50%, -115%);
+  transform: translate(-50%, calc(-100% - 10px));
   background: #0f172a;
   color: #ffffff;
   padding: 10px 14px;

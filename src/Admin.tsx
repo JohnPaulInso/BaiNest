@@ -1086,7 +1086,8 @@ function Overview({ posts }: { posts: Post[] }) {
             setHoveredPointIdx(closestIdx);
           }}
         >
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="analytics-svg-chart">
+          {/* (2026-07-13) Set preserveAspectRatio none for exact mapping. Prev: meet */}
+          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none" className="analytics-svg-chart">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
@@ -1289,13 +1290,13 @@ function Overview({ posts }: { posts: Post[] }) {
             )}
           </svg>
 
-          {/* Crisp HTML Floating Tooltip with dates & telemetry details */}
+          {/* (2026-07-13) Align tooltip arrow directly to active node. Prev: clamped */}
           {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
             <div
               className="chart-crisp-html-tooltip"
               style={{
-                left: `${Math.max(12, Math.min(88, (mappedPoints[hoveredPointIdx].x / chartWidth) * 100))}%`,
-                top: `${Math.max(15, (mappedPoints[hoveredPointIdx].y / chartHeight) * 100)}%`,
+                left: `${(mappedPoints[hoveredPointIdx].x / chartWidth) * 100}%`,
+                top: `${(mappedPoints[hoveredPointIdx].y / chartHeight) * 100}%`,
               }}
             >
               <div className="chart-tooltip-date">{mappedPoints[hoveredPointIdx].pt.fullDate}</div>
