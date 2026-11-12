@@ -1338,8 +1338,9 @@ function Overview({ posts }: { posts: Post[] }) {
             </span>
           </div>
         </div>
-        <div className="svg-chart-container" style={{ height: "230px" }} onMouseLeave={() => setHoveredBarIdx(null)}>
-          <svg viewBox="0 0 720 230" className="analytics-svg-chart" preserveAspectRatio="none">
+        {/* (2026-07-13) Dynamic scales & proportional bars. Prev: stretched 720 */}
+        <div className="svg-chart-container" style={{ height: "260px" }} onMouseLeave={() => setHoveredBarIdx(null)}>
+          <svg viewBox="0 0 960 260" className="analytics-svg-chart">
             <defs>
               <linearGradient id="barClicksGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" />
@@ -1349,121 +1350,165 @@ function Overview({ posts }: { posts: Post[] }) {
                 <stop offset="0%" stopColor="#38bdf8" />
                 <stop offset="100%" stopColor="#0284c7" />
               </linearGradient>
+              <filter id="barCardGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#006654" floodOpacity="0.15" />
+              </filter>
             </defs>
 
-            {/* Subtle horizontal gridlines with scale markers */}
-            {[
-              { val: "200", y: 45 },
-              { val: "150", y: 80 },
-              { val: "100", y: 115 },
-              { val: "50", y: 150 },
-              { val: "0", y: 185 },
-            ].map((g, idx) => (
-              <g key={idx}>
-                <text x="26" y={g.y + 3} textAnchor="end" fontSize="9.5" fill="#94a3b8" fontWeight="600">
-                  {g.val}
-                </text>
-                <line x1="36" y1={g.y} x2="684" y2={g.y} stroke="rgba(226, 232, 240, 0.7)" strokeDasharray={idx === 4 ? "none" : "3 3"} />
-              </g>
-            ))}
+            {/* Dynamic horizontal gridlines with scale markers */}
+            {(() => {
+              const bWidth = 960;
+              const bHeight = 260;
+              const bPadLeft = 58;
+              const bPadRight = 24;
+              const bPadTop = 28;
+              const bPadBottom = 42;
+              const bUsableW = bWidth - bPadLeft - bPadRight;
+              const bUsableH = bHeight - bPadTop - bPadBottom;
 
-            {[
-              { day: "Mon", clicks: Math.round(totalClicks * 0.12), imp: Math.round((totalImpressions * 0.11) / 10) },
-              { day: "Tue", clicks: Math.round(totalClicks * 0.16), imp: Math.round((totalImpressions * 0.15) / 10) },
-              { day: "Wed", clicks: Math.round(totalClicks * 0.20), imp: Math.round((totalImpressions * 0.19) / 10) },
-              { day: "Thu", clicks: Math.round(totalClicks * 0.24), imp: Math.round((totalImpressions * 0.22) / 10) },
-              { day: "Fri", clicks: Math.round(totalClicks * 0.18), imp: Math.round((totalImpressions * 0.17) / 10) },
-              { day: "Sat", clicks: Math.round(totalClicks * 0.06), imp: Math.round((totalImpressions * 0.09) / 10) },
-              { day: "Sun", clicks: Math.round(totalClicks * 0.04), imp: Math.round((totalImpressions * 0.07) / 10) },
-            ].map((col, idx) => {
-              const maxWeekly = Math.round(totalClicks * 0.28) || 220;
-              const slotW = (720 - 72) / 7;
-              const barW = 15;
-              const xBase = 44 + idx * slotW + (slotW - barW * 2 - 8) / 2;
-              const usableBarH = 135;
-              const clickH = Math.max((col.clicks / maxWeekly) * usableBarH, 6);
-              const impH = Math.max((col.imp / maxWeekly) * usableBarH, 6);
-              const clickY = 185 - clickH;
-              const impY = 185 - impH;
-              const isHovered = hoveredBarIdx === idx;
+              const days = [
+                { day: "Mon", clicks: Math.round(totalClicks * 0.12), imp: Math.round((totalImpressions * 0.11) / 10) },
+                { day: "Tue", clicks: Math.round(totalClicks * 0.16), imp: Math.round((totalImpressions * 0.15) / 10) },
+                { day: "Wed", clicks: Math.round(totalClicks * 0.20), imp: Math.round((totalImpressions * 0.19) / 10) },
+                { day: "Thu", clicks: Math.round(totalClicks * 0.24), imp: Math.round((totalImpressions * 0.22) / 10) },
+                { day: "Fri", clicks: Math.round(totalClicks * 0.18), imp: Math.round((totalImpressions * 0.17) / 10) },
+                { day: "Sat", clicks: Math.round(totalClicks * 0.06), imp: Math.round((totalImpressions * 0.09) / 10) },
+                { day: "Sun", clicks: Math.round(totalClicks * 0.04), imp: Math.round((totalImpressions * 0.07) / 10) },
+              ];
+
+              const peak = Math.max(...days.map((d) => Math.max(d.clicks, d.imp)), 1);
+              let maxWeekly = 10;
+              if (peak > 10 && peak <= 20) maxWeekly = 20;
+              else if (peak > 20 && peak <= 50) maxWeekly = 50;
+              else if (peak > 50 && peak <= 100) maxWeekly = 100;
+              else if (peak > 100 && peak <= 200) maxWeekly = 200;
+              else if (peak > 200) maxWeekly = Math.ceil(peak / 50) * 50;
 
               return (
-                <g
-                  key={idx}
-                  onMouseEnter={() => setHoveredBarIdx(idx)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {/* Modern ghost track column container */}
-                  <rect
-                    x={xBase - 6}
-                    y={42}
-                    width={barW * 2 + 18}
-                    height={145}
-                    rx="8"
-                    fill={isHovered ? "rgba(241, 245, 249, 0.95)" : "rgba(248, 250, 252, 0.6)"}
-                    stroke={isHovered ? "rgba(0, 102, 84, 0.18)" : "transparent"}
-                    strokeWidth="1"
-                  />
+                <>
+                  {[1, 0.75, 0.5, 0.25, 0].map((ratio, idx) => {
+                    const y = bPadTop + (1 - ratio) * bUsableH;
+                    const tickVal = Math.round(maxWeekly * ratio);
+                    const label = tickVal >= 1000 ? `${(tickVal / 1000).toFixed(1)}k` : tickVal.toString();
+                    return (
+                      <g key={idx}>
+                        <text
+                          x={bPadLeft - 12}
+                          y={y + 4}
+                          textAnchor="end"
+                          fontSize="11"
+                          fill="#64748b"
+                          fontWeight="600"
+                        >
+                          {label}
+                        </text>
+                        <line
+                          x1={bPadLeft}
+                          y1={y}
+                          x2={bWidth - bPadRight}
+                          y2={y}
+                          stroke="rgba(226, 232, 240, 0.85)"
+                          strokeDasharray={idx === 4 ? "none" : "4 4"}
+                        />
+                      </g>
+                    );
+                  })}
 
-                  {/* Clicks bar (Emerald) */}
-                  <rect
-                    x={xBase}
-                    y={clickY}
-                    width={barW}
-                    height={clickH}
-                    rx="5"
-                    fill="url(#barClicksGrad)"
-                    opacity={isHovered ? 1 : 0.92}
-                  />
+                  {days.map((col, idx) => {
+                    const slotW = bUsableW / 7;
+                    const barW = 24;
+                    const barGap = 6;
+                    const totalBarGroupW = barW * 2 + barGap;
+                    const ghostW = totalBarGroupW + 24;
+                    const xBase = bPadLeft + idx * slotW + (slotW - totalBarGroupW) / 2;
+                    const clickH = Math.max((col.clicks / maxWeekly) * bUsableH, 6);
+                    const impH = Math.max((col.imp / maxWeekly) * bUsableH, 6);
+                    const clickY = bHeight - bPadBottom - clickH;
+                    const impY = bHeight - bPadBottom - impH;
+                    const isHovered = hoveredBarIdx === idx;
 
-                  {/* Impressions bar (Sky) */}
-                  <rect
-                    x={xBase + barW + 6}
-                    y={impY}
-                    width={barW}
-                    height={impH}
-                    rx="5"
-                    fill="url(#barImpGrad)"
-                    opacity={isHovered ? 1 : 0.92}
-                  />
+                    return (
+                      <g
+                        key={idx}
+                        onMouseEnter={() => setHoveredBarIdx(idx)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {/* Background track column */}
+                        <rect
+                          x={xBase - 12}
+                          y={bPadTop}
+                          width={ghostW}
+                          height={bUsableH}
+                          rx="10"
+                          fill={isHovered ? "rgba(241, 245, 249, 0.95)" : "rgba(248, 250, 252, 0.55)"}
+                          stroke={isHovered ? "rgba(0, 102, 84, 0.2)" : "transparent"}
+                          strokeWidth="1"
+                        />
 
-                  {/* Value badges floating above */}
-                  <text
-                    x={xBase + barW / 2}
-                    y={clickY - 7}
-                    textAnchor="middle"
-                    fontSize="9.5"
-                    fontWeight="700"
-                    fill="#006654"
-                  >
-                    {col.clicks}
-                  </text>
-                  <text
-                    x={xBase + barW + 6 + barW / 2}
-                    y={impY - 7}
-                    textAnchor="middle"
-                    fontSize="9.5"
-                    fontWeight="700"
-                    fill="#0284c7"
-                  >
-                    {col.imp}
-                  </text>
+                        {/* Clicks bar (Emerald) */}
+                        <rect
+                          x={xBase}
+                          y={clickY}
+                          width={barW}
+                          height={clickH}
+                          rx="6"
+                          fill="url(#barClicksGrad)"
+                          filter={isHovered ? "url(#barCardGlow)" : undefined}
+                          opacity={isHovered ? 1 : 0.92}
+                        />
 
-                  {/* Day label */}
-                  <text
-                    x={xBase + barW + 3}
-                    y="208"
-                    textAnchor="middle"
-                    fontSize="11"
-                    fontWeight="700"
-                    fill={isHovered ? "#0f172a" : "#64748b"}
-                    letterSpacing="0.04em"
-                  >
-                    {col.day.toUpperCase()}
-                  </text>
-                </g>
+                        {/* Impressions bar (Sky) */}
+                        <rect
+                          x={xBase + barW + barGap}
+                          y={impY}
+                          width={barW}
+                          height={impH}
+                          rx="6"
+                          fill="url(#barImpGrad)"
+                          filter={isHovered ? "url(#barCardGlow)" : undefined}
+                          opacity={isHovered ? 1 : 0.92}
+                        />
+
+                        {/* Value badges floating above */}
+                        <text
+                          x={xBase + barW / 2}
+                          y={clickY - 8}
+                          textAnchor="middle"
+                          fontSize="11"
+                          fontWeight="700"
+                          fill="#006654"
+                        >
+                          {col.clicks}
+                        </text>
+                        <text
+                          x={xBase + barW + barGap + barW / 2}
+                          y={impY - 8}
+                          textAnchor="middle"
+                          fontSize="11"
+                          fontWeight="700"
+                          fill="#0284c7"
+                        >
+                          {col.imp}
+                        </text>
+
+                        {/* Day label */}
+                        <text
+                          x={xBase + totalBarGroupW / 2}
+                          y={bHeight - bPadBottom + 22}
+                          textAnchor="middle"
+                          fontSize="12"
+                          fontWeight="700"
+                          fill={isHovered ? "#0f172a" : "#64748b"}
+                          letterSpacing="0.04em"
+                        >
+                          {col.day.toUpperCase()}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </>
               );
-            })}
+            })()}
           </svg>
         </div>
       </section>
