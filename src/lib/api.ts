@@ -920,6 +920,16 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch {}
   }
 
+  // (2026-07-13) Prefer live Firestore stories on localhost. Prev: stale SQLite
+  if ((path === "/api/admin/posts" || path === "/api/posts") && (!init.method || init.method.toUpperCase() === "GET")) {
+    try {
+      const fsPosts = await getFirestorePosts();
+      if (fsPosts && fsPosts.length > 0) {
+        return (path === "/api/posts" ? fsPosts.filter((p) => p.status === "published") : fsPosts) as T;
+      }
+    } catch {}
+  }
+
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");
