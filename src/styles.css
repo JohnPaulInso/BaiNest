@@ -7550,11 +7550,12 @@ img {
   font-size: 10.5px;
   color: #cbd5e1;
 }
+/* (2026-07-13) Dynamic arrow position via CSS variable. Prev: fixed 50% */
 .chart-crisp-html-tooltip::after {
   content: "";
   position: absolute;
   top: 100%;
-  left: 50%;
+  left: var(--arrow-left, 50%);
   transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;

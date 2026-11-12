@@ -627,13 +627,13 @@ export function getPostImpressions(p: Post): number {
   return Math.round(getPostClicks(p) * 11.5);
 }
 
-// (2026-07-13) Responsive compact SVG Donut Pie chart. Prev: oversized 120px
+// (2026-07-13) Show slice numbers next to pct in pie. Prev: pct only
 function SvgPieChart({
   slices,
   centerLabel,
   centerSub,
 }: {
-  slices: { label: string; pct: number; color: string }[];
+  slices: { label: string; pct: number; color: string; count?: number | string }[];
   centerLabel?: string;
   centerSub?: string;
 }) {
@@ -702,7 +702,14 @@ function SvgPieChart({
                   {s.label}
                 </span>
               </div>
-              <b className="legend-pct" style={{ color: s.color, marginLeft: "8px" }}>{s.pct}%</b>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginLeft: "8px", flexShrink: 0 }}>
+                {s.count !== undefined && (
+                  <span className="legend-count" style={{ color: "#64748b", fontSize: "12px", fontWeight: 600 }}>
+                    {typeof s.count === "number" ? s.count.toLocaleString() : s.count}
+                  </span>
+                )}
+                <b className="legend-pct" style={{ color: s.color }}>{s.pct}%</b>
+              </div>
             </div>
           );
         })}
@@ -1292,27 +1299,33 @@ function Overview({ posts }: { posts: Post[] }) {
             )}
           </svg>
 
-          {/* (2026-07-13) Align tooltip arrow directly to active node. Prev: clamped */}
-          {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (
-            <div
-              className="chart-crisp-html-tooltip"
-              style={{
-                left: `${(mappedPoints[hoveredPointIdx].x / chartWidth) * 100}%`,
-                top: `${(mappedPoints[hoveredPointIdx].y / chartHeight) * 100}%`,
-              }}
-            >
-              <div className="chart-tooltip-date">{mappedPoints[hoveredPointIdx].pt.fullDate}</div>
-              <div className="chart-tooltip-metric">
-                <b>{mappedPoints[hoveredPointIdx].pt.val.toLocaleString()}</b>
-                <span>{activeMetric === "views" ? "page views" : activeMetric === "clicks" ? "search clicks" : "impressions"}</span>
+          {/* (2026-07-13) Shift tooltip inwards at edges to fix clipping. Prev: 50% */}
+          {hoveredPointIdx !== null && mappedPoints[hoveredPointIdx] && (() => {
+            const xPct = (mappedPoints[hoveredPointIdx].x / chartWidth) * 100;
+            const anchorX = xPct > 75 ? Math.min(88, 50 + (xPct - 75) * 1.7) : xPct < 25 ? Math.max(12, 50 - (25 - xPct) * 1.7) : 50;
+            return (
+              <div
+                className="chart-crisp-html-tooltip"
+                style={{
+                  left: `${xPct}%`,
+                  top: `${(mappedPoints[hoveredPointIdx].y / chartHeight) * 100}%`,
+                  transform: `translate(-${anchorX}%, calc(-100% - 10px))`,
+                  ["--arrow-left" as any]: `${anchorX}%`,
+                }}
+              >
+                <div className="chart-tooltip-date">{mappedPoints[hoveredPointIdx].pt.fullDate}</div>
+                <div className="chart-tooltip-metric">
+                  <b>{mappedPoints[hoveredPointIdx].pt.val.toLocaleString()}</b>
+                  <span>{activeMetric === "views" ? "page views" : activeMetric === "clicks" ? "search clicks" : "impressions"}</span>
+                </div>
+                <div className="chart-tooltip-details">
+                  <span><b>{mappedPoints[hoveredPointIdx].pt.clicks}</b> clicks</span>
+                  <span><b>{mappedPoints[hoveredPointIdx].pt.impressions.toLocaleString()}</b> imp.</span>
+                  <span><b>{mappedPoints[hoveredPointIdx].pt.ctr}</b> CTR</span>
+                </div>
               </div>
-              <div className="chart-tooltip-details">
-                <span><b>{mappedPoints[hoveredPointIdx].pt.clicks}</b> clicks</span>
-                <span><b>{mappedPoints[hoveredPointIdx].pt.impressions.toLocaleString()}</b> imp.</span>
-                <span><b>{mappedPoints[hoveredPointIdx].pt.ctr}</b> CTR</span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
         <div className="chart-legend-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "#64748b", padding: "0 6px" }}>
           <span>
@@ -1571,13 +1584,14 @@ function Overview({ posts }: { posts: Post[] }) {
             <span className="gsc-source-tag"><PieChart size={12} /> Donut</span>
           </div>
           <div className="pie-charts-container">
+            {/* (2026-07-13) Pass view counts next to pie percentages. Prev: pct only */}
             <div className="pie-section-block">
               <span className="dist-title">Traffic Channels</span>
               <SvgPieChart
                 slices={[
-                  { label: "Google Search", pct: 68.4, color: "#006654" },
-                  { label: "Direct Navigation", pct: 18.2, color: "#0284c7" },
-                  { label: "Social Referrals", pct: 13.4, color: "#f59e0b" },
+                  { label: "Google Search", pct: 68.4, color: "#006654", count: Math.round(totalViews * 0.684) },
+                  { label: "Direct Navigation", pct: 18.2, color: "#0284c7", count: Math.round(totalViews * 0.182) },
+                  { label: "Social Referrals", pct: 13.4, color: "#f59e0b", count: Math.max(0, totalViews - Math.round(totalViews * 0.684) - Math.round(totalViews * 0.182)) },
                 ]}
                 centerLabel="68%"
                 centerSub="Google"
@@ -1588,9 +1602,9 @@ function Overview({ posts }: { posts: Post[] }) {
               <span className="dist-title">Device Breakdown</span>
               <SvgPieChart
                 slices={[
-                  { label: "Mobile Handheld", pct: 64.2, color: "#10b981" },
-                  { label: "Desktop & Laptop", pct: 31.8, color: "#6366f1" },
-                  { label: "Tablet Devices", pct: 4.0, color: "#94a3b8" },
+                  { label: "Mobile Handheld", pct: 64.2, color: "#10b981", count: Math.round(totalViews * 0.642) },
+                  { label: "Desktop & Laptop", pct: 31.8, color: "#6366f1", count: Math.round(totalViews * 0.318) },
+                  { label: "Tablet Devices", pct: 4.0, color: "#94a3b8", count: Math.max(0, totalViews - Math.round(totalViews * 0.642) - Math.round(totalViews * 0.318)) },
                 ]}
                 centerLabel="64%"
                 centerSub="Mobile"
