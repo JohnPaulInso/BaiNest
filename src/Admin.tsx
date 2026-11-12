@@ -131,15 +131,15 @@ function SortableBlock({
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
-  // (2026-07-13) Direct persistent base64 for block images. Prev: blob URLs
+  // (2026-07-13) Lightweight base64 compression for block images. Prev: 1200 heavy
   async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     try {
       const dataUrl = (await compressImage(file, {
-        maxDimension: 1200,
-        quality: 0.78,
+        maxDimension: 960,
+        quality: 0.70,
         outputType: "dataUrl",
       })) as string;
       onChange(block.id, "src", dataUrl);
@@ -155,8 +155,8 @@ function SortableBlock({
     setUploading(true);
     try {
       const dataUrl = (await compressImage(croppedFile, {
-        maxDimension: 1200,
-        quality: 0.78,
+        maxDimension: 960,
+        quality: 0.70,
         outputType: "dataUrl",
       })) as string;
       onChange(block.id, "src", dataUrl);
@@ -2390,15 +2390,15 @@ function PostEditor({
     const sanitizedBlocks = await Promise.all(
       blocks.map(async (b) => {
         if (b.type === "list") {
-          return { ...b, items: b.items?.filter(Boolean) };
+          return { ...b, items: b.items?.filter(Boolean) || [] };
         }
-        if (b.type === "image" && b.src && b.src.startsWith("blob:")) {
+        if (b.type === "image" && b.src && (b.src.startsWith("blob:") || (b.src.startsWith("data:") && b.src.length > 350000))) {
           try {
             const resp = await fetch(b.src);
             const blob = await resp.blob();
             const dataUrl = await compressImage(blob, {
-              maxDimension: 1200,
-              quality: 0.78,
+              maxDimension: 960,
+              quality: 0.70,
               outputType: "dataUrl",
             });
             return { ...b, src: dataUrl as string };

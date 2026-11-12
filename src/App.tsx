@@ -1197,9 +1197,11 @@ function Blog() {
   );
 }
 // (2026-07-13) Fix Fragment usage without React namespace. Prev: React.Fragment
+// (2026-07-13) Clean escaped backslashes & format lines. Prev: raw text
 function renderWithLinebreaks(text?: string) {
   if (!text) return null;
-  const lines = text.split(/(?:<br\s*\/?>|\r?\n)/gi);
+  const sanitized = text.replace(/\\([.!?,:;'"#*_\-()[\]{}])/g, "$1");
+  const lines = sanitized.split(/(?:<br\s*\/?>|\r?\n)/gi);
   return lines.map((line, idx) => (
     <Fragment key={idx}>
       {line}
@@ -1232,15 +1234,18 @@ function BlockRenderer({ blocks }: { blocks: Block[] }) {
               ))}
             </ul>
           );
-        // (2026-07-13) Safe image block rendering with failure hiding. Prev: basic
+        // (2026-07-13) Fix WebKit data URL rendering with async decoding. Prev: lazy
         if (b.type === "image") {
-          if (!b.src || b.src.startsWith("blob:")) return null;
+          const rawSrc = (b.src || "").trim();
+          if (!rawSrc || rawSrc.startsWith("blob:")) return null;
+          const isDataUri = rawSrc.startsWith("data:");
           return (
             <figure key={i} className="post-figure-image">
               <img
-                src={b.src}
+                src={rawSrc}
                 alt={b.alt || ""}
-                loading="lazy"
+                loading={isDataUri ? "eager" : "lazy"}
+                decoding="async"
                 onError={(e) => {
                   const fig = e.currentTarget.closest("figure");
                   if (fig) fig.style.display = "none";
@@ -1350,6 +1355,22 @@ function PostDetail() {
   };
 
   const { posts: allPosts } = usePosts();
+
+  // (2026-07-13) Sync post live with real-time posts subscription. Prev: static
+  useEffect(() => {
+    if (!preview && slug && allPosts.length > 0) {
+      const lower = slug.toLowerCase();
+      const live = allPosts.find(
+        (p) =>
+          (p.slug && p.slug.toLowerCase() === lower) ||
+          String(p.id).toLowerCase() === lower
+      );
+      if (live) {
+        setPost(live);
+        setLoading(false);
+      }
+    }
+  }, [allPosts, slug, preview]);
 
   useEffect(() => {
     setLoading(true);

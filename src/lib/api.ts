@@ -412,10 +412,20 @@ async function getFirestorePosts(): Promise<Post[]> {
   }
 }
 
+// (2026-07-13) Clean undefined fields for Firestore save. Prev: uncaught fail
+export function cleanFirestoreData<T>(obj: T): T {
+  return JSON.parse(
+    JSON.stringify(obj, (_, v) => (v === undefined ? null : v))
+  );
+}
+
 async function saveFirestorePost(post: Post): Promise<void> {
   try {
-    await setDoc(doc(firestore, "posts", String(post.id)), post);
-  } catch {}
+    const cleaned = cleanFirestoreData(post);
+    await setDoc(doc(firestore, "posts", String(post.id)), cleaned);
+  } catch (err) {
+    console.error("Firestore post save failed:", err);
+  }
 }
 
 async function deleteFirestorePost(id: string | number): Promise<void> {
@@ -434,32 +444,32 @@ async function saveFirestoreContact(body: Record<string, unknown>): Promise<void
   } catch {}
 }
 
-// (2026-07-13) Add onSnapshot real-time subscriptions. Prev: static fetch only
+// (2026-07-13) Robust real-time post subscription with fallback. Prev: q only
 export function subscribeToPosts(
   callback: (posts: Post[]) => void,
   onlyPublished = false
 ): () => void {
   try {
     const col = collection(firestore, "posts");
-    const q = query(col, orderBy("created_at", "desc"));
+    const handleSnap = (snapshot: any) => {
+      const posts: Post[] = [];
+      snapshot.forEach((d: any) => {
+        const data = d.data() as Post;
+        posts.push({ ...data, id: data.id ?? d.id });
+      });
+      posts.sort(
+        (a, b) =>
+          new Date(b.created_at || b.published_at || 0).getTime() -
+          new Date(a.created_at || a.published_at || 0).getTime()
+      );
+      saveStoredPosts(posts);
+      callback(
+        onlyPublished ? posts.filter((p) => p.status === "published") : posts
+      );
+    };
     return onSnapshot(
-      q,
-      (snapshot) => {
-        if (snapshot.empty) {
-          callback([]);
-          return;
-        }
-        // (2026-07-13) Set fallback doc id for real-time posts. Prev: data.id only
-        const posts: Post[] = [];
-        snapshot.forEach((d) => {
-          const data = d.data() as Post;
-          posts.push({ ...data, id: data.id ?? d.id });
-        });
-        saveStoredPosts(posts);
-        callback(
-          onlyPublished ? posts.filter((p) => p.status === "published") : posts
-        );
-      },
+      col,
+      handleSnap,
       () => {
         const stored = getStoredPosts();
         callback(
@@ -694,11 +704,16 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     return posts.filter((p) => p.status === "published");
   }
 
-  const publicPostMatch = url.match(/^\/api\/posts\/([a-z0-9-]+)$/);
+  // (2026-07-13) Case-insensitive URL slug & ID resolver. Prev: strict regex
+  const publicPostMatch = url.match(/^\/api\/posts\/([^/?]+)$/);
   if (publicPostMatch) {
-    const slug = publicPostMatch[1];
+    const rawParam = decodeURIComponent(publicPostMatch[1]).toLowerCase();
     const posts = await getFirestorePosts();
-    const post = posts.find((p) => p.slug === slug);
+    const post = posts.find(
+      (p) =>
+        (p.slug && p.slug.toLowerCase() === rawParam) ||
+        String(p.id).toLowerCase() === rawParam
+    );
     if (!post) throw new Error("That article could not be found.");
     return post;
   }
