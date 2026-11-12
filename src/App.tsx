@@ -442,7 +442,8 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
       </Link>
       <div className="post-card-body">
         <div className="post-meta">
-          <span>{post.category}</span>
+          {/* (2026-07-13) Display Work label instead of Case Study. Prev: post.category */}
+          <span>{post.category?.toLowerCase().includes("case study") ? "Work" : post.category}</span>
           <i />{" "}
           <time>
             {post.published_at
@@ -1114,12 +1115,20 @@ function Blog() {
     [posts]
   );
 
+  // (2026-07-13) Normalize Case Study category to Work in filters. Prev: Case study
   const allTags = useMemo(() => {
     const set = new Set<string>();
     blogPosts.forEach((p) => {
-      if (p.category) set.add(p.category.trim());
+      if (p.category) {
+        const cat = p.category.trim();
+        set.add(cat.toLowerCase().includes("case study") ? "Work" : cat);
+      }
       if (Array.isArray(p.tags)) {
-        p.tags.forEach((t) => t && set.add(t.trim()));
+        p.tags.forEach((t) => {
+          if (!t) return;
+          const tag = t.trim();
+          set.add(tag.toLowerCase().includes("case study") ? "Work" : tag);
+        });
       }
     });
     return ["All", ...Array.from(set)];
@@ -1130,10 +1139,14 @@ function Blog() {
       const matchesQuery = `${p.title} ${p.excerpt} ${p.category} ${(p.tags || []).join(" ")}`
         .toLowerCase()
         .includes(query.toLowerCase());
+      const pCat = (p.category || "").toLowerCase();
+      const isWorkCategory = pCat.includes("case study") || pCat === "work";
       const matchesTag =
         selectedTag === "All" ||
-        p.category?.toLowerCase() === selectedTag.toLowerCase() ||
-        (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase());
+        (selectedTag.toLowerCase() === "work"
+          ? isWorkCategory || (p.tags || []).some((t) => t.toLowerCase().includes("case study") || t.toLowerCase() === "work")
+          : pCat === selectedTag.toLowerCase() ||
+            (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase()));
       return matchesQuery && matchesTag;
     });
   }, [blogPosts, query, selectedTag]);
@@ -1478,7 +1491,8 @@ function PostDetail() {
               {post.category && (
                 <>
                   <span className="meta-sep">·</span>
-                  <span className="post-meta-cat">{post.category}</span>
+                  {/* (2026-07-13) Display Work badge instead of Case study. Prev: post.category */}
+                  <span className="post-meta-cat">{post.category.toLowerCase().includes("case study") ? "Work" : post.category}</span>
                 </>
               )}
             </div>

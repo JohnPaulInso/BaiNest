@@ -2197,7 +2197,8 @@ function PostEditor({
     posts.forEach((p) => {
       if (p.category?.trim()) set.add(p.category.trim());
     });
-    ["Brand strategy", "Digital", "Creative", "Case study", "Insights", "Growth"].forEach((c) =>
+    // (2026-07-13) Set default category chip to Work. Prev: Case study
+    ["Brand strategy", "Digital", "Creative", "Work", "Insights", "Growth"].forEach((c) =>
       set.add(c),
     );
     return Array.from(set);
