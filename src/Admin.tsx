@@ -60,13 +60,15 @@ import {
 import { ImageCropperModal } from "./ImageCropperModal";
 import { uploadBlogImage, compressImage } from "./lib/imageCompressor";
 import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
-// (2026-07-13) Import subscribeToSettings for live editor sync. Prev: static
+// (2026-07-13) Import getFirestoreSettings & saveFirestoreSettings. Prev: none
 import {
   api,
   setCsrf,
   subscribeToPosts,
   subscribeToContacts,
   subscribeToSettings,
+  getFirestoreSettings,
+  saveFirestoreSettings,
   defaultSettings,
   defaultTags,
   defaultServicesList,
@@ -3483,25 +3485,20 @@ function AboutPageEditor() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // (2026-07-13) Subscribe to live settings in About editor. Prev: one-off api
+  // (2026-07-13) Load settings on mount and directly persist to Firestore. Prev: overwritten
   useEffect(() => {
-    const unsub = subscribeToSettings((live) => {
-      if (live) setSettings(live);
-    });
-    api<SiteSettings>("/api/admin/settings")
+    getFirestoreSettings()
       .then((s) => {
-        if (s && Object.keys(s).length > 1) {
-          setSettings((prev) => ({ ...prev, ...s }));
-        }
+        if (s) setSettings(s);
       })
       .catch(() => {});
-    return () => unsub();
   }, []);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
+      await saveFirestoreSettings(settings);
       await api("/api/admin/settings", {
         method: "PUT",
         body: JSON.stringify(settings),
@@ -3799,27 +3796,18 @@ function ServicesPageEditor() {
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // (2026-07-13) Subscribe to live settings in Services editor. Prev: one-off api
+  // (2026-07-13) Load settings on mount and persist directly to Firestore. Prev: live overwrite
   useEffect(() => {
-    const unsub = subscribeToSettings((live) => {
-      if (live) {
-        setSettings(live);
-        if (live.servicesList && live.servicesList.length > 0) {
-          setServicesList(live.servicesList);
-        }
-      }
-    });
-    api<SiteSettings>("/api/admin/settings")
+    getFirestoreSettings()
       .then((s) => {
-        if (s && Object.keys(s).length > 1) {
-          setSettings((prev) => ({ ...prev, ...s }));
+        if (s) {
+          setSettings(s);
           if (s.servicesList && s.servicesList.length > 0) {
             setServicesList(s.servicesList);
           }
         }
       })
       .catch(() => {});
-    return () => unsub();
   }, []);
 
   async function handleServiceImageUpload(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
@@ -3878,6 +3866,7 @@ function ServicesPageEditor() {
         ...settings,
         servicesList,
       };
+      await saveFirestoreSettings(payload);
       await api("/api/admin/settings", {
         method: "PUT",
         body: JSON.stringify(payload),
@@ -4174,25 +4163,20 @@ function ContactPageEditor() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // (2026-07-13) Subscribe to live settings in Contact editor. Prev: one-off api
+  // (2026-07-13) Load settings on mount and persist directly to Firestore. Prev: live overwrite
   useEffect(() => {
-    const unsub = subscribeToSettings((live) => {
-      if (live) setSettings(live);
-    });
-    api<SiteSettings>("/api/admin/settings")
+    getFirestoreSettings()
       .then((s) => {
-        if (s && Object.keys(s).length > 1) {
-          setSettings((prev) => ({ ...prev, ...s }));
-        }
+        if (s) setSettings(s);
       })
       .catch(() => {});
-    return () => unsub();
   }, []);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
+      await saveFirestoreSettings(settings);
       await api("/api/admin/settings", {
         method: "PUT",
         body: JSON.stringify(settings),

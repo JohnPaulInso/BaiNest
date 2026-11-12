@@ -339,19 +339,15 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
   }
 }
 
-// (2026-07-13) Clean data before saving Firestore settings. Prev: raw data
+// (2026-07-13) Direct throw on Firestore settings failure. Prev: silent log
 export async function saveFirestoreSettings(data: Partial<SiteSettings>): Promise<void> {
-  try {
-    const cleaned = cleanFirestoreData(data);
-    await setDoc(doc(firestore, "settings", "global"), cleaned, { merge: true });
-  } catch (err) {
-    console.error("Failed to save Firestore settings:", err);
-  }
+  const cleaned = cleanFirestoreData(data);
+  await setDoc(doc(firestore, "settings", "global"), cleaned, { merge: true });
   try {
     const cur = await getFirestoreSettings();
     localStorage.setItem(
       "bainenest_settings",
-      JSON.stringify({ ...cur, ...data })
+      JSON.stringify({ ...cur, ...cleaned })
     );
   } catch {}
 }
@@ -795,6 +791,16 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // (2026-07-13) Guarantee live Firestore settings sync across all environments
+  if (path.startsWith("/api/admin/settings") && ["PUT", "POST"].includes((init.method || "").toUpperCase()) && init.body) {
+    try {
+      const parsed = JSON.parse(init.body as string);
+      await saveFirestoreSettings(parsed);
+    } catch (err) {
+      console.warn("Direct saveFirestoreSettings error:", err);
+    }
+  }
+
   const isStaticHost =
     typeof window !== "undefined" &&
     window.location.hostname !== "localhost" &&
@@ -802,6 +808,15 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (isStaticHost) {
     return (await handleStaticApi(path, init)) as T;
+  }
+
+  if (path === "/api/admin/settings" && (!init.method || init.method.toUpperCase() === "GET")) {
+    try {
+      const fsSettings = await getFirestoreSettings();
+      if (fsSettings && Object.keys(fsSettings).length > 2) {
+        return fsSettings as T;
+      }
+    } catch {}
   }
 
   const headers = new Headers(init.headers);
