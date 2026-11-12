@@ -308,6 +308,49 @@ function saveStoredPosts(posts: Post[]) {
   } catch {}
 }
 
+// (2026-07-13) Cached contacts helper and merge utility. Prev: none
+export function getStoredContacts(): any[] {
+  try {
+    const raw = localStorage.getItem("bainenest_contacts");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveStoredContacts(contacts: any[]) {
+  try {
+    localStorage.setItem("bainenest_contacts", JSON.stringify(contacts));
+  } catch {}
+}
+
+export function mergeContacts(primary: any[], secondary: any[]): any[] {
+  const map = new Map<string, any>();
+  const add = (item: any) => {
+    if (!item) return;
+    const key = String(item.id || `${item.email}_${(item.created_at || "").slice(0, 16)}`);
+    if (!map.has(key)) {
+      map.set(key, item);
+    } else {
+      const existing = map.get(key);
+      map.set(key, {
+        ...existing,
+        ...item,
+        read: existing.read || item.read ? 1 : 0,
+      });
+    }
+  };
+  (primary || []).forEach(add);
+  (secondary || []).forEach(add);
+  const result = Array.from(map.values());
+  result.sort((a, b) => {
+    const tA = new Date(a.created_at || 0).getTime() || 0;
+    const tB = new Date(b.created_at || 0).getTime() || 0;
+    return tB - tA;
+  });
+  return result;
+}
+
 export async function getFirestoreSettings(): Promise<SiteSettings> {
   try {
     const snap = await getDoc(doc(firestore, "settings", "global"));
@@ -507,7 +550,7 @@ function normalizeContactDoc(d: { id: string; data: () => any }): any {
   };
 }
 
-// (2026-07-13) Normalize contact dates in real-time query. Prev: raw missing
+// (2026-07-13) Merge Firestore & cached contacts in real-time. Prev: raw missing
 export function subscribeToContacts(
   callback: (contacts: any[]) => void
 ): () => void {
@@ -518,17 +561,19 @@ export function subscribeToContacts(
       (snapshot) => {
         const contacts: any[] = [];
         snapshot.forEach((d) => contacts.push(normalizeContactDoc(d)));
-        contacts.sort((a, b) => {
-          const tA = new Date(a.created_at).getTime() || 0;
-          const tB = new Date(b.created_at).getTime() || 0;
-          return tB - tA;
-        });
-        callback(contacts);
+        const stored = getStoredContacts();
+        const merged = mergeContacts(contacts, stored);
+        saveStoredContacts(merged);
+        callback(merged);
       },
-      () => callback([])
+      () => {
+        const stored = getStoredContacts();
+        callback(stored);
+      }
     );
   } catch {
-    callback([]);
+    const stored = getStoredContacts();
+    callback(stored);
     return () => {};
   }
 }
@@ -539,14 +584,12 @@ async function getFirestoreContacts(): Promise<any[]> {
     const snap = await getDocs(col);
     const contacts: any[] = [];
     snap.forEach((d) => contacts.push(normalizeContactDoc(d)));
-    contacts.sort((a, b) => {
-      const tA = new Date(a.created_at).getTime() || 0;
-      const tB = new Date(b.created_at).getTime() || 0;
-      return tB - tA;
-    });
-    return contacts;
+    const stored = getStoredContacts();
+    const merged = mergeContacts(contacts, stored);
+    saveStoredContacts(merged);
+    return merged;
   } catch {
-    return [];
+    return getStoredContacts();
   }
 }
 
@@ -554,6 +597,8 @@ async function deleteFirestoreContact(id: string | number): Promise<void> {
   try {
     await deleteDoc(doc(firestore, "contacts", String(id)));
   } catch {}
+  const stored = getStoredContacts().filter((c) => String(c.id) !== String(id));
+  saveStoredContacts(stored);
 }
 
 async function markFirestoreContactRead(id: string | number): Promise<void> {
@@ -563,6 +608,36 @@ async function markFirestoreContactRead(id: string | number): Promise<void> {
       { read: 1 },
       { merge: true }
     );
+  } catch {}
+  const stored = getStoredContacts().map((c) => (String(c.id) === String(id) ? { ...c, read: 1 } : c));
+  saveStoredContacts(stored);
+}
+
+export async function syncContactsToFirestore(contacts: any[]): Promise<void> {
+  if (!Array.isArray(contacts) || contacts.length === 0) return;
+  try {
+    const col = collection(firestore, "contacts");
+    const snap = await getDocs(col);
+    const existing = new Set(
+      snap.docs.map((d) => {
+        const data = d.data();
+        return `${data.email}_${(data.message || "").trim().slice(0, 30)}`;
+      })
+    );
+    for (const c of contacts) {
+      const key = `${c.email}_${(c.message || "").trim().slice(0, 30)}`;
+      if (!existing.has(key)) {
+        await addDoc(col, {
+          name: c.name || "",
+          email: c.email || "",
+          company: c.company || "",
+          message: c.message || "",
+          read: c.read ? 1 : 0,
+          created_at: c.created_at || new Date().toISOString(),
+        });
+        existing.add(key);
+      }
+    }
   } catch {}
 }
 
@@ -724,7 +799,10 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
 
   if (url === "/api/contact") {
     // (2026-07-13) Store contact message in Firestore with read: 0. Prev: empty
-    await saveFirestoreContact({ ...body, read: 0 });
+    const contactItem = { ...body, read: 0, created_at: body.created_at || new Date().toISOString() };
+    await saveFirestoreContact(contactItem);
+    const stored = getStoredContacts();
+    saveStoredContacts(mergeContacts([contactItem], stored));
     return { ok: true, message: "Thanks — your note is saved. We’ll be in touch." };
   }
 
@@ -801,6 +879,29 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
   }
 
+  // (2026-07-13) Guarantee live contact sync to Firestore across all envs
+  if (path === "/api/contact" && ["POST"].includes((init.method || "").toUpperCase()) && init.body) {
+    try {
+      const parsed = JSON.parse(init.body as string);
+      const contactItem = { ...parsed, read: 0, created_at: parsed.created_at || new Date().toISOString() };
+      saveFirestoreContact(contactItem).catch(() => {});
+      const stored = getStoredContacts();
+      saveStoredContacts(mergeContacts([contactItem], stored));
+    } catch (err) {
+      console.warn("Direct saveFirestoreContact error:", err);
+    }
+  }
+
+  const contactReadMatch = path.match(/^\/api\/admin\/contacts\/([^/]+)\/read$/);
+  if (contactReadMatch && ["PUT", "POST"].includes((init.method || "").toUpperCase())) {
+    markFirestoreContactRead(contactReadMatch[1]).catch(() => {});
+  }
+
+  const contactDeleteMatch = path.match(/^\/api\/admin\/contacts\/([^/]+)$/);
+  if (contactDeleteMatch && (init.method || "").toUpperCase() === "DELETE") {
+    deleteFirestoreContact(contactDeleteMatch[1]).catch(() => {});
+  }
+
   const isStaticHost =
     typeof window !== "undefined" &&
     window.location.hostname !== "localhost" &&
@@ -839,7 +940,15 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (!response.ok || !contentType.includes("application/json")) {
       return (await handleStaticApi(path, init)) as T;
     }
-    return (await response.json()) as T;
+    const json = (await response.json()) as T;
+    if (path === "/api/admin/contacts" && Array.isArray(json)) {
+      const stored = getStoredContacts();
+      const merged = mergeContacts(json, stored);
+      saveStoredContacts(merged);
+      syncContactsToFirestore(json).catch(() => {});
+      return merged as T;
+    }
+    return json;
   } catch (err) {
     return (await handleStaticApi(path, init)) as T;
   }

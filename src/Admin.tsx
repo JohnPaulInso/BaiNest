@@ -66,6 +66,8 @@ import {
   setCsrf,
   subscribeToPosts,
   subscribeToContacts,
+  getStoredContacts,
+  mergeContacts,
   subscribeToSettings,
   getFirestoreSettings,
   saveFirestoreSettings,
@@ -3299,35 +3301,43 @@ function formatInboxDate(raw: any): string {
   return "Just now";
 }
 
-// (2026-07-13) Format inbox contact dates & polish inbox UI. Prev: invalid date
+// (2026-07-13) Reliably merge cached, live, & API contacts. Prev: clobbered
 function InboxPage() {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>(() => getStoredContacts());
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
+    const initial = getStoredContacts();
+    if (initial.length > 0) {
+      setMessages(initial);
+    }
     const unsub = subscribeToContacts((liveContacts) => {
-      setMessages(liveContacts);
+      setMessages((prev) => mergeContacts(liveContacts, prev));
     });
     api<any[]>("/api/admin/contacts")
-      .then(setMessages)
+      .then((apiContacts) => {
+        if (Array.isArray(apiContacts) && apiContacts.length > 0) {
+          setMessages((prev) => mergeContacts(apiContacts, prev));
+        }
+      })
       .catch(() => {});
     return () => unsub();
   }, []);
 
   async function mark(id: number | string) {
+    setMessages((x) => x.map((m) => (m.id === id ? { ...m, read: 1 } : m)));
     await api(`/api/admin/contacts/${id}/read`, {
       method: "PUT",
       body: JSON.stringify({}),
     });
-    setMessages((x) => x.map((m) => (m.id === id ? { ...m, read: 1 } : m)));
   }
 
   async function handleDelete(id: number | string) {
     if (!window.confirm("Are you sure you want to delete this message?")) return;
+    setMessages((x) => x.filter((m) => m.id !== id));
     try {
       await api(`/api/admin/contacts/${id}`, { method: "DELETE" });
-      setMessages((x) => x.filter((m) => m.id !== id));
     } catch {}
   }
 
