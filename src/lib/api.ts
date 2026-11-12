@@ -339,10 +339,14 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
   }
 }
 
+// (2026-07-13) Clean data before saving Firestore settings. Prev: raw data
 export async function saveFirestoreSettings(data: Partial<SiteSettings>): Promise<void> {
   try {
-    await setDoc(doc(firestore, "settings", "global"), data, { merge: true });
-  } catch {}
+    const cleaned = cleanFirestoreData(data);
+    await setDoc(doc(firestore, "settings", "global"), cleaned, { merge: true });
+  } catch (err) {
+    console.error("Failed to save Firestore settings:", err);
+  }
   try {
     const cur = await getFirestoreSettings();
     localStorage.setItem(

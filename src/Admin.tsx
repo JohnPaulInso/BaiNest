@@ -60,11 +60,13 @@ import {
 import { ImageCropperModal } from "./ImageCropperModal";
 import { uploadBlogImage, compressImage } from "./lib/imageCompressor";
 import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
+// (2026-07-13) Import subscribeToSettings for live editor sync. Prev: static
 import {
   api,
   setCsrf,
   subscribeToPosts,
   subscribeToContacts,
+  subscribeToSettings,
   defaultSettings,
   defaultTags,
   defaultServicesList,
@@ -3479,10 +3481,19 @@ function AboutPageEditor() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
+  // (2026-07-13) Subscribe to live settings in About editor. Prev: one-off api
   useEffect(() => {
+    const unsub = subscribeToSettings((live) => {
+      if (live) setSettings(live);
+    });
     api<SiteSettings>("/api/admin/settings")
-      .then((s) => setSettings(s || defaultSettings))
+      .then((s) => {
+        if (s && Object.keys(s).length > 1) {
+          setSettings((prev) => ({ ...prev, ...s }));
+        }
+      })
       .catch(() => {});
+    return () => unsub();
   }, []);
 
   async function handleSave(e: React.FormEvent) {
@@ -3786,17 +3797,27 @@ function ServicesPageEditor() {
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
+  // (2026-07-13) Subscribe to live settings in Services editor. Prev: one-off api
   useEffect(() => {
+    const unsub = subscribeToSettings((live) => {
+      if (live) {
+        setSettings(live);
+        if (live.servicesList && live.servicesList.length > 0) {
+          setServicesList(live.servicesList);
+        }
+      }
+    });
     api<SiteSettings>("/api/admin/settings")
       .then((s) => {
-        if (s) {
-          setSettings(s);
+        if (s && Object.keys(s).length > 1) {
+          setSettings((prev) => ({ ...prev, ...s }));
           if (s.servicesList && s.servicesList.length > 0) {
             setServicesList(s.servicesList);
           }
         }
       })
       .catch(() => {});
+    return () => unsub();
   }, []);
 
   async function handleServiceImageUpload(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
@@ -4151,12 +4172,19 @@ function ContactPageEditor() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
+  // (2026-07-13) Subscribe to live settings in Contact editor. Prev: one-off api
   useEffect(() => {
+    const unsub = subscribeToSettings((live) => {
+      if (live) setSettings(live);
+    });
     api<SiteSettings>("/api/admin/settings")
       .then((s) => {
-        if (s) setSettings(s);
+        if (s && Object.keys(s).length > 1) {
+          setSettings((prev) => ({ ...prev, ...s }));
+        }
       })
       .catch(() => {});
+    return () => unsub();
   }, []);
 
   async function handleSave(e: React.FormEvent) {

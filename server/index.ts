@@ -108,15 +108,30 @@ app.post('/api/admin/domains', requireAdmin, requireCsrf, (req, res) => {
   catch { res.status(409).json({ error: 'That hostname is already configured.' }); }
 });
 app.delete('/api/admin/domains/:id', requireAdmin, requireCsrf, (req, res) => res.json({ ok: domainRepository.remove(Number(req.params.id)) }));
+// (2026-07-13) Store all site & page settings in SQLite. Prev: siteName only
 app.get('/api/admin/settings', requireAdmin, (_req, res) => {
   const rows = db.prepare('SELECT key,value FROM settings').all() as {key:string;value:string}[];
-  res.json(Object.fromEntries(rows.map(({key,value}) => [key,value])));
+  const entries: Record<string, any> = {};
+  for (const { key, value } of rows) {
+    try {
+      entries[key] = JSON.parse(value);
+    } catch {
+      entries[key] = value;
+    }
+  }
+  res.json(entries);
 });
 app.put('/api/admin/settings', requireAdmin, requireCsrf, (req, res) => {
-  const name = z.string().trim().min(1).max(100).safeParse(req.body?.siteName);
-  if (!name.success) return res.status(400).json({ error: 'Enter a valid site name.' });
-  db.prepare('INSERT INTO settings(key,value) VALUES(\'siteName\',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(name.data);
-  res.json({ siteName: name.data });
+  const insert = db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
+  const tx = db.transaction((data: Record<string, any>) => {
+    for (const [k, v] of Object.entries(data)) {
+      if (v !== undefined) {
+        insert.run(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+      }
+    }
+  });
+  tx(req.body || {});
+  res.json({ ok: true, ...(req.body || {}) });
 });
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
