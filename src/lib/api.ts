@@ -61,6 +61,8 @@ export type Post = {
   shares?: number;
   clicks?: number;
   impressions?: number;
+  // (2026-07-13) Add per-article comments array to Post type; was local only
+  comments?: { id: string; name: string; text: string; date: string }[];
 };
 /* (2026-07-13) Helper to determine placement type: Blog, Portfolio, or Both. Prev: none */
 export function getPostPlacement(p: { portfolio_only?: boolean; include_in_portfolio?: boolean }): "Blog" | "Portfolio" | "Both" {
@@ -787,6 +789,9 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         include_in_nav: Boolean(body.include_in_nav),
         include_in_portfolio: Boolean(body.include_in_portfolio),
         portfolio_only: Boolean(body.portfolio_only),
+        // (2026-07-13) Init real 0 views and shares on new post; was undefined
+        views: 0,
+        shares: 0,
       };
       // (2026-07-13) Persist post to Firestore and notify UI listeners. Prev: unawaited
       const savedPost = await saveFirestorePost(newPost);
@@ -921,7 +926,7 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     return { ok: true };
   }
 
-  // (2026-07-13) Track post views and shares in Firestore. Prev: none
+  // (2026-07-13) Update real views & shares in cache and Firestore; was silent
   const postViewMatch = url.match(/^\/api\/posts\/([^/]+)\/view$/);
   if (postViewMatch && method === "POST") {
     const pId = postViewMatch[1];
@@ -929,7 +934,8 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
     if (target) {
       target.views = (target.views || 0) + 1;
-      await saveFirestorePost(target);
+      await setDoc(doc(firestore, "posts", String(target.id)), { views: target.views }, { merge: true });
+      saveStoredPosts(posts, true);
     }
     return { ok: true };
   }
@@ -941,9 +947,32 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
     if (target) {
       target.shares = (target.shares || 0) + 1;
-      await saveFirestorePost(target);
+      await setDoc(doc(firestore, "posts", String(target.id)), { shares: target.shares }, { merge: true });
+      saveStoredPosts(posts, true);
     }
     return { ok: true };
+  }
+
+  // (2026-07-13) Atomically save article comments & engagement; was race-prone
+  const postCommentsMatch = url.match(/^\/api\/posts\/([^/]+)\/comments$/);
+  if (postCommentsMatch && method === "PUT") {
+    const pId = decodeURIComponent(postCommentsMatch[1]).toLowerCase();
+    const posts = await getFirestorePosts();
+    const target = posts.find(
+      (p) => String(p.id).toLowerCase() === pId || (p.slug && p.slug.toLowerCase() === pId)
+    );
+    const nextComments = Array.isArray(body.comments) ? body.comments : [];
+    if (target) {
+      target.comments = nextComments;
+      const patchData: Record<string, unknown> = { comments: nextComments };
+      if (body.incrementEngagement) {
+        target.shares = (target.shares || 0) + 1;
+        patchData.shares = target.shares;
+      }
+      await setDoc(doc(firestore, "posts", String(target.id)), patchData, { merge: true });
+      saveStoredPosts(posts, true);
+    }
+    return { ok: true, comments: nextComments };
   }
 
   return {};

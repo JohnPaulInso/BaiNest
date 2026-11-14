@@ -1120,7 +1120,7 @@ function Blog() {
     [posts]
   );
 
-  // (2026-07-13) Normalize Case Study category to Work in filters. Prev: Case study
+  // (2026-07-13) Hide and disable tags in blog filter; was categories + tags
   const allTags = useMemo(() => {
     const set = new Set<string>();
     blogPosts.forEach((p) => {
@@ -1128,20 +1128,13 @@ function Blog() {
         const cat = p.category.trim();
         set.add(cat.toLowerCase().includes("case study") ? "Work" : cat);
       }
-      if (Array.isArray(p.tags)) {
-        p.tags.forEach((t) => {
-          if (!t) return;
-          const tag = t.trim();
-          set.add(tag.toLowerCase().includes("case study") ? "Work" : tag);
-        });
-      }
     });
     return ["All", ...Array.from(set)];
   }, [blogPosts]);
 
   const filtered = useMemo(() => {
     return blogPosts.filter((p) => {
-      const matchesQuery = `${p.title} ${p.excerpt} ${p.category} ${(p.tags || []).join(" ")}`
+      const matchesQuery = `${p.title} ${p.excerpt} ${p.category}`
         .toLowerCase()
         .includes(query.toLowerCase());
       const pCat = (p.category || "").toLowerCase();
@@ -1149,9 +1142,8 @@ function Blog() {
       const matchesTag =
         selectedTag === "All" ||
         (selectedTag.toLowerCase() === "work"
-          ? isWorkCategory || (p.tags || []).some((t) => t.toLowerCase().includes("case study") || t.toLowerCase() === "work")
-          : pCat === selectedTag.toLowerCase() ||
-            (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase()));
+          ? isWorkCategory
+          : pCat === selectedTag.toLowerCase());
       return matchesQuery && matchesTag;
     });
   }, [blogPosts, query, selectedTag]);
@@ -1315,42 +1307,58 @@ function PostDetail() {
       .catch(() => setIsAdmin(false));
   }, []);
 
+  // (2026-07-13) Keep only real per-article comments; was seeded defaults
+  const normalizedSlug = slug.trim().toLowerCase();
+  const articleCommentKey = `bainest_real_comments_${normalizedSlug || "default"}`;
+  const isCurrentPost = Boolean(
+    post &&
+      ((post.slug && post.slug.toLowerCase() === normalizedSlug) ||
+        String(post.id).toLowerCase() === normalizedSlug)
+  );
+
+  const cleanRealComments = (list: unknown): BlogComment[] => {
+    if (!Array.isArray(list)) return [];
+    return list.filter((c: any) => {
+      if (!c || typeof c.id !== "string" || typeof c.text !== "string") return false;
+      if (c.id === "c1" || c.id === "c2" || c.id.endsWith("_c1") || c.id.endsWith("_c2")) return false;
+      return true;
+    });
+  };
+
   const handleDeleteComment = (commentId: string) => {
     if (!window.confirm("Are you sure you want to delete this comment?")) return;
     const updated = comments.filter((c) => c.id !== commentId);
     setComments(updated);
-    if (slug) {
-      localStorage.setItem(`bainest_comments_${slug}`, JSON.stringify(updated));
+    localStorage.setItem(articleCommentKey, JSON.stringify(updated));
+    const targetKey = isCurrentPost && post?.id ? String(post.id) : normalizedSlug;
+    if (targetKey) {
+      api(`/api/posts/${encodeURIComponent(targetKey)}/comments`, {
+        method: "PUT",
+        body: JSON.stringify({ comments: updated }),
+      }).catch(() => {});
     }
   };
 
   useEffect(() => {
-    if (!slug) return;
-    const storageKey = `bainest_comments_${slug}`;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        setComments(JSON.parse(saved));
-        return;
-      } catch {}
+    if (!normalizedSlug) {
+      setComments([]);
+      return;
     }
-    const defaults: BlogComment[] = [
-      {
-        id: "c1",
-        name: "Maria Santos",
-        text: "Inspiring read! Really exciting to see modern digital agency services and creative brand storytelling growing right here.",
-        date: "2 days ago",
-      },
-      {
-        id: "c2",
-        name: "Jan Errol Duazo",
-        text: "Thank you all for reading! We are dedicated to helping businesses build real connections and memorable digital presence.",
-        date: "1 day ago",
-      },
-    ];
-    setComments(defaults);
-    localStorage.setItem(storageKey, JSON.stringify(defaults));
-  }, [slug]);
+    let localList: BlogComment[] = [];
+    try {
+      const saved = localStorage.getItem(articleCommentKey);
+      if (saved) localList = cleanRealComments(JSON.parse(saved));
+    } catch {}
+
+    if (isCurrentPost && post && Array.isArray(post.comments)) {
+      const remoteList = cleanRealComments(post.comments);
+      setComments(remoteList);
+      localStorage.setItem(articleCommentKey, JSON.stringify(remoteList));
+      return;
+    }
+
+    setComments(localList);
+  }, [normalizedSlug, articleCommentKey, isCurrentPost, post?.id, post?.comments]);
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1361,10 +1369,15 @@ function PostDetail() {
       text: commentText.trim(),
       date: "Just now",
     };
-    const updated = [newComment, ...comments];
+    const updated = [newComment, ...cleanRealComments(comments)];
     setComments(updated);
-    if (slug) {
-      localStorage.setItem(`bainest_comments_${slug}`, JSON.stringify(updated));
+    localStorage.setItem(articleCommentKey, JSON.stringify(updated));
+    const targetKey = isCurrentPost && post?.id ? String(post.id) : normalizedSlug;
+    if (targetKey) {
+      api(`/api/posts/${encodeURIComponent(targetKey)}/comments`, {
+        method: "PUT",
+        body: JSON.stringify({ comments: updated, incrementEngagement: true }),
+      }).catch(() => {});
     }
     setCommentDone(true);
     setCommentText("");

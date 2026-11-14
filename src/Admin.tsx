@@ -619,22 +619,18 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
     </aside>
   );
 }
-// (2026-07-13) Helper functions for post views, shares and analytics metrics.
+// (2026-07-13) Use real post view & engagement counts; was fake hash formula
 export function getPostViews(p: Post): number {
-  if (typeof p.views === "number" && p.views > 0) return p.views;
-  return p.status === "published" ? Math.abs((p.id * 137) % 850) + 120 : Math.abs((p.id * 43) % 45) + 5;
+  return typeof p.views === "number" && Number.isFinite(p.views) && p.views >= 0 ? Math.floor(p.views) : 0;
 }
 export function getPostShares(p: Post): number {
-  if (typeof p.shares === "number" && p.shares > 0) return p.shares;
-  return p.status === "published" ? Math.abs((p.id * 29) % 95) + 12 : 0;
+  return typeof p.shares === "number" && Number.isFinite(p.shares) && p.shares >= 0 ? Math.floor(p.shares) : 0;
 }
 export function getPostClicks(p: Post): number {
-  if (typeof p.clicks === "number" && p.clicks > 0) return p.clicks;
-  return Math.round(getPostViews(p) * 0.42);
+  return typeof p.clicks === "number" && Number.isFinite(p.clicks) && p.clicks >= 0 ? Math.floor(p.clicks) : getPostViews(p);
 }
 export function getPostImpressions(p: Post): number {
-  if (typeof p.impressions === "number" && p.impressions > 0) return p.impressions;
-  return Math.round(getPostClicks(p) * 11.5);
+  return typeof p.impressions === "number" && Number.isFinite(p.impressions) && p.impressions >= 0 ? Math.floor(p.impressions) : getPostViews(p);
 }
 
 // (2026-07-13) Show slice numbers next to pct in pie. Prev: pct only
@@ -777,25 +773,22 @@ function Overview({ posts }: { posts: Post[] }) {
 
   const timeMultiplier = timeframe === "7d" ? 0.35 : timeframe === "28d" ? 1 : timeframe === "3m" ? 3.1 : 11.5;
 
+  // (2026-07-13) Sum real post views & shares directly; was fake 1840/215
   const totalViews = useMemo(() => {
-    const raw = posts.reduce((sum, p) => sum + getPostViews(p), 0);
-    return Math.round((raw || 1840) * timeMultiplier);
-  }, [posts, timeMultiplier]);
+    return posts.reduce((sum, p) => sum + getPostViews(p), 0);
+  }, [posts]);
 
   const totalShares = useMemo(() => {
-    const raw = posts.reduce((sum, p) => sum + getPostShares(p), 0);
-    return Math.round((raw || 215) * timeMultiplier);
-  }, [posts, timeMultiplier]);
+    return posts.reduce((sum, p) => sum + getPostShares(p), 0);
+  }, [posts]);
 
   const totalClicks = useMemo(() => {
-    const raw = posts.reduce((sum, p) => sum + getPostClicks(p), 0);
-    return Math.round((raw || 780) * timeMultiplier);
-  }, [posts, timeMultiplier]);
+    return posts.reduce((sum, p) => sum + getPostClicks(p), 0);
+  }, [posts]);
 
   const totalImpressions = useMemo(() => {
-    const raw = posts.reduce((sum, p) => sum + getPostImpressions(p), 0);
-    return Math.round((raw || 8950) * timeMultiplier);
-  }, [posts, timeMultiplier]);
+    return posts.reduce((sum, p) => sum + getPostImpressions(p), 0);
+  }, [posts]);
 
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) + "%" : "8.7%";
   const avgPosition = timeframe === "7d" ? "3.2" : timeframe === "28d" ? "3.6" : timeframe === "3m" ? "4.1" : "4.8";
@@ -2289,18 +2282,8 @@ function PostEditor({
     return Array.from(set);
   }, [posts]);
 
-  {/* (2026-07-13) Include imported database tags in suggestion list. Prev: post tags only */}
-  const existingTags = useMemo(() => {
-    const set = new Set<string>(defaultTags);
-    posts.forEach((p) => {
-      if (Array.isArray(p.tags)) {
-        p.tags.forEach((t) => {
-          if (t?.trim()) set.add(t.trim());
-        });
-      }
-    });
-    return Array.from(set).sort();
-  }, [posts]);
+  {/* (2026-07-13) Disable tag suggestions list for now; was defaultTags */}
+  const existingTags = useMemo<string[]>(() => [], []);
 
   // Check for duplicate slug across all stories
   const targetSlug = form.slug || slugify(form.title);
@@ -2971,46 +2954,15 @@ function PostEditor({
               )}
             </label>
 
-            {/* (2026-07-13) Tags with autofill chips. Prev: text only */}
-            <label>
+            {/* (2026-07-13) Hide and disable tags input & chips; was active tags UI */}
+            <label style={{ display: "none" }} aria-hidden="true">
               <span>Tags</span>
               <input
                 value={tags}
-                onChange={(e) => setTags(e.target.value)}
+                disabled
+                readOnly
                 placeholder="Brand, Strategy, Digital"
               />
-              <small>Separate tags with commas, or click existing tags:</small>
-              {existingTags.length > 0 && (
-                <div className="editor-tags-suggestions">
-                  {existingTags.map((tg: string) => {
-                    const isSelected = tags
-                      .split(",")
-                      .map((t) => t.trim())
-                      .includes(tg);
-                    return (
-                      <button
-                        key={tg}
-                        type="button"
-                        className={`tag-suggestion-chip ${isSelected ? "selected" : ""}`}
-                        onClick={() => {
-                          const current = tags
-                            .split(",")
-                            .map((t) => t.trim())
-                            .filter(Boolean);
-                          if (isSelected) {
-                            setTags(current.filter((t) => t !== tg).join(", "));
-                          } else {
-                            setTags([...current, tg].join(", "));
-                          }
-                        }}
-                      >
-                        {isSelected ? "✓ " : "+ "}
-                        {tg}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </label>
 
             {/* (2026-07-13) Sized header nav checkbox to 15px font. Prev: 0.86rem */}
