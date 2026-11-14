@@ -44,12 +44,12 @@ import {
   Youtube,
 } from "lucide-react";
 import { AdminApp } from "./Admin";
-// (2026-07-13) Remove unused defaultTags from App imports. Prev: defaultTags
+// (2026-07-13) Import getCachedSettings for instant settings init. Prev: none
 import {
   api,
   subscribeToPosts,
   subscribeToSettings,
-  defaultSettings,
+  getCachedSettings,
   defaultServicesList,
   type Block,
   type Post,
@@ -488,9 +488,9 @@ function usePosts() {
   }, []);
   return { posts, loading };
 }
-// (2026-07-13) Real-time settings hook via onSnapshot. Prev: none
+// (2026-07-13) Init useSettings with cached settings. Prev: defaultSettings
 function useSettings() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [settings, setSettings] = useState<SiteSettings>(() => getCachedSettings());
   useEffect(() => {
     const unsub = subscribeToSettings(setSettings);
     return () => unsub();
@@ -804,36 +804,35 @@ function CtaBand() {
     </section>
   );
 }
-/* (2026-07-13) Render live editable About page content. Prev: hardcoded */
+/* (2026-07-13) Render live About edits with linebreaks & empty-field support. Prev: || flat */
 function About() {
   const settings = useSettings();
-  const heroLabel = settings.aboutHeroLabel || "About BaiNest";
-  const heroTitle = settings.aboutHeroTitle || "Thoughtful partners for your next chapter.";
-  {/* (2026-07-13) Omit default hero copy for about page. Prev: fallback copy */}
+  const heroLabel = settings.aboutHeroLabel ?? "About BaiNest";
+  const heroTitle = settings.aboutHeroTitle ?? "Thoughtful partners for your next chapter.";
   const heroCopy = settings.aboutHeroCopy || undefined;
-  const quote = settings.aboutQuote || "“Good work should feel clear from the first conversation to the final detail.”";
-  const storyEyebrow = settings.aboutStoryEyebrow || "Our point of view";
-  const storyTitle = settings.aboutStoryTitle || "Strategy and making, working as one.";
-  const storyBody1 = settings.aboutStoryBody1 || "BaiNest is an independent digital studio for businesses ready to grow with intention. We connect the dots between what you stand for, what you make, and how people experience it.";
-  const storyBody2 = settings.aboutStoryBody2 || "We believe the strongest work is generous with clarity, ambitious with purpose, and practical enough to make a real difference.";
-  const valuesEyebrow = settings.aboutValuesEyebrow || "What guides us";
-  const valuesTitle = settings.aboutValuesTitle || "Good work is good partnership.";
+  const quote = settings.aboutQuote ?? "“Good work should feel clear from the first conversation to the final detail.”";
+  const storyEyebrow = settings.aboutStoryEyebrow ?? "Our point of view";
+  const storyTitle = settings.aboutStoryTitle ?? "Strategy and making, working as one.";
+  const storyBody1 = settings.aboutStoryBody1 ?? "BaiNest is an independent digital studio for businesses ready to grow with intention. We connect the dots between what you stand for, what you make, and how people experience it.";
+  const storyBody2 = settings.aboutStoryBody2 ?? "We believe the strongest work is generous with clarity, ambitious with purpose, and practical enough to make a real difference.";
+  const valuesEyebrow = settings.aboutValuesEyebrow ?? "What guides us";
+  const valuesTitle = settings.aboutValuesTitle ?? "Good work is good partnership.";
 
   const values = [
     {
       icon: ShieldCheck,
-      title: settings.aboutValue1Title || "Care in the details",
-      copy: settings.aboutValue1Copy || "Thoughtful craft earns trust one useful decision at a time.",
+      title: settings.aboutValue1Title ?? "Care in the details",
+      copy: settings.aboutValue1Copy ?? "Thoughtful craft earns trust one useful decision at a time.",
     },
     {
       icon: Layers3,
-      title: settings.aboutValue2Title || "Connected thinking",
-      copy: settings.aboutValue2Copy || "Strategy and execution belong in the same conversation.",
+      title: settings.aboutValue2Title ?? "Connected thinking",
+      copy: settings.aboutValue2Copy ?? "Strategy and execution belong in the same conversation.",
     },
     {
       icon: ArrowUpRight,
-      title: settings.aboutValue3Title || "Momentum over noise",
-      copy: settings.aboutValue3Copy || "We choose meaningful progress over busywork and buzzwords.",
+      title: settings.aboutValue3Title ?? "Momentum over noise",
+      copy: settings.aboutValue3Copy ?? "We choose meaningful progress over busywork and buzzwords.",
     },
   ];
 
@@ -847,19 +846,23 @@ function About() {
       <section className="section">
         <div className="wrap about-story">
           <div className="about-quote">
-            {quote}
+            {renderWithLinebreaks(quote)}
           </div>
           <div>
-            <Eyebrow>{storyEyebrow}</Eyebrow>
-            <h2>
-              {storyTitle}
-            </h2>
-            <p>
-              {storyBody1}
-            </p>
+            {storyEyebrow && <Eyebrow>{storyEyebrow}</Eyebrow>}
+            {storyTitle && (
+              <h2>
+                {renderWithLinebreaks(storyTitle)}
+              </h2>
+            )}
+            {storyBody1 && (
+              <p>
+                {renderWithLinebreaks(storyBody1)}
+              </p>
+            )}
             {storyBody2 && (
               <p>
-                {storyBody2}
+                {renderWithLinebreaks(storyBody2)}
               </p>
             )}
             <Link className="text-link" to="/services">
@@ -871,16 +874,18 @@ function About() {
       <section className="section section-soft">
         <div className="wrap values-grid">
           <div>
-            <Eyebrow>{valuesEyebrow}</Eyebrow>
-            <h2>
-              {valuesTitle}
-            </h2>
+            {valuesEyebrow && <Eyebrow>{valuesEyebrow}</Eyebrow>}
+            {valuesTitle && (
+              <h2>
+                {renderWithLinebreaks(valuesTitle)}
+              </h2>
+            )}
           </div>
-          {values.map((v) => (
-            <article className="value-card" key={v.title}>
+          {values.map((v, idx) => (
+            <article className="value-card" key={idx}>
               <v.icon />
               <h3>{v.title}</h3>
-              <p>{v.copy}</p>
+              <p>{renderWithLinebreaks(v.copy)}</p>
             </article>
           ))}
         </div>

@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
+// (2026-07-13) Import useRef for stable post editor state. Prev: no useRef
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import {
@@ -58,7 +59,8 @@ import {
 } from "lucide-react";
 // (2026-07-13) Import ImageCropperModal & Crop icon. Prev: no cropper
 import { ImageCropperModal } from "./ImageCropperModal";
-import { uploadBlogImage, compressImage } from "./lib/imageCompressor";
+// (2026-07-13) Import recompressDataUrl & getCachedSettings. Prev: upload/compress
+import { uploadBlogImage, compressImage, recompressDataUrl } from "./lib/imageCompressor";
 import { storage, storageRef, uploadBytes, getDownloadURL } from "./lib/firebase";
 // (2026-07-13) Import getFirestoreSettings & saveFirestoreSettings. Prev: none
 import {
@@ -69,6 +71,7 @@ import {
   getStoredContacts,
   mergeContacts,
   subscribeToSettings,
+  getCachedSettings,
   getFirestoreSettings,
   saveFirestoreSettings,
   defaultSettings,
@@ -137,15 +140,16 @@ function SortableBlock({
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
-  // (2026-07-13) Lightweight base64 compression for block images. Prev: 1200 heavy
+  // (2026-07-13) Compact base64 compression for block images. Prev: 960px heavy
   async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setUploading(true);
     try {
       const dataUrl = (await compressImage(file, {
-        maxDimension: 960,
-        quality: 0.70,
+        maxDimension: 800,
+        quality: 0.62,
         outputType: "dataUrl",
       })) as string;
       onChange(block.id, "src", dataUrl);
@@ -156,16 +160,20 @@ function SortableBlock({
     }
   }
 
-  async function handleBlockCropped(croppedFile: File, _croppedUrl: string) {
+  async function handleBlockCropped(croppedFile: File, croppedUrl: string) {
     setCropSrc(null);
     setUploading(true);
     try {
-      const dataUrl = (await compressImage(croppedFile, {
-        maxDimension: 960,
-        quality: 0.70,
-        outputType: "dataUrl",
-      })) as string;
-      onChange(block.id, "src", dataUrl);
+      if (croppedUrl && croppedUrl.startsWith("data:")) {
+        onChange(block.id, "src", croppedUrl);
+      } else {
+        const dataUrl = (await compressImage(croppedFile, {
+          maxDimension: 800,
+          quality: 0.62,
+          outputType: "dataUrl",
+        })) as string;
+        onChange(block.id, "src", dataUrl);
+      }
     } catch (err) {
       console.warn("Cropped compression failed", err);
     } finally {
@@ -1974,6 +1982,25 @@ const postTemplates = [
   },
 ];
 
+// (2026-07-13) Normalize block IDs for reliable editing. Prev: raw blocks
+function normalizeEditorBlocks(raw: unknown): Block[] {
+  const arr = Array.isArray(raw)
+    ? raw
+    : typeof raw === "string"
+    ? (() => {
+        try {
+          return JSON.parse(raw || "[]");
+        } catch {
+          return [];
+        }
+      })()
+    : [];
+  return arr.map((b: any) => ({
+    ...b,
+    id: b?.id || crypto.randomUUID(),
+  }));
+}
+
 // (2026-07-13) Sync active story meta to sticky header. Prev: no meta sync
 function PostEditor({
   posts,
@@ -1994,6 +2021,7 @@ function PostEditor({
         (p) => String(p.id) === String(id) || String(p.slug) === String(id),
       )
     : undefined;
+  const loadedIdRef = useRef<string | null>(existing ? String(id || "new") : null);
   // (2026-07-13) Synchronous init & safe payload parse for editing. Prev: blank
   const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>(() => {
     if (existing) {
@@ -2012,7 +2040,7 @@ function PostEditor({
         include_in_nav: Boolean(existing.include_in_nav),
         include_in_portfolio: Boolean(existing.include_in_portfolio),
         portfolio_only: Boolean(existing.portfolio_only),
-        blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
+        blocks: normalizeEditorBlocks(existing.blocks),
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       };
     }
@@ -2058,20 +2086,52 @@ function PostEditor({
     return () => onMetaChange?.(null);
   }, [form.title, form.slug, form.category, form.status, onMetaChange]);
 
-  function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // (2026-07-13) Compress cover immediately to persistent dataUrl. Prev: blob URL
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPendingCoverFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    patch("cover_image", previewUrl);
-    setCropModalSrc(previewUrl);
+    e.target.value = "";
+    setCoverUploading(true);
+    try {
+      const dataUrl = (await compressImage(file, {
+        maxDimension: 840,
+        quality: 0.64,
+        outputType: "dataUrl",
+      })) as string;
+      setPendingCoverFile(null);
+      patch("cover_image", dataUrl);
+      setCropModalSrc(dataUrl);
+    } catch {
+      const previewUrl = URL.createObjectURL(file);
+      setPendingCoverFile(file);
+      patch("cover_image", previewUrl);
+      setCropModalSrc(previewUrl);
+    } finally {
+      setCoverUploading(false);
+    }
   }
 
-  function handleCoverCropped(croppedFile: File, croppedUrl: string) {
-    setPendingCoverFile(croppedFile);
-    patch("cover_image", croppedUrl);
+  async function handleCoverCropped(croppedFile: File, croppedUrl: string) {
     setCropModalSrc(null);
-    setNotice("Cover photo cropped to standard blog size (16:9).");
+    if (croppedUrl && croppedUrl.startsWith("data:")) {
+      setPendingCoverFile(null);
+      patch("cover_image", croppedUrl);
+      setNotice("Cover photo cropped to standard blog size (16:9).");
+      return;
+    }
+    try {
+      const dataUrl = (await compressImage(croppedFile, {
+        maxDimension: 840,
+        quality: 0.64,
+        outputType: "dataUrl",
+      })) as string;
+      setPendingCoverFile(null);
+      patch("cover_image", dataUrl);
+      setNotice("Cover photo cropped to standard blog size (16:9).");
+    } catch {
+      setPendingCoverFile(croppedFile);
+      patch("cover_image", croppedUrl);
+    }
   }
 
   async function uploadPendingCover() {
@@ -2094,8 +2154,24 @@ function PostEditor({
     }
   }
 
+  // (2026-07-13) Prevent background post snapshots from wiping active edits. Prev: [id, existing]
   useEffect(() => {
+    const targetKey = String(id || "new");
+    if (!id || id === "new") {
+      if (loadedIdRef.current !== "new") {
+        loadedIdRef.current = "new";
+        setForm({
+          ...emptyPost,
+          blocks: [],
+          published_at: new Date().toISOString(),
+        });
+        setTags("");
+      }
+      return;
+    }
+    if (loadedIdRef.current === targetKey) return;
     if (existing) {
+      loadedIdRef.current = targetKey;
       setForm({
         title: existing.title || "",
         slug: existing.slug || "",
@@ -2111,7 +2187,7 @@ function PostEditor({
         include_in_nav: Boolean(existing.include_in_nav),
         include_in_portfolio: Boolean(existing.include_in_portfolio),
         portfolio_only: Boolean(existing.portfolio_only),
-        blocks: Array.isArray(existing.blocks) ? existing.blocks : [],
+        blocks: normalizeEditorBlocks(existing.blocks),
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       });
       setTags(
@@ -2121,15 +2197,13 @@ function PostEditor({
             : String(existing.tags)
           : ""
       );
-    } else if (id && id !== "new") {
+    } else {
       api<Post>(`/api/admin/posts/${id}`)
         .then((p) => {
+          if (loadedIdRef.current === targetKey) return;
           if (p && (p.title !== undefined || p.slug !== undefined || p.id !== undefined)) {
-            const parsedBlocks = Array.isArray(p.blocks)
-              ? p.blocks
-              : typeof p.blocks === "string"
-              ? JSON.parse(p.blocks || "[]")
-              : [];
+            loadedIdRef.current = targetKey;
+            const parsedBlocks = normalizeEditorBlocks(p.blocks);
             const parsedTags = Array.isArray(p.tags)
               ? p.tags
               : typeof p.tags === "string"
@@ -2157,13 +2231,6 @@ function PostEditor({
           }
         })
         .catch(() => {});
-    } else {
-      setForm({
-        ...emptyPost,
-        blocks: [],
-        published_at: new Date().toISOString(),
-      });
-      setTags("");
     }
   }, [id, existing]);
 
@@ -2288,10 +2355,49 @@ function PostEditor({
     setForm((old) => ({ ...old, [key]: value }));
   }
 
+  // (2026-07-13) Functional state updates for block mutations. Prev: closure state
   function addBlock(type: Block["type"]) {
-    patch("blocks", [
-      ...blocks,
-      {
+    setForm((old) => ({
+      ...old,
+      blocks: [
+        ...((old.blocks as Block[]) || []),
+        {
+          id: crypto.randomUUID(),
+          type,
+          text: "",
+          label: type === "cta" ? "Get in touch" : undefined,
+          href: type === "cta" ? "/contact" : undefined,
+          items: type === "list" ? [""] : undefined,
+          left: type === "columns" ? "" : undefined,
+          right: type === "columns" ? "" : undefined,
+        },
+      ],
+    }));
+  }
+
+  function moveBlockUp(blockId: string) {
+    setForm((old) => {
+      const cur = (old.blocks as Block[]) || [];
+      const index = cur.findIndex((b) => b.id === blockId);
+      if (index <= 0) return old;
+      return { ...old, blocks: arrayMove(cur, index, index - 1) };
+    });
+  }
+
+  function moveBlockDown(blockId: string) {
+    setForm((old) => {
+      const cur = (old.blocks as Block[]) || [];
+      const index = cur.findIndex((b) => b.id === blockId);
+      if (index < 0 || index >= cur.length - 1) return old;
+      return { ...old, blocks: arrayMove(cur, index, index + 1) };
+    });
+  }
+
+  function insertBlockAfter(afterId: string, type: Block["type"]) {
+    setForm((old) => {
+      const cur = (old.blocks as Block[]) || [];
+      const index = cur.findIndex((b) => b.id === afterId);
+      const newBlock: Block = {
         id: crypto.randomUUID(),
         type,
         text: "",
@@ -2300,64 +2406,40 @@ function PostEditor({
         items: type === "list" ? [""] : undefined,
         left: type === "columns" ? "" : undefined,
         right: type === "columns" ? "" : undefined,
-      },
-    ]);
-  }
-
-  function moveBlockUp(blockId: string) {
-    const index = blocks.findIndex((b) => b.id === blockId);
-    if (index > 0) {
-      patch("blocks", arrayMove(blocks, index, index - 1));
-    }
-  }
-
-  function moveBlockDown(blockId: string) {
-    const index = blocks.findIndex((b) => b.id === blockId);
-    if (index < blocks.length - 1) {
-      patch("blocks", arrayMove(blocks, index, index + 1));
-    }
-  }
-
-  function insertBlockAfter(afterId: string, type: Block["type"]) {
-    const index = blocks.findIndex((b) => b.id === afterId);
-    const newBlock: Block = {
-      id: crypto.randomUUID(),
-      type,
-      text: "",
-      label: type === "cta" ? "Get in touch" : undefined,
-      href: type === "cta" ? "/contact" : undefined,
-      items: type === "list" ? [""] : undefined,
-      left: type === "columns" ? "" : undefined,
-      right: type === "columns" ? "" : undefined,
-    };
-    const newBlocks = [...blocks];
-    newBlocks.splice(index + 1, 0, newBlock);
-    patch("blocks", newBlocks);
+      };
+      const newBlocks = [...cur];
+      newBlocks.splice(index + 1, 0, newBlock);
+      return { ...old, blocks: newBlocks };
+    });
   }
 
   function updateBlock(blockId: string, key: string, value: string) {
-    patch(
-      "blocks",
-      blocks.map((b) => {
+    setForm((old) => ({
+      ...old,
+      blocks: ((old.blocks as Block[]) || []).map((b) => {
         if (b.id !== blockId) return b;
         if (key === "items") return { ...b, items: value.split("\n") };
         return { ...b, [key]: value };
       }),
-    );
+    }));
   }
 
   function removeBlock(blockId: string) {
-    patch(
-      "blocks",
-      blocks.filter((b) => b.id !== blockId),
-    );
+    setForm((old) => ({
+      ...old,
+      blocks: ((old.blocks as Block[]) || []).filter((b) => b.id !== blockId),
+    }));
   }
 
   function drop(event: DragEndEvent) {
     if (!event.over || event.active.id === event.over.id) return;
-    const a = blocks.findIndex((b) => b.id === event.active.id),
-      b = blocks.findIndex((x) => x.id === event.over?.id);
-    patch("blocks", arrayMove(blocks, a, b));
+    setForm((old) => {
+      const cur = (old.blocks as Block[]) || [];
+      const a = cur.findIndex((b) => b.id === event.active.id);
+      const b = cur.findIndex((x) => x.id === event.over?.id);
+      if (a < 0 || b < 0) return old;
+      return { ...old, blocks: arrayMove(cur, a, b) };
+    });
   }
 
   // (2026-07-13) Show toast on preview action click. Prev: notice only
@@ -2375,7 +2457,7 @@ function PostEditor({
     );
   }
 
-  // (2026-07-13) Show toast on save/publish action click. Prev: notice only
+  // (2026-07-13) Sync saved post state & images back into editor. Prev: stale form
   async function save(status: "draft" | "published") {
     if (!form.title.trim()) {
       showToast("Please add a title before saving.", "warning");
@@ -2391,7 +2473,6 @@ function PostEditor({
     }
     setBusy(true);
     showToast(status === "published" ? (form.status === "published" ? "Updating post..." : "Publishing story...") : "Saving draft...", "info");
-    // (2026-07-13) Compress & upload cover on save/publish. Prev: hung in form
     let finalCover = form.cover_image;
     if (pendingCoverFile) {
       setNotice("Compressing & uploading cover photo...");
@@ -2406,40 +2487,38 @@ function PostEditor({
       } catch (err) {
         console.warn("Cover image upload failed", err);
       }
+    } else if (finalCover && (finalCover.startsWith("blob:") || (finalCover.startsWith("data:") && finalCover.length > 150000))) {
+      finalCover = await recompressDataUrl(finalCover, 800, 0.62);
     }
 
-    // (2026-07-13) Guarantee block images are persistent base64. Prev: blob:
     const sanitizedBlocks = await Promise.all(
       blocks.map(async (b) => {
+        const blockId = b.id || crypto.randomUUID();
         if (b.type === "list") {
-          return { ...b, items: b.items?.filter(Boolean) || [] };
+          return { ...b, id: blockId, items: b.items?.filter(Boolean) || [] };
         }
-        if (b.type === "image" && b.src && (b.src.startsWith("blob:") || (b.src.startsWith("data:") && b.src.length > 350000))) {
+        if (b.type === "image" && b.src && (b.src.startsWith("blob:") || (b.src.startsWith("data:") && b.src.length > 120000))) {
           try {
-            const resp = await fetch(b.src);
-            const blob = await resp.blob();
-            const dataUrl = await compressImage(blob, {
-              maxDimension: 960,
-              quality: 0.70,
-              outputType: "dataUrl",
-            });
-            return { ...b, src: dataUrl as string };
+            const dataUrl = await recompressDataUrl(b.src, 780, 0.60);
+            return { ...b, id: blockId, src: dataUrl };
           } catch {
-            return b;
+            return { ...b, id: blockId };
           }
         }
-        return b;
+        return { ...b, id: blockId };
       })
     );
+
+    const parsedTagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
 
     const payload = {
       ...form,
       cover_image: finalCover,
       status,
-      tags: tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
+      tags: parsedTagList,
       blocks: sanitizedBlocks,
       slug: finalSlug,
     };
@@ -2450,13 +2529,33 @@ function PostEditor({
         id ? `/api/admin/posts/${id}` : "/api/admin/posts",
         { method: id ? "PUT" : "POST", body: JSON.stringify(payload) },
       );
+      if (saved) {
+        loadedIdRef.current = String(saved.id || id || "new");
+        setForm({
+          title: saved.title ?? payload.title,
+          slug: saved.slug ?? payload.slug,
+          author: saved.author ?? payload.author,
+          category: saved.category ?? payload.category,
+          status: saved.status ?? status,
+          excerpt: saved.excerpt ?? payload.excerpt,
+          cover_image: saved.cover_image ?? finalCover,
+          seo_title: saved.seo_title ?? payload.seo_title,
+          seo_description: saved.seo_description ?? payload.seo_description,
+          published_at: saved.published_at || payload.published_at || new Date().toISOString(),
+          include_in_nav: Boolean(saved.include_in_nav ?? payload.include_in_nav),
+          include_in_portfolio: Boolean(saved.include_in_portfolio ?? payload.include_in_portfolio),
+          portfolio_only: Boolean(saved.portfolio_only ?? payload.portfolio_only),
+          blocks: normalizeEditorBlocks(saved.blocks ?? sanitizedBlocks),
+          tags: Array.isArray(saved.tags) ? saved.tags : parsedTagList,
+        });
+      }
       await refresh();
       const successMsg = status === "published"
         ? (form.status === "published" ? "Post updated successfully!" : "Published and ready to read.")
         : "Draft saved successfully.";
       setNotice(successMsg);
       showToast(successMsg, "success");
-      if (!id) navigate(`/admin/posts/${saved.id}`, { replace: true });
+      if (!id && saved?.id) navigate(`/admin/posts/${saved.id}`, { replace: true });
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Could not save this story.";
       setNotice(errMsg);
@@ -3505,11 +3604,11 @@ function InboxPage() {
 
 /* (2026-07-13) Manage live editable About page content in Firestore. Prev: none */
 function AboutPageEditor() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  // (2026-07-13) Init About editor with cached settings for instant load. Prev: defaultSettings
+  const [settings, setSettings] = useState<SiteSettings>(() => getCachedSettings());
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // (2026-07-13) Load settings on mount and directly persist to Firestore. Prev: overwritten
   useEffect(() => {
     getFirestoreSettings()
       .then((s) => {
@@ -3527,6 +3626,7 @@ function AboutPageEditor() {
         method: "PUT",
         body: JSON.stringify(settings),
       });
+      setSettings((prev) => ({ ...prev, ...settings }));
       setToast({ message: "About page updated successfully!", type: "success" });
       setTimeout(() => setToast(null), 3500);
     } catch (err) {
@@ -3814,13 +3914,18 @@ function AboutPageEditor() {
 
 /* (2026-07-13) Services page editor with image uploads. Prev: no editor */
 function ServicesPageEditor() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
-  const [servicesList, setServicesList] = useState<ServiceItemSetting[]>(defaultServicesList);
+  // (2026-07-13) Init Services editor from cache & auto-persist image uploads. Prev: default
+  const [settings, setSettings] = useState<SiteSettings>(() => getCachedSettings());
+  const [servicesList, setServicesList] = useState<ServiceItemSetting[]>(() => {
+    const cached = getCachedSettings();
+    return cached.servicesList && cached.servicesList.length > 0
+      ? cached.servicesList
+      : defaultServicesList;
+  });
   const [saving, setSaving] = useState(false);
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // (2026-07-13) Load settings on mount and persist directly to Firestore. Prev: live overwrite
   useEffect(() => {
     getFirestoreSettings()
       .then((s) => {
@@ -3837,24 +3942,27 @@ function ServicesPageEditor() {
   async function handleServiceImageUpload(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setUploadingIdx(idx);
     try {
       let url = "";
       try {
-        // (2026-07-13) Fix storage helper ref prop name. Prev: storageRef
         url = await uploadBlogImage(file, storage, {
           ref: storageRef,
           uploadBytes,
           getDownloadURL,
         });
       } catch {
-        const compressed = await compressImage(file, { maxDimension: 1200, quality: 0.76, outputType: "dataUrl" });
+        const compressed = await compressImage(file, { maxDimension: 800, quality: 0.62, outputType: "dataUrl" });
         url = compressed as string;
       }
       const updated = [...servicesList];
       updated[idx] = { ...updated[idx], image: url };
       setServicesList(updated);
-      setToast({ message: "Picture uploaded successfully!", type: "success" });
+      const nextPayload: SiteSettings = { ...settings, servicesList: updated };
+      setSettings(nextPayload);
+      await saveFirestoreSettings(nextPayload);
+      setToast({ message: "Picture uploaded & saved!", type: "success" });
       setTimeout(() => setToast(null), 3000);
     } catch {
       setToast({ message: "Failed to upload picture.", type: "error" });
@@ -4183,7 +4291,8 @@ function ServicesPageEditor() {
 
 /* (2026-07-13) Contact page editor with editable details. Prev: no contact editor */
 function ContactPageEditor() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  // (2026-07-13) Init Contact editor with cached settings. Prev: defaultSettings
+  const [settings, setSettings] = useState<SiteSettings>(() => getCachedSettings());
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 

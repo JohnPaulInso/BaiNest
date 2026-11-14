@@ -13,6 +13,8 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { firestore } from "./firebase";
+// (2026-07-13) Import recompressDataUrl for 1MB Firestore limit. Prev: none
+import { recompressDataUrl } from "./imageCompressor";
 
 export type Block = {
   id: string;
@@ -291,7 +293,7 @@ let csrfToken = "";
 export function setCsrf(token: string) {
   csrfToken = token;
 }
-// (2026-07-13) Clean storage fallback without mock seed. Prev: mock data
+// (2026-07-13) Quota-safe post cache & live event dispatch. Prev: raw localStorage
 function getStoredPosts(): Post[] {
   try {
     const raw = localStorage.getItem("bainenest_posts");
@@ -302,10 +304,24 @@ function getStoredPosts(): Post[] {
   }
 }
 
-function saveStoredPosts(posts: Post[]) {
+function saveStoredPosts(posts: Post[], notify = false) {
   try {
     localStorage.setItem("bainenest_posts", JSON.stringify(posts));
-  } catch {}
+  } catch {
+    try {
+      const compact = posts.map((p) => ({
+        ...p,
+        cover_image: p.cover_image && p.cover_image.length > 90000 ? "" : p.cover_image,
+        blocks: (p.blocks || []).map((b) =>
+          b.type === "image" && b.src && b.src.length > 90000 ? { ...b, src: "" } : b
+        ),
+      }));
+      localStorage.setItem("bainenest_posts", JSON.stringify(compact));
+    } catch {}
+  }
+  if (notify && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("bainest-posts-updated", { detail: posts }));
+  }
 }
 
 // (2026-07-13) Cached contacts helper and merge utility. Prev: none
@@ -351,6 +367,21 @@ export function mergeContacts(primary: any[], secondary: any[]): any[] {
   return result;
 }
 
+// (2026-07-13) Instant cached settings helper & cross-tab sync. Prev: Firestore only
+export function getCachedSettings(): SiteSettings {
+  try {
+    const raw = localStorage.getItem("bainenest_settings");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const merged = { ...defaultSettings, ...parsed };
+      if (!merged.email || merged.email.includes("bainestdigital.com")) merged.email = "bainestph@gmail.com";
+      if (!merged.phone || merged.phone.includes("900 000")) merged.phone = "09622302015";
+      return merged;
+    }
+  } catch {}
+  return defaultSettings;
+}
+
 export async function getFirestoreSettings(): Promise<SiteSettings> {
   try {
     const snap = await getDoc(doc(firestore, "settings", "global"));
@@ -363,43 +394,52 @@ export async function getFirestoreSettings(): Promise<SiteSettings> {
       if (data.email?.includes("bainestdigital.com") || data.phone?.includes("900 000")) {
         setDoc(doc(firestore, "settings", "global"), { email: "bainestph@gmail.com", phone: "09622302015" }, { merge: true }).catch(() => {});
       }
+      try {
+        localStorage.setItem("bainenest_settings", JSON.stringify(merged));
+      } catch {}
       return merged;
     }
     await setDoc(doc(firestore, "settings", "global"), defaultSettings);
     return defaultSettings;
   } catch {
-    const raw = localStorage.getItem("bainenest_settings");
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        const merged = { ...defaultSettings, ...parsed };
-        if (!merged.email || merged.email === "contact@bainestdigital.com") merged.email = "bainestph@gmail.com";
-        if (!merged.phone || merged.phone === "+63 900 000 0000") merged.phone = "09622302015";
-        return merged;
-      } catch {}
-    }
-    return defaultSettings;
+    return getCachedSettings();
   }
 }
 
-// (2026-07-13) Direct throw on Firestore settings failure. Prev: silent log
+// (2026-07-13) Immediate local cache & event broadcast on settings save. Prev: delayed
 export async function saveFirestoreSettings(data: Partial<SiteSettings>): Promise<void> {
   const cleaned = cleanFirestoreData(data);
-  await setDoc(doc(firestore, "settings", "global"), cleaned, { merge: true });
+  const nextSettings = { ...getCachedSettings(), ...cleaned };
   try {
-    const cur = await getFirestoreSettings();
-    localStorage.setItem(
-      "bainenest_settings",
-      JSON.stringify({ ...cur, ...cleaned })
-    );
+    localStorage.setItem("bainenest_settings", JSON.stringify(nextSettings));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("bainest-settings-updated", { detail: nextSettings }));
+    }
   } catch {}
+  await setDoc(doc(firestore, "settings", "global"), cleaned, { merge: true });
 }
 
 export function subscribeToSettings(
   callback: (s: SiteSettings) => void
 ): () => void {
+  callback(getCachedSettings());
+  const onLocalUpdate = (e: Event) => {
+    const custom = e as CustomEvent<SiteSettings>;
+    if (custom.detail) callback(custom.detail);
+    else callback(getCachedSettings());
+  };
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === "bainenest_settings") {
+      callback(getCachedSettings());
+    }
+  };
+  if (typeof window !== "undefined") {
+    window.addEventListener("bainest-settings-updated", onLocalUpdate);
+    window.addEventListener("storage", onStorage);
+  }
+  let unsubFirestore = () => {};
   try {
-    return onSnapshot(
+    unsubFirestore = onSnapshot(
       doc(firestore, "settings", "global"),
       (snap) => {
         if (snap.exists()) {
@@ -407,51 +447,47 @@ export function subscribeToSettings(
           const merged = { ...defaultSettings, ...data };
           if (!merged.email || merged.email.includes("bainestdigital.com")) merged.email = "bainestph@gmail.com";
           if (!merged.phone || merged.phone.includes("900 000")) merged.phone = "09622302015";
+          try {
+            localStorage.setItem("bainenest_settings", JSON.stringify(merged));
+          } catch {}
           callback(merged);
         } else {
-          callback(defaultSettings);
+          callback(getCachedSettings());
         }
       },
-      () => callback(defaultSettings)
+      () => callback(getCachedSettings())
     );
   } catch {
-    callback(defaultSettings);
-    return () => {};
+    callback(getCachedSettings());
   }
+  return () => {
+    unsubFirestore();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("bainest-settings-updated", onLocalUpdate);
+      window.removeEventListener("storage", onStorage);
+    }
+  };
 }
 
 // (2026-07-13) Ensure doc ID fallback & query resiliency. Prev: data.id only
 async function getFirestorePosts(): Promise<Post[]> {
   try {
     const col = collection(firestore, "posts");
-    const q = query(col, orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
+    const snap = await getDocs(col);
     const posts: Post[] = [];
     snap.forEach((d) => {
       const data = d.data() as Post;
       posts.push({ ...data, id: data.id ?? d.id });
     });
+    posts.sort(
+      (a, b) =>
+        new Date(b.created_at || b.published_at || 0).getTime() -
+        new Date(a.created_at || a.published_at || 0).getTime()
+    );
     saveStoredPosts(posts);
     return posts;
   } catch {
-    try {
-      const col = collection(firestore, "posts");
-      const snap = await getDocs(col);
-      const posts: Post[] = [];
-      snap.forEach((d) => {
-        const data = d.data() as Post;
-        posts.push({ ...data, id: data.id ?? d.id });
-      });
-      posts.sort(
-        (a, b) =>
-          new Date(b.created_at || 0).getTime() -
-          new Date(a.created_at || 0).getTime()
-      );
-      saveStoredPosts(posts);
-      return posts;
-    } catch {
-      return getStoredPosts();
-    }
+    return getStoredPosts();
   }
 }
 
@@ -462,13 +498,47 @@ export function cleanFirestoreData<T>(obj: T): T {
   );
 }
 
-async function saveFirestorePost(post: Post): Promise<void> {
-  try {
-    const cleaned = cleanFirestoreData(post);
-    await setDoc(doc(firestore, "posts", String(post.id)), cleaned);
-  } catch (err) {
-    console.error("Firestore post save failed:", err);
+// (2026-07-13) Auto-fit post images under 1MB Firestore limit. Prev: silent fail
+async function saveFirestorePost(post: Post): Promise<Post> {
+  const prepared: Post = {
+    ...post,
+    created_at: post.created_at || post.published_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    blocks: (post.blocks || []).map((b) => ({
+      ...b,
+      id: b.id || crypto.randomUUID(),
+    })),
+  };
+  let cleaned = cleanFirestoreData(prepared);
+  let serialized = JSON.stringify(cleaned);
+  if (serialized.length > 820000) {
+    if (cleaned.cover_image && cleaned.cover_image.startsWith("data:")) {
+      cleaned.cover_image = await recompressDataUrl(cleaned.cover_image, 680, 0.52);
+    }
+    if (Array.isArray(cleaned.blocks)) {
+      cleaned.blocks = await Promise.all(
+        cleaned.blocks.map(async (b) => {
+          if (b.type === "image" && b.src && b.src.startsWith("data:")) {
+            return { ...b, src: await recompressDataUrl(b.src, 640, 0.50) };
+          }
+          return b;
+        })
+      );
+    }
+    serialized = JSON.stringify(cleaned);
   }
+  if (serialized.length > 920000 && Array.isArray(cleaned.blocks)) {
+    cleaned.blocks = await Promise.all(
+      cleaned.blocks.map(async (b) => {
+        if (b.type === "image" && b.src && b.src.startsWith("data:")) {
+          return { ...b, src: await recompressDataUrl(b.src, 480, 0.42) };
+        }
+        return b;
+      })
+    );
+  }
+  await setDoc(doc(firestore, "posts", String(cleaned.id)), cleaned);
+  return cleaned;
 }
 
 async function deleteFirestorePost(id: string | number): Promise<void> {
@@ -487,11 +557,24 @@ async function saveFirestoreContact(body: Record<string, unknown>): Promise<void
   } catch {}
 }
 
-// (2026-07-13) Robust real-time post subscription with fallback. Prev: q only
+// (2026-07-13) Real-time post subscription with local event sync. Prev: snapshot only
 export function subscribeToPosts(
   callback: (posts: Post[]) => void,
   onlyPublished = false
 ): () => void {
+  const emit = (list: Post[]) => {
+    callback(onlyPublished ? list.filter((p) => p.status === "published") : list);
+  };
+  const onLocalPosts = (e: Event) => {
+    const custom = e as CustomEvent<Post[]>;
+    if (Array.isArray(custom.detail)) {
+      emit(custom.detail);
+    }
+  };
+  if (typeof window !== "undefined") {
+    window.addEventListener("bainest-posts-updated", onLocalPosts);
+  }
+  let unsubFirestore = () => {};
   try {
     const col = collection(firestore, "posts");
     const handleSnap = (snapshot: any) => {
@@ -506,29 +589,24 @@ export function subscribeToPosts(
           new Date(a.created_at || a.published_at || 0).getTime()
       );
       saveStoredPosts(posts);
-      callback(
-        onlyPublished ? posts.filter((p) => p.status === "published") : posts
-      );
+      emit(posts);
     };
-    return onSnapshot(
+    unsubFirestore = onSnapshot(
       col,
       handleSnap,
       () => {
-        const stored = getStoredPosts();
-        callback(
-          onlyPublished
-            ? stored.filter((p) => p.status === "published")
-            : stored
-        );
+        emit(getStoredPosts());
       }
     );
   } catch {
-    const stored = getStoredPosts();
-    callback(
-      onlyPublished ? stored.filter((p) => p.status === "published") : stored
-    );
-    return () => {};
+    emit(getStoredPosts());
   }
+  return () => {
+    unsubFirestore();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("bainest-posts-updated", onLocalPosts);
+    }
+  };
 }
 
 function normalizeContactDoc(d: { id: string; data: () => any }): any {
@@ -710,10 +788,11 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         include_in_portfolio: Boolean(body.include_in_portfolio),
         portfolio_only: Boolean(body.portfolio_only),
       };
-      posts.unshift(newPost);
-      saveStoredPosts(posts);
-      await saveFirestorePost(newPost);
-      return newPost;
+      // (2026-07-13) Persist post to Firestore and notify UI listeners. Prev: unawaited
+      const savedPost = await saveFirestorePost(newPost);
+      posts.unshift(savedPost);
+      saveStoredPosts(posts, true);
+      return savedPost;
     }
   }
 
@@ -754,21 +833,23 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         ...(p || {}),
         ...body,
         id: p?.id ?? rawId,
+        created_at: p?.created_at || body.published_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
+      // (2026-07-13) Save edited post & broadcast update immediately. Prev: stale cache
+      const savedPost = await saveFirestorePost(updated);
       const filtered = posts.filter(
         (item) => String(item.id) !== String(rawId) && String(item.slug) !== String(rawId)
       );
-      filtered.unshift(updated);
-      saveStoredPosts(filtered);
-      await saveFirestorePost(updated);
-      return updated;
+      filtered.unshift(savedPost);
+      saveStoredPosts(filtered, true);
+      return savedPost;
     }
     if (method === "DELETE") {
       const filtered = posts.filter(
         (item) => String(item.id) !== String(rawId) && String(item.slug) !== String(rawId)
       );
-      saveStoredPosts(filtered);
+      saveStoredPosts(filtered, true);
       await deleteFirestorePost(rawId);
       return { ok: true };
     }
@@ -911,23 +992,20 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     return (await handleStaticApi(path, init)) as T;
   }
 
-  if (path === "/api/admin/settings" && (!init.method || init.method.toUpperCase() === "GET")) {
-    try {
-      const fsSettings = await getFirestoreSettings();
-      if (fsSettings && Object.keys(fsSettings).length > 2) {
-        return fsSettings as T;
-      }
-    } catch {}
-  }
-
-  // (2026-07-13) Prefer live Firestore stories on localhost. Prev: stale SQLite
-  if ((path === "/api/admin/posts" || path === "/api/posts") && (!init.method || init.method.toUpperCase() === "GET")) {
-    try {
-      const fsPosts = await getFirestorePosts();
-      if (fsPosts && fsPosts.length > 0) {
-        return (path === "/api/posts" ? fsPosts.filter((p) => p.status === "published") : fsPosts) as T;
-      }
-    } catch {}
+  // (2026-07-13) Route all post & settings calls via Firestore handler. Prev: GET list only
+  if (
+    path.startsWith("/api/admin/posts") ||
+    path.startsWith("/api/posts") ||
+    path.startsWith("/api/admin/settings")
+  ) {
+    const result = (await handleStaticApi(path, init)) as T;
+    if (!isStaticHost && ["POST", "PUT", "DELETE"].includes((init.method || "").toUpperCase())) {
+      const mirrorHeaders = new Headers(init.headers);
+      if (init.body && !mirrorHeaders.has("Content-Type")) mirrorHeaders.set("Content-Type", "application/json");
+      if (csrfToken) mirrorHeaders.set("X-CSRF-Token", csrfToken);
+      fetch(path, { ...init, headers: mirrorHeaders, credentials: "same-origin" }).catch(() => {});
+    }
+    return result;
   }
 
   const headers = new Headers(init.headers);

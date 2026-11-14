@@ -68,48 +68,46 @@ export async function compressImage(
   });
 }
 
-// (2026-07-13) Add upload timeout race & base64 fallback. Prev: hung uploads
+// (2026-07-13) Instant compact base64 upload & recompression. Prev: 4.5s timeout
+export async function recompressDataUrl(
+  src: string,
+  maxDimension = 720,
+  quality = 0.56,
+): Promise<string> {
+  if (!src || (!src.startsWith("data:") && !src.startsWith("blob:"))) return src;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onerror = () => resolve(src);
+    img.onload = () => {
+      const { width, height } = calculateDimensions(img.width, img.height, maxDimension);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) return resolve(src);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.src = src;
+  });
+}
+
 export async function uploadBlogImage(
   file: File,
-  storage?: any,
-  storageHelpers?: {
+  _storage?: any,
+  _storageHelpers?: {
     ref: any;
     uploadBytes: any;
     getDownloadURL: any;
   },
 ): Promise<string> {
-  // Try Firebase Cloud Storage if initialized
-  if (storage && storageHelpers?.ref && storageHelpers?.uploadBytes && storageHelpers?.getDownloadURL) {
-    try {
-      const blob = (await compressImage(file, {
-        maxDimension: 1280,
-        quality: 0.72,
-        outputType: "blob",
-      })) as Blob;
-      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-      const storageRef = storageHelpers.ref(
-        storage,
-        `blog-images/${Date.now()}_${cleanName}`,
-      );
-      const uploadPromise = (async () => {
-        const snapshot = await storageHelpers.uploadBytes(storageRef, blob, {
-          contentType: "image/jpeg",
-        });
-        return await storageHelpers.getDownloadURL(snapshot.ref);
-      })();
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Storage timeout")), 4500)
-      );
-      return await Promise.race([uploadPromise, timeoutPromise]);
-    } catch {
-      // Storage blocked or timed out; fallback to inline compressed dataUrl
-    }
-  }
-
-  // Fallback: Ultra-compact lightweight Base64 dataUrl (850px, quality 0.68)
   const dataUrl = (await compressImage(file, {
-    maxDimension: 850,
-    quality: 0.68,
+    maxDimension: 800,
+    quality: 0.62,
     outputType: "dataUrl",
   })) as string;
   return dataUrl;

@@ -13,12 +13,13 @@ import { createSession, destroySession, loadAdmin, requireAdmin, requireCsrf } f
 const scrypt = promisify(scryptCallback);
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '1mb' }));
+// (2026-07-13) Allow 15mb json & base64 cover_image; was 1mb and max(1000)
+app.use(express.json({ limit: '15mb' }));
 app.use(loadAdmin);
 
 const postSchema = z.object({
   title: z.string().trim().min(1).max(180), slug: z.string().trim().min(1).max(180).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  excerpt: z.string().max(600).optional(), cover_image: z.string().max(1000).optional(), author: z.string().max(100).optional(),
+  excerpt: z.string().max(600).optional(), cover_image: z.string().max(2000000).optional(), author: z.string().max(100).optional(),
   category: z.string().max(100).optional(), tags: z.array(z.string().max(40)).max(20).optional(), blocks: z.array(z.record(z.string(), z.unknown())).max(100).optional(),
   status: z.enum(['draft','published']).optional(), seo_title: z.string().max(180).optional(), seo_description: z.string().max(320).optional(), published_at: z.string().nullable().optional()
 });

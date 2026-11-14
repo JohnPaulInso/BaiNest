@@ -55,10 +55,10 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
       ? Math.min(viewportSize.width / imgNaturalSize.width, viewportSize.height / imgNaturalSize.height)
       : 1;
 
-  // Load natural dimensions
+  // (2026-07-13) Only set crossOrigin for external URLs. Prev: always anonymous
   useEffect(() => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    if (imageSrc.startsWith("http")) img.crossOrigin = "anonymous";
     img.onload = () => {
       setImgNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
       setZoom(1);
@@ -111,8 +111,8 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
 
     const currentBaseScale = Math.min(vWidth / imgNaturalSize.width, vHeight / imgNaturalSize.height);
 
-    // Standard output resolution: 1200px wide
-    const outputWidth = 1200;
+    // (2026-07-13) Output persistent base64 dataUrl on crop. Prev: blob URL
+    const outputWidth = 840;
     const outputHeight = Math.round(outputWidth / aspect);
 
     const canvas = document.createElement("canvas");
@@ -129,7 +129,7 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
     const scaleRatio = outputWidth / vWidth;
 
     const imageElement = new Image();
-    imageElement.crossOrigin = "anonymous";
+    if (imageSrc.startsWith("http")) imageElement.crossOrigin = "anonymous";
     imageElement.onload = () => {
       ctx.save();
       ctx.translate(outputWidth / 2, outputHeight / 2);
@@ -139,17 +139,16 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
       ctx.drawImage(imageElement, -drawW / 2, -drawH / 2, drawW, drawH);
       ctx.restore();
 
+      const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.64);
       canvas.toBlob(
         (blob) => {
-          if (!blob) return;
-          const croppedFile = new File([blob], "blog-cover-standard.jpg", {
-            type: "image/jpeg",
-          });
-          const croppedUrl = URL.createObjectURL(blob);
-          onCrop(croppedFile, croppedUrl);
+          const croppedFile = blob
+            ? new File([blob], "blog-cover-standard.jpg", { type: "image/jpeg" })
+            : new File([], "blog-cover-standard.jpg", { type: "image/jpeg" });
+          onCrop(croppedFile, croppedDataUrl);
         },
         "image/jpeg",
-        0.88
+        0.64
       );
     };
     imageElement.src = imageSrc;
