@@ -2059,6 +2059,51 @@ function PostEditor({
   const [deliverablesInput, setDeliverablesInput] = useState(() =>
     existing ? resolveCaseStudyDefaults(existing).deliverables.join(", ") : ""
   );
+  // (2026-07-13) Auto-scan full blog content for new stories; was manual only
+  const manualCaseEditsRef = useRef<{
+    client?: boolean;
+    industry?: boolean;
+    direction?: boolean;
+    deliverables?: boolean;
+  }>({});
+
+  useEffect(() => {
+    manualCaseEditsRef.current = {};
+  }, [id]);
+
+  useEffect(() => {
+    if (id) return;
+    const hasContent =
+      Boolean(form.title?.trim()) ||
+      Boolean(form.excerpt?.trim()) ||
+      (Array.isArray(form.blocks) && form.blocks.some((b) => Boolean(b.text?.trim() || b.items?.some(Boolean))));
+    if (!hasContent) return;
+    const scanned = resolveCaseStudyDefaults(form, true);
+    setForm((old) => ({
+      ...old,
+      client_name: manualCaseEditsRef.current.client ? old.client_name : scanned.client_name,
+      industry_sector: manualCaseEditsRef.current.industry ? old.industry_sector : scanned.industry_sector,
+      creative_direction: manualCaseEditsRef.current.direction ? old.creative_direction : scanned.creative_direction,
+      deliverables: manualCaseEditsRef.current.deliverables ? old.deliverables : scanned.deliverables,
+    }));
+    if (!manualCaseEditsRef.current.deliverables) {
+      setDeliverablesInput(scanned.deliverables.join(", "));
+    }
+  }, [id, form.title, form.excerpt, form.category, form.blocks]);
+
+  function handleAutoScanCaseStudy() {
+    const scanned = resolveCaseStudyDefaults(form, true);
+    manualCaseEditsRef.current = {};
+    setForm((old) => ({
+      ...old,
+      client_name: scanned.client_name,
+      industry_sector: scanned.industry_sector,
+      creative_direction: scanned.creative_direction,
+      deliverables: scanned.deliverables,
+    }));
+    setDeliverablesInput(scanned.deliverables.join(", "));
+    showToast("Scanned blog content & auto-filled Case Study Overview!", "info");
+  }
   const [tags, setTags] = useState(() =>
     existing?.tags
       ? Array.isArray(existing.tags)
@@ -3093,16 +3138,41 @@ function PostEditor({
               </div>
             </div>
 
-            {/* (2026-07-13) Editable Case Study Overview fields in Admin; was auto only */}
+            {/* (2026-07-13) Add Auto-Scan Blog button & field tracking; was static */}
             <div className="case-study-admin-box" style={{ marginTop: "14px", padding: "14px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0", display: "grid", gap: "10px" }}>
-              <span style={{ fontSize: "12px", fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                Case Study Overview Bar
-              </span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Case Study Overview Bar
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAutoScanCaseStudy}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "4px 9px",
+                    borderRadius: "6px",
+                    border: "1px solid #99f6e4",
+                    background: "#f0fdfa",
+                    color: "#0f766e",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  title="Scan entire blog title, excerpt, and blocks to auto-suggest fields"
+                >
+                  <Sparkles size={12} /> Auto-Scan Blog
+                </button>
+              </div>
               <label style={{ fontSize: "12.5px" }}>
                 <span>Client / Partner</span>
                 <input
                   value={form.client_name || ""}
-                  onChange={(e) => patch("client_name", e.target.value)}
+                  onChange={(e) => {
+                    manualCaseEditsRef.current.client = true;
+                    patch("client_name", e.target.value);
+                  }}
                   placeholder="e.g. Doc Jackie / Dr. K Pharmacy"
                 />
               </label>
@@ -3110,7 +3180,10 @@ function PostEditor({
                 <span>Industry Sector</span>
                 <input
                   value={form.industry_sector || ""}
-                  onChange={(e) => patch("industry_sector", e.target.value)}
+                  onChange={(e) => {
+                    manualCaseEditsRef.current.industry = true;
+                    patch("industry_sector", e.target.value);
+                  }}
                   placeholder="e.g. Healthcare Personal Brand"
                 />
               </label>
@@ -3118,7 +3191,10 @@ function PostEditor({
                 <span>Creative Direction</span>
                 <input
                   value={form.creative_direction || ""}
-                  onChange={(e) => patch("creative_direction", e.target.value)}
+                  onChange={(e) => {
+                    manualCaseEditsRef.current.direction = true;
+                    patch("creative_direction", e.target.value);
+                  }}
                   placeholder="e.g. Credible, Warm & Engaging"
                 />
               </label>
@@ -3128,6 +3204,7 @@ function PostEditor({
                 <input
                   value={deliverablesInput}
                   onChange={(e) => {
+                    manualCaseEditsRef.current.deliverables = true;
                     const val = e.target.value;
                     setDeliverablesInput(val);
                     patch(
@@ -3142,7 +3219,7 @@ function PostEditor({
                 />
               </label>
               <small style={{ fontSize: "11px", color: "#64748b", margin: 0 }}>
-                Edits here update the live Case Study Overview Bar immediately upon saving.
+                Auto-scans your blog as you write, or click Auto-Scan Blog to refresh suggestions.
               </small>
             </div>
           </div>

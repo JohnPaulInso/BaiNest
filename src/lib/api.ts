@@ -78,69 +78,189 @@ export function getPostPlacement(p: { portfolio_only?: boolean; include_in_portf
   return "Blog";
 }
 
-// (2026-07-13) Shared case-study defaults resolver for Admin & UI; was App only
-export function resolveCaseStudyDefaults(p: Partial<Post>) {
-  const hay = `${p?.title || ""} ${p?.slug || ""} ${p?.excerpt || ""}`.toLowerCase();
+// (2026-07-13) Scan full blog blocks for case-study auto-suggest; was title
+export function resolveCaseStudyDefaults(p: Partial<Post>, ignoreSaved = false) {
+  const blocksText = Array.isArray(p?.blocks)
+    ? p.blocks
+        .map((b) =>
+          [
+            b.text || "",
+            Array.isArray(b.items) ? b.items.join(" ") : "",
+            b.left || "",
+            b.right || "",
+            b.caption || "",
+            b.alt || "",
+          ].join(" ")
+        )
+        .join(" ")
+    : "";
+  const fullText = `${p?.title || ""} ${p?.slug || ""} ${p?.excerpt || ""} ${blocksText}`;
+  const hay = fullText.toLowerCase();
+  const titleHay = `${p?.title || ""} ${p?.slug || ""}`.toLowerCase();
+
   let base = {
-    client_name: p?.title?.split(":")[0]?.trim() || "Client Partner",
+    client_name: "",
     industry_sector: p?.category || "Brand & Digital Strategy",
     creative_direction: "Intentional, Clear & Results-Oriented",
     deliverables: ["Brand Strategy", "Creative Direction", "Digital Execution"],
   };
-  if (hay.includes("pharmacy") || hay.includes("dr. k") || hay.includes("dr-k")) {
+
+  if (titleHay.includes("pharmacy") || titleHay.includes("dr. k") || titleHay.includes("dr-k")) {
     base = {
       client_name: "Dr. K Pharmacy & Medical Supplies",
       industry_sector: "Pharmacy & Healthcare",
       creative_direction: "Clean, Trust-Driven & Approachable",
       deliverables: ["Brand Identity", "Social Media Design", "Patient Education"],
     };
-  } else if (hay.includes("aton") || hay.includes("law")) {
+  } else if (titleHay.includes("aton") || titleHay.includes("law office")) {
     base = {
       client_name: "Aton & Aton Law Office",
       industry_sector: "Legal & Law Practice",
       creative_direction: "Authoritative, Modern & Bold",
       deliverables: ["Visual Identity", "Corporate Branding", "Digital Presence"],
     };
-  } else if (hay.includes("doc jackie") || hay.includes("doc-jackie")) {
+  } else if (titleHay.includes("doc jackie") || titleHay.includes("doc-jackie")) {
     base = {
       client_name: "Doc Jackie",
       industry_sector: "Healthcare Personal Brand",
       creative_direction: "Credible, Warm & Engaging",
       deliverables: ["Personal Branding", "Social Media Management", "Content Strategy"],
     };
-  } else if (hay.includes("virtual assistant") || hay.includes("medical practice")) {
+  } else if (titleHay.includes("virtual assistant") || titleHay.includes("medical practice")) {
     base = {
       client_name: "Medical Practice Support",
       industry_sector: "Healthcare Operations",
       creative_direction: "Reliable, Structured & Patient-First",
       deliverables: ["Healthcare VA", "Patient Communication", "Digital Workflow"],
     };
-  } else if (hay.includes("centrum mall") || hay.includes("mall")) {
+  } else if (titleHay.includes("centrum mall")) {
     base = {
       client_name: "Bogo City Centrum Mall",
       industry_sector: "Shopping Mall & Commercial",
       creative_direction: "Vibrant, Community-Focused & Modern",
       deliverables: ["Digital Transformation", "Campaign Strategy", "Brand Refresh"],
     };
-  } else if (hay.includes("k.lee") || hay.includes("k-lee") || hay.includes("storefront")) {
+  } else if (titleHay.includes("k.lee") || titleHay.includes("k-lee")) {
     base = {
       client_name: "K.LEE Essentials",
       industry_sector: "Retail & E-Commerce",
       creative_direction: "Polished, Accessible & Conversion-Ready",
       deliverables: ["Digital Storefront", "Product Branding", "Social Launch"],
     };
-  } else if (hay.includes("pickleball") || hay.includes("pinktober") || hay.includes("freeway") || hay.includes("event")) {
+  } else if (titleHay.includes("pickleball") || titleHay.includes("pinktober") || titleHay.includes("freeway")) {
     base = {
-      client_name: hay.includes("freeway")
+      client_name: titleHay.includes("freeway")
         ? "Freeway Pickleball Tournament"
-        : hay.includes("pinktober")
+        : titleHay.includes("pinktober")
         ? "Clash of Clubs Pickleball"
         : "Live Event Production",
       industry_sector: "Sports & Live Events",
       creative_direction: "High-Energy, Cohesive & Memorable",
       deliverables: ["Event Identity", "Merch & Court Visuals", "Campaign Graphics"],
     };
+  } else {
+    // Dynamic full-blog scanner for new blogs
+    const rawTitle = (p?.title || "").replace(/\|\s*bainest.*$/i, "").trim();
+    let extractedClient = "";
+    if (rawTitle.includes(":")) {
+      const parts = rawTitle.split(":").map((s) => s.trim()).filter(Boolean);
+      extractedClient = parts[parts.length - 1]
+        .replace(/^(the|bringing|creating|elevating|building|launching)\s+/i, "")
+        .replace(/\s+(digital transformation|online|to the court|tournament)$/i, "")
+        .trim();
+    }
+    if (!extractedClient) {
+      const forMatch = rawTitle.match(/\b(?:for|with|at)\s+([A-Z][A-Za-z0-9.&'\-]+(?:\s+[A-Za-z0-9.&'\-]+){0,4})/);
+      if (forMatch?.[1]) extractedClient = forMatch[1].trim();
+    }
+    if (!extractedClient && fullText) {
+      const bodyMatch = fullText.match(/\b(?:client|partnered with|working with|created for|brand like)\s+([A-Z][A-Za-z0-9.&'\-]+(?:\s+[A-Z][A-Za-z0-9.&'\-]+){0,3})/);
+      if (bodyMatch?.[1]) extractedClient = bodyMatch[1].trim();
+    }
+    base.client_name = extractedClient || rawTitle || "Client Partner";
+
+    // Industry sector scan across full blog text
+    if (/pharmacy|medicine|medical|clinic|doctor|patient|dental|hospital|wellness|health/.test(hay)) {
+      base.industry_sector = /personal brand|doctor|dr\./.test(hay) ? "Healthcare Personal Brand" : "Healthcare & Medical";
+    } else if (/law|legal|attorney|counsel|litigation|notary|firm/.test(hay)) {
+      base.industry_sector = "Legal & Law Practice";
+    } else if (/mall|shopping center|plaza|commercial center/.test(hay)) {
+      base.industry_sector = "Shopping Mall & Commercial";
+    } else if (/restaurant|cafe|coffee|dining|food|bakery|hotel|resort|hospitality|bar|bistro/.test(hay)) {
+      base.industry_sector = "Food, Cafe & Hospitality";
+    } else if (/pickleball|tournament|sport|athlete|court|fitness|gym|festival|concert|event/.test(hay)) {
+      base.industry_sector = "Sports & Live Events";
+    } else if (/real estate|property|architecture|construction|interior|development|housing/.test(hay)) {
+      base.industry_sector = "Real Estate & Property";
+    } else if (/storefront|retail|e-commerce|shop|boutique|apparel|fashion|product|essentials/.test(hay)) {
+      base.industry_sector = "Retail & E-Commerce";
+    } else if (/software|saas|tech|startup|app|platform|automation|ai /.test(hay)) {
+      base.industry_sector = "Technology & Digital";
+    } else if (/school|academy|education|training|university|learning/.test(hay)) {
+      base.industry_sector = "Education & Community";
+    } else if (/finance|accounting|consulting|corporate|insurance|investment/.test(hay)) {
+      base.industry_sector = "Finance & Corporate";
+    }
+
+    // Tone & creative direction scan across full blog text
+    const toneMap: [RegExp, string][] = [
+      [/clean|minimal|simplicity|clarity/, "Clean"],
+      [/trust|reliable|credib|dependable/, "Trust-Driven"],
+      [/approachable|friendly|welcoming|warm/, "Approachable"],
+      [/bold|striking|stand out|distinct/, "Bold"],
+      [/modern|contemporary|fresh|new/, "Modern"],
+      [/authoritat|professional|formal|corporate/, "Professional"],
+      [/vibrant|energetic|lively|dynamic|high-energy/, "Vibrant"],
+      [/cohesive|unified|consistent|connected/, "Cohesive"],
+      [/community|local|people-first/, "Community-Focused"],
+      [/polished|refined|elevated|premium/, "Refined"],
+      [/accessible|easy|practical/, "Accessible"],
+    ];
+    const matchedTones: string[] = [];
+    for (const [rx, label] of toneMap) {
+      if (rx.test(hay) && !matchedTones.includes(label)) {
+        matchedTones.push(label);
+        if (matchedTones.length === 3) break;
+      }
+    }
+    if (matchedTones.length === 3) {
+      base.creative_direction = `${matchedTones[0]}, ${matchedTones[1]} & ${matchedTones[2]}`;
+    } else if (matchedTones.length === 2) {
+      base.creative_direction = `${matchedTones[0]}, ${matchedTones[1]} & Strategic`;
+    } else if (matchedTones.length === 1) {
+      base.creative_direction = `${matchedTones[0]}, Modern & Intentional`;
+    }
+
+    // Deliverables scan across full blog text
+    const delivMap: [RegExp, string][] = [
+      [/personal brand/, "Personal Branding"],
+      [/brand identity|visual identity|logo|rebrand|color palette|typography/, "Brand Identity"],
+      [/social media|facebook|instagram|tiktok|feed/, "Social Media Management"],
+      [/content|storytelling|copywriting|caption|educational/, "Content Strategy"],
+      [/graphic|poster|infographic|layout|print|signage/, "Graphic Design"],
+      [/digital transformation|moderniz|online presence/, "Digital Transformation"],
+      [/storefront|e-commerce|online store|website|web design|landing page/, "Digital Storefront"],
+      [/campaign|launch|promotion|awareness|rollout/, "Campaign Strategy"],
+      [/event|tournament|merch|jersey|court|banner/, "Event Identity"],
+      [/virtual assistant|workflow|scheduling|patient communication|inbox/, "Digital Workflow"],
+      [/ads|advertising|lead gen|conversion|seo/, "Growth & Ads"],
+    ];
+    const matchedDelivs: string[] = [];
+    for (const [rx, label] of delivMap) {
+      if (rx.test(hay) && !matchedDelivs.includes(label)) {
+        matchedDelivs.push(label);
+        if (matchedDelivs.length === 3) break;
+      }
+    }
+    if (matchedDelivs.length > 0) {
+      base.deliverables = matchedDelivs;
+    }
   }
+
+  if (ignoreSaved) {
+    return base;
+  }
+
   return {
     client_name: p?.client_name?.trim() || base.client_name,
     industry_sector: p?.industry_sector?.trim() || base.industry_sector,

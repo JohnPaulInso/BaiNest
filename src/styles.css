@@ -7961,3 +7961,27 @@ section.home-soft-reveal.is-visible .why-item {
     transform: none !important;
   }
 }
+
+/* (2026-07-13) Soft low-opacity shimmer skeleton bars; was plain text load */
+@keyframes softSkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.skeleton-shimmer-bar {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.55) 0%,
+    rgba(241, 245, 249, 0.95) 50%,
+    rgba(226, 232, 240, 0.55) 100%
+  );
+  background-size: 200% 100%;
+  animation: softSkeletonShimmer 1.6s ease-in-out infinite;
+}
+.skeleton-post-card {
+  pointer-events: none;
+}

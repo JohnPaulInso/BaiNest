@@ -1446,8 +1446,31 @@ function Blog() {
               />
             </label>
           </div>
+          {/* (2026-07-13) Shimmering card skeleton grid on blog load; was plain text */}
           {loading ? (
-            <div className="empty-state">Loading blogs…</div>
+            <div className="blog-list" aria-busy="true" aria-label="Loading stories">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <article key={idx} className="post-card skeleton-post-card">
+                  <div className="card-cover-wrap skeleton-shimmer-bar" style={{ height: "200px", borderRadius: 0 }} />
+                  <div className="post-card-body">
+                    <div className="post-meta" style={{ gap: "10px" }}>
+                      <span className="skeleton-shimmer-bar" style={{ width: "68px", height: "14px", borderRadius: "999px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "84px", height: "14px", borderRadius: "6px" }} />
+                    </div>
+                    <div style={{ display: "grid", gap: "8px", margin: "10px 0 12px" }}>
+                      <span className="skeleton-shimmer-bar" style={{ width: "92%", height: "20px", borderRadius: "6px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "68%", height: "20px", borderRadius: "6px" }} />
+                    </div>
+                    <div style={{ display: "grid", gap: "6px", marginBottom: "16px" }}>
+                      <span className="skeleton-shimmer-bar" style={{ width: "100%", height: "13px", borderRadius: "5px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "95%", height: "13px", borderRadius: "5px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "60%", height: "13px", borderRadius: "5px" }} />
+                    </div>
+                    <span className="skeleton-shimmer-bar" style={{ width: "96px", height: "15px", borderRadius: "6px" }} />
+                  </div>
+                </article>
+              ))}
+            </div>
           ) : filtered.length ? (
             <div className="blog-list">
               {filtered.map((p, i) => (
@@ -1647,7 +1670,7 @@ function PostDetail() {
 
   const { posts: allPosts } = usePosts();
 
-  // (2026-07-13) Sync post live with real-time posts subscription. Prev: static
+  // (2026-07-13) Keep brief skeleton shimmer on story open; was instant skip
   useEffect(() => {
     if (!preview && slug && allPosts.length > 0) {
       const lower = slug.toLowerCase();
@@ -1658,12 +1681,13 @@ function PostDetail() {
       );
       if (live) {
         setPost(live);
-        setLoading(false);
       }
     }
   }, [allPosts, slug, preview]);
 
   useEffect(() => {
+    let active = true;
+    const start = Date.now();
     setLoading(true);
     const endpoint =
       preview && previewId
@@ -1671,14 +1695,27 @@ function PostDetail() {
         : `/api/posts/${encodeURIComponent(slug)}`;
     api<Post>(endpoint)
       .then((p) => {
+        if (!active) return;
         setPost(p);
         // (2026-07-13) Track post views and shares in PostDetail. Prev: none
         if (p?.id && !preview) {
           api(`/api/posts/${p.id}/view`, { method: "POST" }).catch(() => {});
         }
       })
-      .catch(() => setPost(null))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (active) setPost(null);
+      })
+      .finally(() => {
+        if (!active) return;
+        const elapsed = Date.now() - start;
+        const remain = Math.max(0, 340 - elapsed);
+        setTimeout(() => {
+          if (active) setLoading(false);
+        }, remain);
+      });
+    return () => {
+      active = false;
+    };
   }, [slug, preview, previewId]);
 
   // (2026-07-13) Exclude portfolio-only posts from related & latest. Prev: published
@@ -1728,10 +1765,111 @@ function PostDetail() {
     }
   }
 
+  // (2026-07-13) Exact-layout shimmering skeleton for story; was Loading text
   if (loading)
     return (
       <PageFrame>
-        <div className="wrap article-not-found">Loading story…</div>
+        <div className="article-layout-wrap wrap" aria-busy="true" aria-label="Loading story">
+          <article className="article-main-col">
+            {/* Breadcrumb skeleton */}
+            <div className="post-breadcrumbs" style={{ gap: "8px", marginBottom: "18px" }}>
+              <span className="skeleton-shimmer-bar" style={{ width: "42px", height: "13px", borderRadius: "4px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "58px", height: "13px", borderRadius: "4px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "260px", height: "13px", borderRadius: "4px" }} />
+            </div>
+
+            {/* Header skeleton */}
+            <header className="post-detail-header">
+              <div className="case-study-eyebrow-row">
+                <span className="skeleton-shimmer-bar" style={{ width: "155px", height: "24px", borderRadius: "999px" }} />
+                <span className="skeleton-shimmer-bar" style={{ width: "190px", height: "16px", borderRadius: "6px" }} />
+              </div>
+              <div style={{ display: "grid", gap: "10px", margin: "10px 0 16px" }}>
+                <span className="skeleton-shimmer-bar" style={{ width: "94%", height: "34px", borderRadius: "8px" }} />
+                <span className="skeleton-shimmer-bar" style={{ width: "68%", height: "34px", borderRadius: "8px" }} />
+              </div>
+              <div className="post-meta-row" style={{ gap: "10px" }}>
+                <span className="skeleton-shimmer-bar" style={{ width: "110px", height: "15px", borderRadius: "5px" }} />
+                <span className="skeleton-shimmer-bar" style={{ width: "86px", height: "15px", borderRadius: "5px" }} />
+                <span className="skeleton-shimmer-bar" style={{ width: "130px", height: "22px", borderRadius: "6px" }} />
+              </div>
+            </header>
+
+            {/* Featured hero skeleton */}
+            <div className="post-featured-hero" style={{ border: "none" }}>
+              <div className="skeleton-shimmer-bar" style={{ width: "100%", height: "420px", borderRadius: "12px" }} />
+            </div>
+
+            {/* Case study 4-col overview bar skeleton */}
+            <div className="case-study-meta-strip">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="case-meta-col" style={{ display: "grid", gap: "8px" }}>
+                  <span className="skeleton-shimmer-bar" style={{ width: "70%", height: "11px", borderRadius: "4px" }} />
+                  <span className="skeleton-shimmer-bar" style={{ width: "90%", height: "16px", borderRadius: "5px" }} />
+                  <span className="skeleton-shimmer-bar" style={{ width: "65%", height: "16px", borderRadius: "5px" }} />
+                </div>
+              ))}
+            </div>
+
+            {/* Lead excerpt & article body skeleton bars */}
+            <div style={{ display: "grid", gap: "10px", margin: "24px 0 30px" }}>
+              <span className="skeleton-shimmer-bar" style={{ width: "100%", height: "18px", borderRadius: "6px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "96%", height: "18px", borderRadius: "6px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "74%", height: "18px", borderRadius: "6px" }} />
+            </div>
+
+            <div className="post-content-blocks" style={{ display: "grid", gap: "14px" }}>
+              <span className="skeleton-shimmer-bar" style={{ width: "48%", height: "26px", borderRadius: "7px", marginTop: "8px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "100%", height: "15px", borderRadius: "5px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "98%", height: "15px", borderRadius: "5px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "92%", height: "15px", borderRadius: "5px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "80%", height: "15px", borderRadius: "5px" }} />
+              <div className="skeleton-shimmer-bar" style={{ width: "100%", height: "320px", borderRadius: "12px", margin: "14px 0" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "100%", height: "15px", borderRadius: "5px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "94%", height: "15px", borderRadius: "5px" }} />
+              <span className="skeleton-shimmer-bar" style={{ width: "66%", height: "15px", borderRadius: "5px" }} />
+            </div>
+          </article>
+
+          {/* Right sidebar skeleton */}
+          <aside className="article-sidebar">
+            <div className="sidebar-widget-card">
+              <div className="widget-title">
+                <span className="skeleton-shimmer-bar" style={{ width: "105px", height: "18px", borderRadius: "5px", display: "block" }} />
+              </div>
+              <div className="latest-posts-list">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="latest-post-row">
+                    <div className="latest-post-thumb skeleton-shimmer-bar" />
+                    <div className="latest-post-info" style={{ display: "grid", gap: "6px", flex: 1 }}>
+                      <span className="skeleton-shimmer-bar" style={{ width: "95%", height: "13px", borderRadius: "4px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "72%", height: "13px", borderRadius: "4px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "48%", height: "11px", borderRadius: "4px" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="sidebar-widget-card popular-posts-sticky-card">
+              <div className="widget-title">
+                <span className="skeleton-shimmer-bar" style={{ width: "115px", height: "18px", borderRadius: "5px", display: "block" }} />
+              </div>
+              <div className="popular-posts-list">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="popular-post-row">
+                    <div className="popular-post-thumb-wrap skeleton-shimmer-bar" />
+                    <div className="popular-post-info" style={{ display: "grid", gap: "6px", flex: 1 }}>
+                      <span className="skeleton-shimmer-bar" style={{ width: "94%", height: "13px", borderRadius: "4px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "68%", height: "13px", borderRadius: "4px" }} />
+                      <span className="skeleton-shimmer-bar" style={{ width: "45%", height: "11px", borderRadius: "4px" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
       </PageFrame>
     );
 
