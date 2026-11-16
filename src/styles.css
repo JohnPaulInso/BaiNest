@@ -704,106 +704,102 @@ img {
   grid-template-columns: repeat(2, 1fr);
   gap: 21px;
 }
+/* (2026-07-13) Separate project image & white text card; was overlaid text */
 .project-card {
   position: relative;
   display: flex;
-  align-items: end;
-  min-height: 290px;
+  flex-direction: column;
   overflow: hidden;
-  padding: 28px;
+  padding: 0;
   border-radius: var(--radius);
-  background: linear-gradient(145deg, #406773, #122c44);
-  color: white;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: var(--ink);
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .project-1 {
-  background: linear-gradient(145deg, #789a8e, #173951);
+  background: #ffffff;
 }
-/* (2026-07-13) Zoom out project cover image with contain. Prev: cover */
+@media (hover: hover) {
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 34px rgba(13, 148, 136, 0.12);
+    border-color: var(--teal);
+  }
+}
 .project-card:before,
 .project-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(10, 25, 41, 0.96) 0%,
-    rgba(10, 25, 41, 0.78) 46%,
-    rgba(10, 25, 41, 0.22) 76%,
-    rgba(10, 25, 41, 0) 100%
-  );
-  z-index: 2;
-  pointer-events: none;
+  display: none;
 }
+/* (2026-07-13) Use 16:9 flex box so logos never clip; was 220px auto grid */
 .project-art {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  z-index: 1;
   background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
 }
 .project-cover-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  padding: 22px 30px 88px;
+  padding: 10px 14px;
   transition: transform 0.3s ease;
 }
 .project-card:hover .project-cover-img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 .project-art > span {
-  font: 800 clamp(110px, 18vw, 210px)/1 "Manrope";
-  color: rgba(255, 255, 255, 0.15);
-  transform: translate(55px, -25px);
+  font: 800 56px/1 "Manrope", sans-serif;
+  color: var(--teal-dark);
 }
 .project-orbit {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 32px rgba(255, 255, 255, 0.045),
-    0 0 0 68px rgba(255, 255, 255, 0.035);
-  transform: translate(72px, -30px);
+  display: none;
 }
-/* (2026-07-13) Elevate project content above overlay for legibility. Prev: z 1 */
 .project-content {
   position: relative;
-  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   width: 100%;
-  max-width: 100%;
-  padding-right: 44px;
+  padding: 22px 24px 24px;
+  background: #ffffff;
 }
 .project-type {
   display: inline-block;
-  color: #5eead4;
-  font-size: 10px;
+  color: #ffffff;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(13, 148, 136, 0.35);
-  border: 1px solid rgba(94, 234, 212, 0.4);
-  padding: 3px 9px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  backdrop-filter: blur(4px);
+  background: var(--navy);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 .project-card h3 {
-  margin: 6px 0 4px;
-  font: 800 24px/1.25 "Manrope", sans-serif;
-  letter-spacing: -0.03em;
-  color: #ffffff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  margin: 8px 0 8px;
+  font: 800 20px/1.32 "Manrope", sans-serif;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  text-shadow: none;
 }
 .project-card p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.45;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.58;
+  text-shadow: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .project-arrow {
   position: absolute;
@@ -3473,17 +3469,19 @@ img {
   .portfolio-grid {
     grid-template-columns: 1fr;
   }
-  /* (2026-07-13) Improve mobile project-card padding and font sizes. Prev: min-height */
+  /* (2026-07-13) Keep split project-card layout on mobile; was 20px pad */
   .project-card {
-    min-height: 250px;
-    padding: 20px 18px 18px;
+    padding: 0;
+  }
+  .project-content {
+    padding: 18px;
   }
   .project-card h3 {
-    font-size: 20px;
-    line-height: 1.25;
+    font-size: 18px;
+    line-height: 1.3;
   }
   .project-card p {
-    font-size: 12px;
+    font-size: 13px;
   }
   .blog-posts .post-card:nth-child(n + 3) {
     display: none;
@@ -4478,18 +4476,25 @@ img {
 .portfolio-project-card:active {
   transform: scale(0.98);
 }
+/* (2026-07-13) Contain portfolio card cover logos; was object-fit cover */
 .portfolio-card-cover-wrap {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #0f172a;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   overflow: hidden;
 }
 .portfolio-card-cover {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  padding: 10px 14px;
   transition: transform 0.35s ease;
 }
 .portfolio-card-cover-fallback {
@@ -4658,18 +4663,21 @@ img {
   border-radius: 4px;
   font-size: 12px;
 }
+/* (2026-07-13) Contain post featured hero image; was cropped 440px cover */
 .post-featured-hero {
   width: 100%;
-  max-height: 440px;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 28px;
-  background: #f1f5f9;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
 }
 .post-featured-hero img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 540px;
+  object-fit: contain;
+  display: block;
 }
 /* (2026-07-13) Support linebreaks in post lead excerpt. Prev: normal */
 .post-lead-excerpt {
@@ -5021,17 +5029,19 @@ img {
   word-break: break-word;
 }
 
-/* (2026-07-13) Make right article sidebar sticky on scroll; was static flex */
+/* (2026-07-13) Stick Popular Posts only with 140px top offset; was 96px all */
 .article-sidebar {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  align-self: stretch;
+}
+.popular-posts-sticky-card {
   position: sticky;
-  top: 96px;
-  align-self: start;
+  top: 140px;
 }
 @media (max-width: 960px) {
-  .article-sidebar {
+  .popular-posts-sticky-card {
     position: static;
   }
 }
@@ -7849,5 +7859,105 @@ img {
 @media (max-width: 560px) {
   .case-study-meta-strip {
     grid-template-columns: 1fr;
+  }
+}
+
+/* (2026-07-13) Staggered soft text reveal per section on scroll; was block */
+@keyframes homeHeroSoftUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.home-hero-ease-left > .eyebrow {
+  animation: homeHeroSoftUp 0.58s cubic-bezier(0.22, 1, 0.36, 1) 0.02s both;
+}
+.home-hero-ease-left > h1 {
+  animation: homeHeroSoftUp 0.66s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+.home-hero-ease-left > .hero-copy {
+  animation: homeHeroSoftUp 0.66s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+.home-hero-ease-left > .hero-actions {
+  animation: homeHeroSoftUp 0.66s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+.home-hero-ease-left > .hero-note {
+  animation: homeHeroSoftUp 0.66s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
+}
+.home-hero-ease-right {
+  animation: homeHeroSoftUp 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+}
+section.home-soft-reveal .eyebrow,
+section.home-soft-reveal h2,
+section.home-soft-reveal .section-intro,
+section.home-soft-reveal .intro-copy p,
+section.home-soft-reveal .text-link,
+section.home-soft-reveal .industry-proof-pills,
+section.home-soft-reveal .why-item {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+section.home-soft-reveal.is-visible .eyebrow {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 0ms;
+}
+section.home-soft-reveal.is-visible h2 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 90ms;
+}
+section.home-soft-reveal.is-visible .section-intro,
+section.home-soft-reveal.is-visible .intro-copy p,
+section.home-soft-reveal.is-visible .industry-proof-pills {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 175ms;
+}
+section.home-soft-reveal.is-visible .text-link,
+section.home-soft-reveal.is-visible .why-item {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 240ms;
+}
+.service-card.home-soft-reveal,
+.project-card.home-soft-reveal,
+.testimonial-card.home-soft-reveal {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+.service-card.home-soft-reveal.is-visible,
+.project-card.home-soft-reveal.is-visible,
+.testimonial-card.home-soft-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-ease-left > *,
+  .home-hero-ease-right,
+  section.home-soft-reveal .eyebrow,
+  section.home-soft-reveal h2,
+  section.home-soft-reveal .section-intro,
+  section.home-soft-reveal .intro-copy p,
+  section.home-soft-reveal .text-link,
+  section.home-soft-reveal .industry-proof-pills,
+  section.home-soft-reveal .why-item,
+  .service-card.home-soft-reveal,
+  .project-card.home-soft-reveal,
+  .testimonial-card.home-soft-reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

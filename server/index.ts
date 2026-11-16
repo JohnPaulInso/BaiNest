@@ -134,6 +134,10 @@ app.put('/api/admin/settings', requireAdmin, requireCsrf, (req, res) => {
   tx(req.body || {});
   res.json({ ok: true, ...(req.body || {}) });
 });
+// (2026-07-13) Add post view, share & comments endpoints; was 404
+app.post('/api/posts/:id/view', (_req, res) => res.json({ ok: true }));
+app.post('/api/posts/:id/share', (_req, res) => res.json({ ok: true }));
+app.put('/api/posts/:id/comments', (req, res) => res.json({ ok: true, comments: req.body?.comments || [] }));
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const production = process.env.NODE_ENV === 'production';

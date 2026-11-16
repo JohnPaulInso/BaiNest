@@ -78,6 +78,8 @@ import {
   defaultTags,
   defaultServicesList,
   getPostPlacement,
+  // (2026-07-13) Import resolveCaseStudyDefaults to prefill Admin; was none
+  resolveCaseStudyDefaults,
   type AdminState,
   type Block,
   type Post,
@@ -103,6 +105,11 @@ const emptyPost: Omit<Post, "id" | "created_at" | "updated_at"> = {
   include_in_nav: false,
   include_in_portfolio: false,
   portfolio_only: false,
+  // (2026-07-13) Add editable case-study overview fields; was none
+  client_name: "",
+  industry_sector: "",
+  creative_direction: "",
+  deliverables: [],
 };
 function slugify(text: string) {
   return text
@@ -2018,6 +2025,8 @@ function PostEditor({
   // (2026-07-13) Synchronous init & safe payload parse for editing. Prev: blank
   const [form, setForm] = useState<Omit<Post, "id" | "created_at" | "updated_at">>(() => {
     if (existing) {
+      // (2026-07-13) Prefill case-study fields with live values; was empty string
+      const cs = resolveCaseStudyDefaults(existing);
       return {
         title: existing.title || "",
         slug: existing.slug || "",
@@ -2033,6 +2042,11 @@ function PostEditor({
         include_in_nav: Boolean(existing.include_in_nav),
         include_in_portfolio: Boolean(existing.include_in_portfolio),
         portfolio_only: Boolean(existing.portfolio_only),
+        // (2026-07-13) Init editable case-study fields in editor; was none
+        client_name: cs.client_name,
+        industry_sector: cs.industry_sector,
+        creative_direction: cs.creative_direction,
+        deliverables: cs.deliverables,
         blocks: normalizeEditorBlocks(existing.blocks),
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       };
@@ -2042,6 +2056,9 @@ function PostEditor({
       published_at: new Date().toISOString(),
     };
   });
+  const [deliverablesInput, setDeliverablesInput] = useState(() =>
+    existing ? resolveCaseStudyDefaults(existing).deliverables.join(", ") : ""
+  );
   const [tags, setTags] = useState(() =>
     existing?.tags
       ? Array.isArray(existing.tags)
@@ -2165,6 +2182,8 @@ function PostEditor({
     if (loadedIdRef.current === targetKey) return;
     if (existing) {
       loadedIdRef.current = targetKey;
+      // (2026-07-13) Prefill case-study fields when existing loads; was blank
+      const cs = resolveCaseStudyDefaults(existing);
       setForm({
         title: existing.title || "",
         slug: existing.slug || "",
@@ -2180,9 +2199,15 @@ function PostEditor({
         include_in_nav: Boolean(existing.include_in_nav),
         include_in_portfolio: Boolean(existing.include_in_portfolio),
         portfolio_only: Boolean(existing.portfolio_only),
+        // (2026-07-13) Load editable case-study fields from existing; was none
+        client_name: cs.client_name,
+        industry_sector: cs.industry_sector,
+        creative_direction: cs.creative_direction,
+        deliverables: cs.deliverables,
         blocks: normalizeEditorBlocks(existing.blocks),
         tags: Array.isArray(existing.tags) ? existing.tags : [],
       });
+      setDeliverablesInput(cs.deliverables.join(", "));
       setTags(
         existing.tags
           ? Array.isArray(existing.tags)
@@ -2202,6 +2227,7 @@ function PostEditor({
               : typeof p.tags === "string"
               ? JSON.parse(p.tags || "[]")
               : [];
+            const cs = resolveCaseStudyDefaults(p);
             setForm({
               title: p.title || "",
               slug: p.slug || "",
@@ -2217,9 +2243,15 @@ function PostEditor({
               include_in_nav: Boolean(p.include_in_nav),
               include_in_portfolio: Boolean(p.include_in_portfolio),
               portfolio_only: Boolean(p.portfolio_only),
+              // (2026-07-13) Load editable case-study fields on fetch; was none
+              client_name: cs.client_name,
+              industry_sector: cs.industry_sector,
+              creative_direction: cs.creative_direction,
+              deliverables: cs.deliverables,
               blocks: parsedBlocks,
               tags: parsedTags,
             });
+            setDeliverablesInput(cs.deliverables.join(", "));
             setTags(parsedTags.length ? parsedTags.join(", ") : "");
           }
         })
@@ -2227,7 +2259,7 @@ function PostEditor({
     }
   }, [id, existing]);
 
-  // (2026-07-13) Manage and delete story comments in editor. Prev: none
+  // (2026-07-13) Sync real per-article comments in Admin; was legacy c1/c2 key
   interface BlogComment {
     id: string;
     name: string;
@@ -2236,27 +2268,53 @@ function PostEditor({
   }
   const [blogComments, setBlogComments] = useState<BlogComment[]>([]);
 
+  const filterRealComments = (list: unknown): BlogComment[] => {
+    if (!Array.isArray(list)) return [];
+    return list.filter((c: any) => {
+      if (!c || typeof c.id !== "string" || typeof c.text !== "string") return false;
+      if (c.id === "c1" || c.id === "c2" || c.id.endsWith("_c1") || c.id.endsWith("_c2")) return false;
+      return true;
+    });
+  };
+
   useEffect(() => {
-    const activeSlug = form.slug || (existing && existing.slug);
-    if (!activeSlug) return;
-    const storageKey = `bainest_comments_${activeSlug}`;
-    const saved = localStorage.getItem(storageKey);
+    const activeSlug = (form.slug || existing?.slug || "").trim().toLowerCase();
+    if (!activeSlug) {
+      setBlogComments([]);
+      return;
+    }
+    const realKey = `bainest_real_comments_${activeSlug}`;
+    if (existing && Array.isArray(existing.comments)) {
+      const cleaned = filterRealComments(existing.comments);
+      setBlogComments(cleaned);
+      localStorage.setItem(realKey, JSON.stringify(cleaned));
+      return;
+    }
+    const saved = localStorage.getItem(realKey);
     if (saved) {
       try {
-        setBlogComments(JSON.parse(saved));
+        setBlogComments(filterRealComments(JSON.parse(saved)));
         return;
       } catch {}
     }
     setBlogComments([]);
-  }, [form.slug, existing]);
+  }, [form.slug, existing?.id, existing?.slug, existing?.comments]);
 
   const deleteBlogComment = (commentId: string) => {
     if (!window.confirm("Delete this comment permanently?")) return;
-    const activeSlug = form.slug || (existing && existing.slug);
+    const activeSlug = (form.slug || existing?.slug || "").trim().toLowerCase();
     if (!activeSlug) return;
     const updated = blogComments.filter((c) => c.id !== commentId);
     setBlogComments(updated);
-    localStorage.setItem(`bainest_comments_${activeSlug}`, JSON.stringify(updated));
+    localStorage.setItem(`bainest_real_comments_${activeSlug}`, JSON.stringify(updated));
+    localStorage.removeItem(`bainest_comments_${activeSlug}`);
+    const targetId = existing?.id || id || activeSlug;
+    if (targetId) {
+      api(`/api/posts/${encodeURIComponent(String(targetId))}/comments`, {
+        method: "PUT",
+        body: JSON.stringify({ comments: updated }),
+      }).catch(() => {});
+    }
   };
 
   // Existing authors from published / existing posts
@@ -2529,6 +2587,13 @@ function PostEditor({
           include_in_nav: Boolean(saved.include_in_nav ?? payload.include_in_nav),
           include_in_portfolio: Boolean(saved.include_in_portfolio ?? payload.include_in_portfolio),
           portfolio_only: Boolean(saved.portfolio_only ?? payload.portfolio_only),
+          // (2026-07-13) Sync saved case-study overview fields; was omitted
+          client_name: saved.client_name ?? payload.client_name ?? "",
+          industry_sector: saved.industry_sector ?? payload.industry_sector ?? "",
+          creative_direction: saved.creative_direction ?? payload.creative_direction ?? "",
+          deliverables: Array.isArray(saved.deliverables)
+            ? saved.deliverables
+            : payload.deliverables || [],
           blocks: normalizeEditorBlocks(saved.blocks ?? sanitizedBlocks),
           tags: Array.isArray(saved.tags) ? saved.tags : parsedTagList,
         });
@@ -3026,6 +3091,59 @@ function PostEditor({
                   Both (Blog & Portfolio)
                 </label>
               </div>
+            </div>
+
+            {/* (2026-07-13) Editable Case Study Overview fields in Admin; was auto only */}
+            <div className="case-study-admin-box" style={{ marginTop: "14px", padding: "14px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0", display: "grid", gap: "10px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Case Study Overview Bar
+              </span>
+              <label style={{ fontSize: "12.5px" }}>
+                <span>Client / Partner</span>
+                <input
+                  value={form.client_name || ""}
+                  onChange={(e) => patch("client_name", e.target.value)}
+                  placeholder="e.g. Doc Jackie / Dr. K Pharmacy"
+                />
+              </label>
+              <label style={{ fontSize: "12.5px" }}>
+                <span>Industry Sector</span>
+                <input
+                  value={form.industry_sector || ""}
+                  onChange={(e) => patch("industry_sector", e.target.value)}
+                  placeholder="e.g. Healthcare Personal Brand"
+                />
+              </label>
+              <label style={{ fontSize: "12.5px" }}>
+                <span>Creative Direction</span>
+                <input
+                  value={form.creative_direction || ""}
+                  onChange={(e) => patch("creative_direction", e.target.value)}
+                  placeholder="e.g. Credible, Warm & Engaging"
+                />
+              </label>
+              <label style={{ fontSize: "12.5px" }}>
+                <span>Scope & Deliverables (comma-separated)</span>
+                {/* (2026-07-13) Bind deliverablesInput for live editing; was array join */}
+                <input
+                  value={deliverablesInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDeliverablesInput(val);
+                    patch(
+                      "deliverables",
+                      val
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    );
+                  }}
+                  placeholder="Personal Branding, Social Media Management, Content Strategy"
+                />
+              </label>
+              <small style={{ fontSize: "11px", color: "#64748b", margin: 0 }}>
+                Edits here update the live Case Study Overview Bar immediately upon saving.
+              </small>
             </div>
           </div>
 

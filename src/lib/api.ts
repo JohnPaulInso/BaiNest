@@ -65,12 +65,91 @@ export type Post = {
   impressions?: number;
   // (2026-07-13) Add per-article comments array to Post type; was local only
   comments?: { id: string; name: string; text: string; date: string }[];
+  // (2026-07-13) Editable case-study overview fields on Post; was inferred only
+  client_name?: string;
+  industry_sector?: string;
+  creative_direction?: string;
+  deliverables?: string[];
 };
 /* (2026-07-13) Helper to determine placement type: Blog, Portfolio, or Both. Prev: none */
 export function getPostPlacement(p: { portfolio_only?: boolean; include_in_portfolio?: boolean }): "Blog" | "Portfolio" | "Both" {
   if (p?.portfolio_only) return "Portfolio";
   if (p?.include_in_portfolio) return "Both";
   return "Blog";
+}
+
+// (2026-07-13) Shared case-study defaults resolver for Admin & UI; was App only
+export function resolveCaseStudyDefaults(p: Partial<Post>) {
+  const hay = `${p?.title || ""} ${p?.slug || ""} ${p?.excerpt || ""}`.toLowerCase();
+  let base = {
+    client_name: p?.title?.split(":")[0]?.trim() || "Client Partner",
+    industry_sector: p?.category || "Brand & Digital Strategy",
+    creative_direction: "Intentional, Clear & Results-Oriented",
+    deliverables: ["Brand Strategy", "Creative Direction", "Digital Execution"],
+  };
+  if (hay.includes("pharmacy") || hay.includes("dr. k") || hay.includes("dr-k")) {
+    base = {
+      client_name: "Dr. K Pharmacy & Medical Supplies",
+      industry_sector: "Pharmacy & Healthcare",
+      creative_direction: "Clean, Trust-Driven & Approachable",
+      deliverables: ["Brand Identity", "Social Media Design", "Patient Education"],
+    };
+  } else if (hay.includes("aton") || hay.includes("law")) {
+    base = {
+      client_name: "Aton & Aton Law Office",
+      industry_sector: "Legal & Law Practice",
+      creative_direction: "Authoritative, Modern & Bold",
+      deliverables: ["Visual Identity", "Corporate Branding", "Digital Presence"],
+    };
+  } else if (hay.includes("doc jackie") || hay.includes("doc-jackie")) {
+    base = {
+      client_name: "Doc Jackie",
+      industry_sector: "Healthcare Personal Brand",
+      creative_direction: "Credible, Warm & Engaging",
+      deliverables: ["Personal Branding", "Social Media Management", "Content Strategy"],
+    };
+  } else if (hay.includes("virtual assistant") || hay.includes("medical practice")) {
+    base = {
+      client_name: "Medical Practice Support",
+      industry_sector: "Healthcare Operations",
+      creative_direction: "Reliable, Structured & Patient-First",
+      deliverables: ["Healthcare VA", "Patient Communication", "Digital Workflow"],
+    };
+  } else if (hay.includes("centrum mall") || hay.includes("mall")) {
+    base = {
+      client_name: "Bogo City Centrum Mall",
+      industry_sector: "Shopping Mall & Commercial",
+      creative_direction: "Vibrant, Community-Focused & Modern",
+      deliverables: ["Digital Transformation", "Campaign Strategy", "Brand Refresh"],
+    };
+  } else if (hay.includes("k.lee") || hay.includes("k-lee") || hay.includes("storefront")) {
+    base = {
+      client_name: "K.LEE Essentials",
+      industry_sector: "Retail & E-Commerce",
+      creative_direction: "Polished, Accessible & Conversion-Ready",
+      deliverables: ["Digital Storefront", "Product Branding", "Social Launch"],
+    };
+  } else if (hay.includes("pickleball") || hay.includes("pinktober") || hay.includes("freeway") || hay.includes("event")) {
+    base = {
+      client_name: hay.includes("freeway")
+        ? "Freeway Pickleball Tournament"
+        : hay.includes("pinktober")
+        ? "Clash of Clubs Pickleball"
+        : "Live Event Production",
+      industry_sector: "Sports & Live Events",
+      creative_direction: "High-Energy, Cohesive & Memorable",
+      deliverables: ["Event Identity", "Merch & Court Visuals", "Campaign Graphics"],
+    };
+  }
+  return {
+    client_name: p?.client_name?.trim() || base.client_name,
+    industry_sector: p?.industry_sector?.trim() || base.industry_sector,
+    creative_direction: p?.creative_direction?.trim() || base.creative_direction,
+    deliverables:
+      Array.isArray(p?.deliverables) && p.deliverables.length > 0
+        ? p.deliverables
+        : base.deliverables,
+  };
 }
 export type SiteSettings = {
   siteName: string;
@@ -845,6 +924,11 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
         // (2026-07-13) Init real 0 views and shares on new post; was undefined
         views: 0,
         shares: 0,
+        // (2026-07-13) Persist custom case-study overview fields; was omitted
+        client_name: body.client_name || "",
+        industry_sector: body.industry_sector || "",
+        creative_direction: body.creative_direction || "",
+        deliverables: Array.isArray(body.deliverables) ? body.deliverables : [],
       };
       // (2026-07-13) Persist post to Firestore and notify UI listeners. Prev: unawaited
       const savedPost = await saveFirestorePost(newPost);

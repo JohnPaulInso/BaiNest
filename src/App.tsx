@@ -1,5 +1,5 @@
-// (2026-07-13) Import Fragment for line break mapping. Prev: useEffect, useMemo, useState
-import { Fragment, useEffect, useMemo, useState } from "react";
+// (2026-07-13) Import useRef for homepage IO reveal; was missing
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
   NavLink,
@@ -497,78 +497,98 @@ function useSettings() {
   }, []);
   return settings;
 }
-// (2026-07-13) Derive industry, client & scope metadata; was generic badge
+// (2026-07-13) Use Admin case-study fields first; was auto-inferred only
 function getProjectCaseStudyMeta(p: Post) {
   const hay = `${p.title || ""} ${p.slug || ""} ${p.excerpt || ""}`.toLowerCase();
   const isCaseStudy = Boolean(
     p.include_in_portfolio ||
       p.portfolio_only ||
       (p.category && ["work", "case study"].includes(p.category.toLowerCase())) ||
-      hay.includes("aton")
+      hay.includes("aton") ||
+      p.client_name ||
+      p.industry_sector
   );
 
+  const applyOverrides = <T extends {
+    isCaseStudy: boolean;
+    clientName: string;
+    industry: string;
+    industryGroup: "Healthcare & Medical" | "Legal & Corporate" | "Retail & Commercial" | "Sports & Events";
+    deliverables: string[];
+    direction: string;
+  }>(base: T): T => ({
+    ...base,
+    clientName: p.client_name?.trim() || base.clientName,
+    industry: p.industry_sector?.trim() || base.industry,
+    direction: p.creative_direction?.trim() || base.direction,
+    deliverables:
+      Array.isArray(p.deliverables) && p.deliverables.length > 0
+        ? p.deliverables
+        : base.deliverables,
+  });
+
   if (hay.includes("pharmacy") || hay.includes("dr. k") || hay.includes("dr-k")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "Dr. K Pharmacy & Medical Supplies",
       industry: "Pharmacy & Healthcare",
       industryGroup: "Healthcare & Medical" as const,
       deliverables: ["Brand Identity", "Social Media Design", "Patient Education"],
       direction: "Clean, Trust-Driven & Approachable",
-    };
+    });
   }
   if (hay.includes("aton") || hay.includes("law")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "Aton & Aton Law Office",
       industry: "Legal & Law Practice",
       industryGroup: "Legal & Corporate" as const,
       deliverables: ["Visual Identity", "Corporate Branding", "Digital Presence"],
       direction: "Authoritative, Modern & Bold",
-    };
+    });
   }
   if (hay.includes("doc jackie") || hay.includes("doc-jackie")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "Doc Jackie",
       industry: "Healthcare Personal Brand",
       industryGroup: "Healthcare & Medical" as const,
       deliverables: ["Personal Branding", "Social Media Management", "Content Strategy"],
       direction: "Credible, Warm & Engaging",
-    };
+    });
   }
   if (hay.includes("virtual assistant") || hay.includes("medical practice")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "Medical Practice Support",
       industry: "Healthcare Operations",
       industryGroup: "Healthcare & Medical" as const,
       deliverables: ["Healthcare VA", "Patient Communication", "Digital Workflow"],
       direction: "Reliable, Structured & Patient-First",
-    };
+    });
   }
   if (hay.includes("centrum mall") || hay.includes("mall")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "Bogo City Centrum Mall",
       industry: "Shopping Mall & Commercial",
       industryGroup: "Retail & Commercial" as const,
       deliverables: ["Digital Transformation", "Campaign Strategy", "Brand Refresh"],
       direction: "Vibrant, Community-Focused & Modern",
-    };
+    });
   }
   if (hay.includes("k.lee") || hay.includes("k-lee") || hay.includes("storefront")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: "K.LEE Essentials",
       industry: "Retail & E-Commerce",
       industryGroup: "Retail & Commercial" as const,
       deliverables: ["Digital Storefront", "Product Branding", "Social Launch"],
       direction: "Polished, Accessible & Conversion-Ready",
-    };
+    });
   }
   if (hay.includes("pickleball") || hay.includes("pinktober") || hay.includes("freeway") || hay.includes("event")) {
-    return {
+    return applyOverrides({
       isCaseStudy: true,
       clientName: hay.includes("freeway")
         ? "Freeway Pickleball Tournament"
@@ -579,21 +599,41 @@ function getProjectCaseStudyMeta(p: Post) {
       industryGroup: "Sports & Events" as const,
       deliverables: ["Event Identity", "Merch & Court Visuals", "Campaign Graphics"],
       direction: "High-Energy, Cohesive & Memorable",
-    };
+    });
   }
 
-  return {
+  return applyOverrides({
     isCaseStudy,
     clientName: p.title?.split(":")[0]?.trim() || "Client Partner",
     industry: isCaseStudy ? "Brand & Digital Strategy" : p.category || "Insights",
     industryGroup: "Retail & Commercial" as const,
     deliverables: ["Brand Strategy", "Creative Direction", "Digital Execution"],
     direction: "Intentional, Clear & Results-Oriented",
-  };
+  });
 }
 
 function Home() {
   const { posts } = usePosts();
+  // (2026-07-13) Add lightweight IO reveal for homepage; was static mount
+  const homeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = homeRef.current;
+    if (!root || typeof IntersectionObserver === "undefined") return;
+    const targets = root.querySelectorAll<HTMLElement>(".home-soft-reveal");
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -32px 0px" }
+    );
+    targets.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [posts.length]);
   // (2026-07-13) Filter published portfolio stories for homepage. Prev: none
   const featuredProjects = useMemo(() => {
     return posts.filter(
@@ -607,10 +647,11 @@ function Home() {
   }, [posts]);
   return (
     <PageFrame>
+      <div ref={homeRef} className="home-entrance-scope">
       <section className="hero">
         <div className="hero-glow" />
         <div className="wrap hero-grid">
-          <div className="hero-copy-wrap">
+          <div className="hero-copy-wrap home-hero-ease-left">
             <Eyebrow>Independent digital studio</Eyebrow>
             <h1>
               Make your digital presence <span>work harder.</span>
@@ -632,7 +673,7 @@ function Home() {
               momentum.
             </p>
           </div>
-          <div className="hero-visual">
+          <div className="hero-visual home-hero-ease-right">
             <div className="visual-orbit orbit-one" />
             <div className="visual-orbit orbit-two" />
             <div className="visual-panel">
@@ -683,7 +724,8 @@ function Home() {
           <ArrowDown size={15} />
         </a>
       </section>
-      <section className="section intro-section" id="intro">
+      {/* (2026-07-13) Add soft reveal classes to homepage sections; was static */}
+      <section className="section intro-section home-soft-reveal" id="intro">
         <div className="wrap intro-grid">
           <div className="intro-title">
             <Eyebrow>A clearer way forward</Eyebrow>
@@ -703,7 +745,7 @@ function Home() {
           </div>
         </div>
       </section>
-      <section className="section section-soft">
+      <section className="section section-soft home-soft-reveal">
         <div className="wrap">
           <div className="section-head">
             <div>
@@ -722,7 +764,8 @@ function Home() {
           <div className="services-grid">
             {services.map((s, i) => (
               <motion.article
-                className="service-card"
+                className="service-card home-soft-reveal"
+                style={{ "--reveal-delay": `${i * 55}ms` } as React.CSSProperties}
                 key={s.no}
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.22 }}
@@ -745,7 +788,7 @@ function Home() {
           </Link>
         </div>
       </section>
-      <section className="section work-section">
+      <section className="section work-section home-soft-reveal">
         <div className="wrap">
           <div className="section-head">
             <div>
@@ -775,7 +818,8 @@ function Home() {
                 const meta = getProjectCaseStudyMeta(p);
                 return (
                   <Link
-                    className={`project-card project-${i % 2}`}
+                    className={`project-card project-${i % 2} home-soft-reveal`}
+                    style={{ "--reveal-delay": `${(i % 2) * 70}ms` } as React.CSSProperties}
                     key={p.slug || p.id}
                     to={`/blog/${p.slug}`}
                   >
@@ -824,7 +868,8 @@ function Home() {
           )}
         </div>
       </section>
-      <section className="section section-soft why-section">
+      {/* (2026-07-13) Add soft reveal to why, testimonials & blog; was static */}
+      <section className="section section-soft why-section home-soft-reveal">
         <div className="wrap why-grid">
           <div>
             <Eyebrow>How we think</Eyebrow>
@@ -871,7 +916,7 @@ function Home() {
         </div>
       </section>
       {/* (2026-07-13) Add client trust & industry testimonials section; was none */}
-      <section className="section testimonials-section">
+      <section className="section testimonials-section home-soft-reveal">
         <div className="wrap">
           <div className="section-head">
             <div>
@@ -910,8 +955,12 @@ function Home() {
                 scope: "Digital Transformation · Social Campaigns",
                 slug: "elevating-an-established-brand-the-bogo-city-centrum-mall-digital-transformation",
               },
-            ].map((item) => (
-              <article key={item.client} className="testimonial-card">
+            ].map((item, i) => (
+              <article
+                key={item.client}
+                className="testimonial-card home-soft-reveal"
+                style={{ "--reveal-delay": `${i * 65}ms` } as React.CSSProperties}
+              >
                 <div className="testimonial-sector-pill">{item.sector}</div>
                 <p className="testimonial-quote">“{item.quote}”</p>
                 <div className="testimonial-footer">
@@ -928,7 +977,7 @@ function Home() {
           </div>
         </div>
       </section>
-      <section className="section blog-section">
+      <section className="section blog-section home-soft-reveal">
         <div className="wrap">
           <div className="section-head">
             <div>
@@ -951,6 +1000,7 @@ function Home() {
         </div>
       </section>
       <CtaBand />
+      </div>
     </PageFrame>
   );
 }
@@ -2025,9 +2075,9 @@ function PostDetail() {
             </div>
           )}
 
-          {/* (2026-07-13) Render top 5 popular posts by views+shares; was latestPosts */}
+          {/* (2026-07-13) Make only Popular Posts card sticky; was whole sidebar */}
           {popularPosts.length > 0 && (
-            <div className="sidebar-widget-card">
+            <div className="sidebar-widget-card popular-posts-sticky-card">
               <h3 className="widget-title">Popular Posts</h3>
               <div className="popular-posts-list">
                 {popularPosts.map((pp, idx) => (
