@@ -497,6 +497,101 @@ function useSettings() {
   }, []);
   return settings;
 }
+// (2026-07-13) Derive industry, client & scope metadata; was generic badge
+function getProjectCaseStudyMeta(p: Post) {
+  const hay = `${p.title || ""} ${p.slug || ""} ${p.excerpt || ""}`.toLowerCase();
+  const isCaseStudy = Boolean(
+    p.include_in_portfolio ||
+      p.portfolio_only ||
+      (p.category && ["work", "case study"].includes(p.category.toLowerCase())) ||
+      hay.includes("aton")
+  );
+
+  if (hay.includes("pharmacy") || hay.includes("dr. k") || hay.includes("dr-k")) {
+    return {
+      isCaseStudy: true,
+      clientName: "Dr. K Pharmacy & Medical Supplies",
+      industry: "Pharmacy & Healthcare",
+      industryGroup: "Healthcare & Medical" as const,
+      deliverables: ["Brand Identity", "Social Media Design", "Patient Education"],
+      direction: "Clean, Trust-Driven & Approachable",
+    };
+  }
+  if (hay.includes("aton") || hay.includes("law")) {
+    return {
+      isCaseStudy: true,
+      clientName: "Aton & Aton Law Office",
+      industry: "Legal & Law Practice",
+      industryGroup: "Legal & Corporate" as const,
+      deliverables: ["Visual Identity", "Corporate Branding", "Digital Presence"],
+      direction: "Authoritative, Modern & Bold",
+    };
+  }
+  if (hay.includes("doc jackie") || hay.includes("doc-jackie")) {
+    return {
+      isCaseStudy: true,
+      clientName: "Doc Jackie",
+      industry: "Healthcare Personal Brand",
+      industryGroup: "Healthcare & Medical" as const,
+      deliverables: ["Personal Branding", "Social Media Management", "Content Strategy"],
+      direction: "Credible, Warm & Engaging",
+    };
+  }
+  if (hay.includes("virtual assistant") || hay.includes("medical practice")) {
+    return {
+      isCaseStudy: true,
+      clientName: "Medical Practice Support",
+      industry: "Healthcare Operations",
+      industryGroup: "Healthcare & Medical" as const,
+      deliverables: ["Healthcare VA", "Patient Communication", "Digital Workflow"],
+      direction: "Reliable, Structured & Patient-First",
+    };
+  }
+  if (hay.includes("centrum mall") || hay.includes("mall")) {
+    return {
+      isCaseStudy: true,
+      clientName: "Bogo City Centrum Mall",
+      industry: "Shopping Mall & Commercial",
+      industryGroup: "Retail & Commercial" as const,
+      deliverables: ["Digital Transformation", "Campaign Strategy", "Brand Refresh"],
+      direction: "Vibrant, Community-Focused & Modern",
+    };
+  }
+  if (hay.includes("k.lee") || hay.includes("k-lee") || hay.includes("storefront")) {
+    return {
+      isCaseStudy: true,
+      clientName: "K.LEE Essentials",
+      industry: "Retail & E-Commerce",
+      industryGroup: "Retail & Commercial" as const,
+      deliverables: ["Digital Storefront", "Product Branding", "Social Launch"],
+      direction: "Polished, Accessible & Conversion-Ready",
+    };
+  }
+  if (hay.includes("pickleball") || hay.includes("pinktober") || hay.includes("freeway") || hay.includes("event")) {
+    return {
+      isCaseStudy: true,
+      clientName: hay.includes("freeway")
+        ? "Freeway Pickleball Tournament"
+        : hay.includes("pinktober")
+        ? "Clash of Clubs Pickleball"
+        : "Live Event Production",
+      industry: "Sports & Live Events",
+      industryGroup: "Sports & Events" as const,
+      deliverables: ["Event Identity", "Merch & Court Visuals", "Campaign Graphics"],
+      direction: "High-Energy, Cohesive & Memorable",
+    };
+  }
+
+  return {
+    isCaseStudy,
+    clientName: p.title?.split(":")[0]?.trim() || "Client Partner",
+    industry: isCaseStudy ? "Brand & Digital Strategy" : p.category || "Insights",
+    industryGroup: "Retail & Commercial" as const,
+    deliverables: ["Brand Strategy", "Creative Direction", "Digital Execution"],
+    direction: "Intentional, Clear & Results-Oriented",
+  };
+}
+
 function Home() {
   const { posts } = usePosts();
   // (2026-07-13) Filter published portfolio stories for homepage. Prev: none
@@ -665,37 +760,57 @@ function Home() {
               View all work <ArrowRight size={14} />
             </Link>
           </div>
-          {/* (2026-07-13) Show real portfolio stories or clean teaser. Prev: empty map */}
+          {/* (2026-07-13) Expand cross-industry portfolio grid to 6; was 2 cards */}
+          <div className="industry-proof-pills">
+            <span>Proven across industries:</span>
+            <b>Healthcare & Pharmacy</b>
+            <b>Legal & Law Firms</b>
+            <b>Shopping Malls & Retail</b>
+            <b>Medical Practices</b>
+            <b>Sports & Live Events</b>
+          </div>
           {featuredProjects.length > 0 ? (
-            <div className="projects-grid">
-              {featuredProjects.slice(0, 2).map((p, i) => (
-                <Link
-                  className={`project-card project-${i}`}
-                  key={p.slug || p.id}
-                  to={`/blog/${p.slug}`}
-                >
-                  <div className="project-art">
-                    {p.cover_image ? (
-                      /* (2026-07-13) Remove inline cover crop from project img. Prev: cover */
-                      <img
-                        src={p.cover_image}
-                        alt={p.title}
-                        className="project-cover-img"
-                      />
-                    ) : (
-                      <span>{p.title.slice(0, 2).toUpperCase()}</span>
-                    )}
-                    <div className="project-orbit" />
-                  </div>
-                  <div className="project-content">
-                    {/* (2026-07-13) Replace Case Study badge with WORK. Prev: Case Study */}
-                    <span className="project-type">{(!p.category || p.category.toLowerCase().includes("case study")) ? "WORK" : p.category}</span>
-                    <h3>{p.title}</h3>
-                    <p>{p.excerpt || "View this client work."}</p>
-                    <ArrowUpRight className="project-arrow" size={20} />
-                  </div>
-                </Link>
-              ))}
+            <div className="projects-grid projects-grid-expanded">
+              {featuredProjects.slice(0, 6).map((p, i) => {
+                const meta = getProjectCaseStudyMeta(p);
+                return (
+                  <Link
+                    className={`project-card project-${i % 2}`}
+                    key={p.slug || p.id}
+                    to={`/blog/${p.slug}`}
+                  >
+                    <div className="project-art">
+                      {p.cover_image ? (
+                        <img
+                          src={p.cover_image}
+                          alt={p.title}
+                          className="project-cover-img"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span>{p.title.slice(0, 2).toUpperCase()}</span>
+                      )}
+                      <div className="project-orbit" />
+                    </div>
+                    <div className="project-content">
+                      <div className="project-badge-row">
+                        <span className="project-type">{meta.industry}</span>
+                        <span className="project-client-tag">{meta.clientName}</span>
+                      </div>
+                      <h3>{p.title}</h3>
+                      <p>{p.excerpt || "Explore how we shaped strategy, identity, and digital execution for this project."}</p>
+                      <div className="project-deliverables-row">
+                        {meta.deliverables.map((d) => (
+                          <span key={d} className="project-deliverable-chip">{d}</span>
+                        ))}
+                      </div>
+                      <span className="project-view-case-link">
+                        View case study <ArrowUpRight size={16} />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="portfolio-teaser-box">
@@ -751,6 +866,64 @@ function Home() {
                   <p>{x.p}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      {/* (2026-07-13) Add client trust & industry testimonials section; was none */}
+      <section className="section testimonials-section">
+        <div className="wrap">
+          <div className="section-head">
+            <div>
+              <Eyebrow>Client trust & adaptability</Eyebrow>
+              <h2>
+                Tailored to the industry.
+                <br />
+                <em>Built to earn trust.</em>
+              </h2>
+            </div>
+            <Link className="text-link" to="/contact">
+              Start a conversation <ArrowRight size={14} />
+            </Link>
+          </div>
+          {/* Industry testimonial cards grid */}
+          <div className="testimonials-grid">
+            {[
+              {
+                sector: "Healthcare & Pharmacy",
+                client: "Dr. K Pharmacy & Medical Supplies",
+                quote: "BaiNest translated complex medical and pharmacy messaging into a clean, approachable visual identity that patients immediately trust.",
+                scope: "Brand Identity · Patient Education Graphics",
+                slug: "clean-professional-and-approachable-dr-k-pharmacy-and-medical-supplies",
+              },
+              {
+                sector: "Legal & Professional",
+                client: "Aton & Aton Law Office",
+                quote: "They respected the authority required for a law practice while giving our firm a modern, distinctive brand system that stands out.",
+                scope: "Corporate Identity · Digital Presence",
+                slug: "professional-by-nature-bold-by-design-aton-aton-law-office",
+              },
+              {
+                sector: "Commercial & Retail",
+                client: "Bogo City Centrum Mall & K.LEE",
+                quote: "From established shopping centers to growing storefronts, the strategy and creative direction made our digital presence feel cohesive and active.",
+                scope: "Digital Transformation · Social Campaigns",
+                slug: "elevating-an-established-brand-the-bogo-city-centrum-mall-digital-transformation",
+              },
+            ].map((item) => (
+              <article key={item.client} className="testimonial-card">
+                <div className="testimonial-sector-pill">{item.sector}</div>
+                <p className="testimonial-quote">“{item.quote}”</p>
+                <div className="testimonial-footer">
+                  <div>
+                    <b>{item.client}</b>
+                    <span>{item.scope}</span>
+                  </div>
+                  <Link to={`/blog/${item.slug}`} className="testimonial-case-link" title="View case study">
+                    <ArrowUpRight size={16} />
+                  </Link>
+                </div>
+              </article>
             ))}
           </div>
         </div>
@@ -992,8 +1165,10 @@ function Services() {
   );
 }
 // (2026-07-13) Showcase real client portfolio stories with link. Prev: empty state
+// (2026-07-13) Add industry filter & deliverable chips to Portfolio; was plain
 function Portfolio() {
   const { posts } = usePosts();
+  const [industryFilter, setIndustryFilter] = useState<string>("All Industries");
   const portfolioPosts = useMemo(() => {
     return posts.filter(
       (p) =>
@@ -1005,58 +1180,93 @@ function Portfolio() {
     );
   }, [posts]);
 
+  const industryTabs = [
+    "All Industries",
+    "Healthcare & Medical",
+    "Legal & Corporate",
+    "Retail & Commercial",
+    "Sports & Events",
+  ];
+
+  const filteredPortfolio = useMemo(() => {
+    if (industryFilter === "All Industries") return portfolioPosts;
+    return portfolioPosts.filter((p) => getProjectCaseStudyMeta(p).industryGroup === industryFilter);
+  }, [portfolioPosts, industryFilter]);
+
   return (
     <PageFrame>
       <PageHeading
         label="Portfolio"
-        title="Work that moves good ideas forward."
-        copy="A curated showcase of strategic, creative, and digital builds made in close partnership with ambitious brands."
+        title="Work that adapts to your industry."
+        copy="From pharmacies, medical practices, and law offices to shopping malls and sporting events—we tailor our creative direction to fit your audience, never forcing every client into one template."
       />
       <section className="section">
         <div className="wrap">
-          {portfolioPosts.length > 0 ? (
-            <div className="portfolio-gallery-grid">
-              {portfolioPosts.map((p) => (
-                <article key={p.id} className="portfolio-project-card">
-                  <Link to={`/blog/${p.slug}`} className="portfolio-card-cover-wrap">
-                    {p.cover_image ? (
-                      <img
-                        src={p.cover_image}
-                        alt={p.title}
-                        className="portfolio-card-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="portfolio-card-cover-fallback">
-                        <span>{p.title.slice(0, 2).toUpperCase()}</span>
-                      </div>
-                    )}
-                    {/* (2026-07-13) Set portfolio badge to WORK. Prev: Case Study */}
-                    <span className="portfolio-badge-pill">{(!p.category || p.category.toLowerCase().includes("case study")) ? "WORK" : p.category}</span>
-                  </Link>
-                  <div className="portfolio-card-content">
-                    <div className="portfolio-card-meta">
-                      {p.published_at && (
-                        <time dateTime={p.published_at}>
-                          {new Date(p.published_at).toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </time>
-                      )}
-                      {p.author && <span>· by {p.author}</span>}
-                    </div>
-                    <h3>
-                      <Link to={`/blog/${p.slug}`}>{p.title}</Link>
-                    </h3>
-                    {p.excerpt && <p className="portfolio-card-excerpt">{p.excerpt}</p>}
-                    {/* (2026-07-13) Removed tag chips from portfolio cards. Prev: tags rendered */}
-                    <Link to={`/blog/${p.slug}`} className="portfolio-card-cta">
-                      Explore work <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </article>
+          {portfolioPosts.length > 0 && (
+            <div className="category-chips-bar portfolio-industry-bar">
+              {industryTabs.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`category-chip ${industryFilter === tab ? "active" : ""}`}
+                  onClick={() => setIndustryFilter(tab)}
+                >
+                  {tab}
+                </button>
               ))}
+            </div>
+          )}
+          {filteredPortfolio.length > 0 ? (
+            <div className="portfolio-gallery-grid">
+              {filteredPortfolio.map((p) => {
+                const meta = getProjectCaseStudyMeta(p);
+                return (
+                  <article key={p.id} className="portfolio-project-card">
+                    <Link to={`/blog/${p.slug}`} className="portfolio-card-cover-wrap">
+                      {p.cover_image ? (
+                        <img
+                          src={p.cover_image}
+                          alt={p.title}
+                          className="portfolio-card-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="portfolio-card-cover-fallback">
+                          <span>{p.title.slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
+                      <span className="portfolio-badge-pill">{meta.industry}</span>
+                    </Link>
+                    <div className="portfolio-card-content">
+                      <div className="portfolio-card-meta">
+                        <b>{meta.clientName}</b>
+                        {p.published_at && (
+                          <time dateTime={p.published_at}>
+                            ·{" "}
+                            {new Date(p.published_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </time>
+                        )}
+                      </div>
+                      <h3>
+                        <Link to={`/blog/${p.slug}`}>{p.title}</Link>
+                      </h3>
+                      {p.excerpt && <p className="portfolio-card-excerpt">{p.excerpt}</p>}
+                      <div className="project-deliverables-row">
+                        {meta.deliverables.map((d) => (
+                          <span key={d} className="project-deliverable-chip">{d}</span>
+                        ))}
+                      </div>
+                      <Link to={`/blog/${p.slug}`} className="portfolio-card-cta">
+                        View case study <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="portfolio-empty-state">
@@ -1433,6 +1643,24 @@ function PostDetail() {
     return allPosts.filter((p) => p.status === "published" && !p.portfolio_only).slice(0, 4);
   }, [allPosts]);
 
+  // (2026-07-13) Rank top 5 popular posts by views & engagement; was latest 4
+  const popularPosts = useMemo(() => {
+    return [...allPosts]
+      .filter((p) => p.status === "published" && !p.portfolio_only)
+      .sort((a, b) => {
+        const viewsA = typeof a.views === "number" && a.views > 0 ? Math.floor(a.views) : 0;
+        const sharesA = typeof a.shares === "number" && a.shares > 0 ? Math.floor(a.shares) : 0;
+        const viewsB = typeof b.views === "number" && b.views > 0 ? Math.floor(b.views) : 0;
+        const sharesB = typeof b.shares === "number" && b.shares > 0 ? Math.floor(b.shares) : 0;
+        const scoreA = viewsA + sharesA;
+        const scoreB = viewsB + sharesB;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        if (viewsB !== viewsA) return viewsB - viewsA;
+        return new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime();
+      })
+      .slice(0, 5);
+  }, [allPosts]);
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   function trackShare() {
@@ -1470,6 +1698,9 @@ function PostDetail() {
       </PageFrame>
     );
 
+  // (2026-07-13) Add structured case-study overview & CTA; was plain blog view
+  const caseMeta = getProjectCaseStudyMeta(post);
+
   return (
     <PageFrame>
       <div className="article-layout-wrap wrap">
@@ -1485,12 +1716,20 @@ function PostDetail() {
           <div className="post-breadcrumbs">
             <Link to="/">Home</Link>
             <ChevronRight size={13} />
-            <Link to="/blog">Blogs</Link>
+            <Link to={caseMeta.isCaseStudy ? "/portfolio" : "/blog"}>
+              {caseMeta.isCaseStudy ? "Portfolio" : "Blogs"}
+            </Link>
             <ChevronRight size={13} />
             <span>{post.title}</span>
           </div>
 
           <header className="post-detail-header">
+            {caseMeta.isCaseStudy && (
+              <div className="case-study-eyebrow-row">
+                <span className="case-study-sector-badge">{caseMeta.industry}</span>
+                <span className="case-study-direction-tag">{caseMeta.direction}</span>
+              </div>
+            )}
             <h1>{post.title}</h1>
             <div className="post-meta-row">
               <span className="post-meta-author">
@@ -1500,7 +1739,7 @@ function PostDetail() {
               <time className="post-meta-date">
                 {post.published_at
                   ? new Date(post.published_at).toLocaleDateString("en-US", {
-                      month: "long",
+                      month: "short",
                       day: "numeric",
                       year: "numeric",
                     })
@@ -1510,7 +1749,7 @@ function PostDetail() {
                 <>
                   <span className="meta-sep">·</span>
                   {/* (2026-07-13) Display Work badge instead of Case study. Prev: post.category */}
-                  <span className="post-meta-cat">{post.category.toLowerCase().includes("case study") ? "Work" : post.category}</span>
+                  <span className="post-meta-cat">{caseMeta.isCaseStudy ? caseMeta.industry : post.category}</span>
                 </>
               )}
             </div>
@@ -1522,12 +1761,59 @@ function PostDetail() {
             </div>
           )}
 
+          {caseMeta.isCaseStudy && (
+            /* Case study project snapshot bar */
+            <div className="case-study-meta-strip">
+              <div className="case-meta-col">
+                <small>Client / Partner</small>
+                <b>{caseMeta.clientName}</b>
+              </div>
+              <div className="case-meta-col">
+                <small>Industry Sector</small>
+                <b>{caseMeta.industry}</b>
+              </div>
+              <div className="case-meta-col">
+                <small>Creative Direction</small>
+                <b>{caseMeta.direction}</b>
+              </div>
+              <div className="case-meta-col">
+                <small>Scope & Deliverables</small>
+                <div className="case-meta-chips">
+                  {caseMeta.deliverables.map((d) => (
+                    <span key={d}>{d}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* (2026-07-13) Support linebreaks in post lead excerpt. Prev: flat text */}
           {post.excerpt && <p className="post-lead-excerpt">{renderWithLinebreaks(post.excerpt)}</p>}
 
           <div className="post-content-blocks">
             <BlockRenderer blocks={post.blocks || []} />
           </div>
+
+          {caseMeta.isCaseStudy && (
+            /* Persuasive project conversion card */
+            <div className="case-study-cta-banner">
+              <div className="case-study-cta-copy">
+                <span className="case-cta-eyebrow">Work with BaiNest</span>
+                <h3>Want this level of clarity and creative direction for your brand?</h3>
+                <p>
+                  We adapt our strategy and visual identity systems to fit your industry—whether you lead a healthcare practice, law firm, retail brand, or live event.
+                </p>
+              </div>
+              <div className="case-study-cta-actions">
+                <Link to="/contact" className="btn">
+                  Start a project like this <ArrowRight size={15} />
+                </Link>
+                <Link to="/portfolio" className="btn btn-outline">
+                  View more client work
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* (2026-07-13) Single-row symmetrical share bar buttons. Prev: wrapped row */}
           <div className="post-share-bar">
@@ -1739,12 +2025,12 @@ function PostDetail() {
             </div>
           )}
 
-          {/* Popular Posts Widget */}
-          {latestPosts.length > 0 && (
+          {/* (2026-07-13) Render top 5 popular posts by views+shares; was latestPosts */}
+          {popularPosts.length > 0 && (
             <div className="sidebar-widget-card">
               <h3 className="widget-title">Popular Posts</h3>
               <div className="popular-posts-list">
-                {latestPosts.map((pp, idx) => (
+                {popularPosts.map((pp, idx) => (
                   <Link
                     key={pp.id}
                     to={`/blog/${pp.slug}`}
