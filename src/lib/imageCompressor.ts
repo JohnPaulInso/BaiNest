@@ -16,11 +16,12 @@ function calculateDimensions(width: number, height: number, maxDimension: number
   };
 }
 
+// (2026-07-13) Use HD 1800px 0.92 quality default; was 1280px 0.72
 export async function compressImage(
   file: File | Blob,
   options: CompressOptions = {},
 ): Promise<Blob | string> {
-  const { maxDimension = 1280, quality = 0.72, outputType = "blob" } = options;
+  const { maxDimension = 1800, quality = 0.92, outputType = "blob" } = options;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -68,11 +69,11 @@ export async function compressImage(
   });
 }
 
-// (2026-07-13) Instant compact base64 upload & recompression. Prev: 4.5s timeout
+// (2026-07-13) Keep HD 1800px 0.92 quality on upload; was 800px 0.62
 export async function recompressDataUrl(
   src: string,
-  maxDimension = 720,
-  quality = 0.56,
+  maxDimension = 1600,
+  quality = 0.88,
 ): Promise<string> {
   if (!src || (!src.startsWith("data:") && !src.startsWith("blob:"))) return src;
   return new Promise((resolve) => {
@@ -106,8 +107,8 @@ export async function uploadBlogImage(
   },
 ): Promise<string> {
   const dataUrl = (await compressImage(file, {
-    maxDimension: 800,
-    quality: 0.62,
+    maxDimension: 1800,
+    quality: 0.92,
     outputType: "dataUrl",
   })) as string;
   return dataUrl;

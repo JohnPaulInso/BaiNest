@@ -111,8 +111,8 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
 
     const currentBaseScale = Math.min(vWidth / imgNaturalSize.width, vHeight / imgNaturalSize.height);
 
-    // (2026-07-13) Output persistent base64 dataUrl on crop. Prev: blob URL
-    const outputWidth = 840;
+    // (2026-07-13) Export crisp 1600px 0.92 quality crop; was 840px 0.64
+    const outputWidth = 1600;
     const outputHeight = Math.round(outputWidth / aspect);
 
     const canvas = document.createElement("canvas");
@@ -139,7 +139,7 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
       ctx.drawImage(imageElement, -drawW / 2, -drawH / 2, drawW, drawH);
       ctx.restore();
 
-      const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.64);
+      const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.92);
       canvas.toBlob(
         (blob) => {
           const croppedFile = blob
@@ -148,7 +148,7 @@ export function ImageCropperModal({ imageSrc, onCrop, onClose }: Props) {
           onCrop(croppedFile, croppedDataUrl);
         },
         "image/jpeg",
-        0.64
+        0.92
       );
     };
     imageElement.src = imageSrc;

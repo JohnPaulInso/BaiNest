@@ -36,6 +36,8 @@ export type Block = {
   src?: string;
   alt?: string;
   caption?: string;
+  // (2026-07-13) Reference separate Firestore doc for HD image; was inline only
+  media_ref?: string;
 };
 export type Post = {
   id: number;
@@ -471,6 +473,46 @@ export function subscribeToSettings(
   };
 }
 
+// (2026-07-13) Store overflow HD images in post_media docs; was 480px downscale
+const mediaCache = new Map<string, string>();
+
+async function hydratePostsMedia(posts: Post[]): Promise<Post[]> {
+  const missingRefs = new Set<string>();
+  for (const p of posts) {
+    for (const b of p.blocks || []) {
+      if (b.media_ref && !b.src) {
+        const cached = mediaCache.get(b.media_ref);
+        if (cached) {
+          b.src = cached;
+        } else {
+          missingRefs.add(b.media_ref);
+        }
+      }
+    }
+  }
+  if (missingRefs.size > 0) {
+    await Promise.all(
+      Array.from(missingRefs).map(async (refId) => {
+        try {
+          const snap = await getDoc(doc(firestore, "post_media", refId));
+          if (snap.exists()) {
+            const data = snap.data() as { src?: string };
+            if (data?.src) mediaCache.set(refId, data.src);
+          }
+        } catch {}
+      })
+    );
+    for (const p of posts) {
+      for (const b of p.blocks || []) {
+        if (b.media_ref && !b.src && mediaCache.has(b.media_ref)) {
+          b.src = mediaCache.get(b.media_ref);
+        }
+      }
+    }
+  }
+  return posts;
+}
+
 // (2026-07-13) Ensure doc ID fallback & query resiliency. Prev: data.id only
 async function getFirestorePosts(): Promise<Post[]> {
   try {
@@ -486,6 +528,7 @@ async function getFirestorePosts(): Promise<Post[]> {
         new Date(b.created_at || b.published_at || 0).getTime() -
         new Date(a.created_at || a.published_at || 0).getTime()
     );
+    await hydratePostsMedia(posts);
     saveStoredPosts(posts);
     return posts;
   } catch {
@@ -500,7 +543,7 @@ export function cleanFirestoreData<T>(obj: T): T {
   );
 }
 
-// (2026-07-13) Auto-fit post images under 1MB Firestore limit. Prev: silent fail
+// (2026-07-13) Save HD images in post_media docs over 850KB; was 480px crush
 async function saveFirestorePost(post: Post): Promise<Post> {
   const prepared: Post = {
     ...post,
@@ -512,35 +555,43 @@ async function saveFirestorePost(post: Post): Promise<Post> {
     })),
   };
   let cleaned = cleanFirestoreData(prepared);
-  let serialized = JSON.stringify(cleaned);
-  if (serialized.length > 820000) {
-    if (cleaned.cover_image && cleaned.cover_image.startsWith("data:")) {
-      cleaned.cover_image = await recompressDataUrl(cleaned.cover_image, 680, 0.52);
-    }
-    if (Array.isArray(cleaned.blocks)) {
-      cleaned.blocks = await Promise.all(
-        cleaned.blocks.map(async (b) => {
-          if (b.type === "image" && b.src && b.src.startsWith("data:")) {
-            return { ...b, src: await recompressDataUrl(b.src, 640, 0.50) };
-          }
-          return b;
-        })
-      );
-    }
-    serialized = JSON.stringify(cleaned);
+  if (cleaned.cover_image && cleaned.cover_image.startsWith("data:") && cleaned.cover_image.length > 780000) {
+    cleaned.cover_image = await recompressDataUrl(cleaned.cover_image, 1600, 0.86);
   }
-  if (serialized.length > 920000 && Array.isArray(cleaned.blocks)) {
+  if (Array.isArray(cleaned.blocks)) {
     cleaned.blocks = await Promise.all(
       cleaned.blocks.map(async (b) => {
-        if (b.type === "image" && b.src && b.src.startsWith("data:")) {
-          return { ...b, src: await recompressDataUrl(b.src, 480, 0.42) };
+        if (b.type === "image" && b.src && b.src.startsWith("data:") && b.src.length > 780000) {
+          return { ...b, src: await recompressDataUrl(b.src, 1600, 0.86) };
         }
         return b;
       })
     );
   }
-  await setDoc(doc(firestore, "posts", String(cleaned.id)), cleaned);
-  return cleaned;
+  const fullBlocks = (cleaned.blocks || []).map((b) => ({ ...b }));
+  const docBlocks = (cleaned.blocks || []).map((b) => ({ ...b }));
+  let docPayload: Post = { ...cleaned, blocks: docBlocks };
+
+  if (JSON.stringify(docPayload).length > 850000) {
+    for (let i = 0; i < docBlocks.length; i++) {
+      const b = docBlocks[i];
+      if (b.type === "image" && b.src && b.src.startsWith("data:") && b.src.length > 20000) {
+        const refId = `${cleaned.id}_${b.id}`;
+        mediaCache.set(refId, b.src);
+        await setDoc(doc(firestore, "post_media", refId), {
+          postId: String(cleaned.id),
+          blockId: b.id,
+          src: b.src,
+        });
+        docBlocks[i] = { ...b, src: "", media_ref: refId };
+        fullBlocks[i] = { ...fullBlocks[i], media_ref: refId };
+        if (JSON.stringify(docPayload).length <= 820000) break;
+      }
+    }
+  }
+
+  await setDoc(doc(firestore, "posts", String(cleaned.id)), docPayload);
+  return { ...cleaned, blocks: fullBlocks };
 }
 
 async function deleteFirestorePost(id: string | number): Promise<void> {
@@ -590,8 +641,10 @@ export function subscribeToPosts(
           new Date(b.created_at || b.published_at || 0).getTime() -
           new Date(a.created_at || a.published_at || 0).getTime()
       );
-      saveStoredPosts(posts);
-      emit(posts);
+      hydratePostsMedia(posts).then((hydrated) => {
+        saveStoredPosts(hydrated);
+        emit(hydrated);
+      });
     };
     unsubFirestore = onSnapshot(
       col,

@@ -140,7 +140,7 @@ function SortableBlock({
     useSortable({ id: block.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
-  // (2026-07-13) Compact base64 compression for block images. Prev: 960px heavy
+  // (2026-07-13) Keep HD 1800px 0.92 quality on block upload; was 800px 0.62
   async function handleBlockImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -148,8 +148,8 @@ function SortableBlock({
     setUploading(true);
     try {
       const dataUrl = (await compressImage(file, {
-        maxDimension: 800,
-        quality: 0.62,
+        maxDimension: 1800,
+        quality: 0.92,
         outputType: "dataUrl",
       })) as string;
       onChange(block.id, "src", dataUrl);
@@ -168,8 +168,8 @@ function SortableBlock({
         onChange(block.id, "src", croppedUrl);
       } else {
         const dataUrl = (await compressImage(croppedFile, {
-          maxDimension: 800,
-          quality: 0.62,
+          maxDimension: 1800,
+          quality: 0.92,
           outputType: "dataUrl",
         })) as string;
         onChange(block.id, "src", dataUrl);
@@ -2079,7 +2079,7 @@ function PostEditor({
     return () => onMetaChange?.(null);
   }, [form.title, form.slug, form.category, form.status, onMetaChange]);
 
-  // (2026-07-13) Compress cover immediately to persistent dataUrl. Prev: blob URL
+  // (2026-07-13) Keep HD 1800px 0.92 quality for cover upload; was 840px 0.64
   async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -2087,8 +2087,8 @@ function PostEditor({
     setCoverUploading(true);
     try {
       const dataUrl = (await compressImage(file, {
-        maxDimension: 840,
-        quality: 0.64,
+        maxDimension: 1800,
+        quality: 0.92,
         outputType: "dataUrl",
       })) as string;
       setPendingCoverFile(null);
@@ -2114,8 +2114,8 @@ function PostEditor({
     }
     try {
       const dataUrl = (await compressImage(croppedFile, {
-        maxDimension: 840,
-        quality: 0.64,
+        maxDimension: 1800,
+        quality: 0.92,
         outputType: "dataUrl",
       })) as string;
       setPendingCoverFile(null);
@@ -2470,8 +2470,9 @@ function PostEditor({
       } catch (err) {
         console.warn("Cover image upload failed", err);
       }
-    } else if (finalCover && (finalCover.startsWith("blob:") || (finalCover.startsWith("data:") && finalCover.length > 150000))) {
-      finalCover = await recompressDataUrl(finalCover, 800, 0.62);
+    // (2026-07-13) Preserve HD image quality on post save; was 800px 0.62 downscale
+    } else if (finalCover && (finalCover.startsWith("blob:") || (finalCover.startsWith("data:") && finalCover.length > 780000))) {
+      finalCover = await recompressDataUrl(finalCover, 1600, 0.88);
     }
 
     const sanitizedBlocks = await Promise.all(
@@ -2480,9 +2481,9 @@ function PostEditor({
         if (b.type === "list") {
           return { ...b, id: blockId, items: b.items?.filter(Boolean) || [] };
         }
-        if (b.type === "image" && b.src && (b.src.startsWith("blob:") || (b.src.startsWith("data:") && b.src.length > 120000))) {
+        if (b.type === "image" && b.src && (b.src.startsWith("blob:") || (b.src.startsWith("data:") && b.src.length > 780000))) {
           try {
-            const dataUrl = await recompressDataUrl(b.src, 780, 0.60);
+            const dataUrl = await recompressDataUrl(b.src, 1600, 0.88);
             return { ...b, id: blockId, src: dataUrl };
           } catch {
             return { ...b, id: blockId };
@@ -3905,7 +3906,8 @@ function ServicesPageEditor() {
           getDownloadURL,
         });
       } catch {
-        const compressed = await compressImage(file, { maxDimension: 800, quality: 0.62, outputType: "dataUrl" });
+        // (2026-07-13) Keep HD 1600px 0.90 quality on service image; was 800px 0.62
+        const compressed = await compressImage(file, { maxDimension: 1600, quality: 0.90, outputType: "dataUrl" });
         url = compressed as string;
       }
       const updated = [...servicesList];
