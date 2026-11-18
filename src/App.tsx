@@ -415,7 +415,27 @@ function PageHeading({
     </div>
   );
 }
+// (2026-07-13) Track real post card clicks & impressions; was untracked
+function trackPostClick(postId?: string | number) {
+  if (!postId) return;
+  api(`/api/posts/${encodeURIComponent(String(postId))}/click`, { method: "POST" }).catch(() => {});
+}
+function trackPostImpressions(pageKey: string, list: Post[]) {
+  if (typeof window === "undefined" || !list.length) return;
+  const key = `bainest_imp_${pageKey}`;
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, "1");
+  const postIds = list.map((p) => String(p.id)).filter(Boolean);
+  if (postIds.length > 0) {
+    api("/api/posts/impressions", {
+      method: "POST",
+      body: JSON.stringify({ postIds }),
+    }).catch(() => {});
+  }
+}
+
 function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
+  const onCardClick = () => trackPostClick(post.id);
   return (
     <motion.article
       className="post-card"
@@ -428,6 +448,7 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
         className={`post-thumb thumb-${index % 3}`}
         to={`/blog/${post.slug}`}
         aria-label={`Read ${post.title}`}
+        onClick={onCardClick}
       >
         {post.cover_image ? (
           <img className="post-thumb-image" src={post.cover_image} alt="" />
@@ -456,7 +477,7 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
           </time>
         </div>
         <h3>
-          <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+          <Link to={`/blog/${post.slug}`} onClick={onCardClick}>{post.title}</Link>
         </h3>
         {/* (2026-07-13) Add subtle description fallback for posts. Prev: post.excerpt */}
         <p className="post-excerpt">
@@ -468,7 +489,7 @@ function ArticleCard({ post, index = 0 }: { post: Post; index?: number }) {
             ? "Every story has a beginning, and ours starts right here in Bogo City, Cebu—empowering ambitious brands to innovate, elevate, and connect online."
             : "Strategic insight, purposeful creative, and digital execution designed to help modern businesses stand out and grow."}
         </p>
-        <Link className="text-link" to={`/blog/${post.slug}`}>
+        <Link className="text-link" to={`/blog/${post.slug}`} onClick={onCardClick}>
           Read the story <ArrowRight size={14} />
         </Link>
       </div>
@@ -645,6 +666,12 @@ function Home() {
           p.title?.toLowerCase().includes("aton"))
     );
   }, [posts]);
+  // (2026-07-13) Track real homepage impressions once per session; was none
+  useEffect(() => {
+    if (featuredProjects.length > 0) {
+      trackPostImpressions("home_projects", featuredProjects.slice(0, 6));
+    }
+  }, [featuredProjects.length]);
   return (
     <PageFrame>
       <div ref={homeRef} className="home-entrance-scope">
@@ -822,6 +849,7 @@ function Home() {
                     style={{ "--reveal-delay": `${(i % 2) * 70}ms` } as React.CSSProperties}
                     key={p.slug || p.id}
                     to={`/blog/${p.slug}`}
+                    onClick={() => trackPostClick(p.id)}
                   >
                     <div className="project-art">
                       {p.cover_image ? (
@@ -1238,6 +1266,13 @@ function Portfolio() {
     "Sports & Events",
   ];
 
+  // (2026-07-13) Track real portfolio impressions once per session; was none
+  useEffect(() => {
+    if (portfolioPosts.length > 0) {
+      trackPostImpressions("portfolio_grid", portfolioPosts);
+    }
+  }, [portfolioPosts.length]);
+
   const filteredPortfolio = useMemo(() => {
     if (industryFilter === "All Industries") return portfolioPosts;
     return portfolioPosts.filter((p) => getProjectCaseStudyMeta(p).industryGroup === industryFilter);
@@ -1272,7 +1307,7 @@ function Portfolio() {
                 const meta = getProjectCaseStudyMeta(p);
                 return (
                   <article key={p.id} className="portfolio-project-card">
-                    <Link to={`/blog/${p.slug}`} className="portfolio-card-cover-wrap">
+                    <Link to={`/blog/${p.slug}`} className="portfolio-card-cover-wrap" onClick={() => trackPostClick(p.id)}>
                       {p.cover_image ? (
                         <img
                           src={p.cover_image}
@@ -1379,6 +1414,13 @@ function Blog() {
     () => posts.filter((p) => !p.portfolio_only),
     [posts]
   );
+
+  // (2026-07-13) Track real blog listing impressions per session; was none
+  useEffect(() => {
+    if (blogPosts.length > 0) {
+      trackPostImpressions("blog_list", blogPosts.slice(0, 12));
+    }
+  }, [blogPosts.length]);
 
   // (2026-07-13) Hide and disable tags in blog filter; was categories + tags
   const allTags = useMemo(() => {

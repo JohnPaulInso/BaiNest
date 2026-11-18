@@ -1,4 +1,4 @@
-// (2026-07-13) Add where to firestore imports for slug query. Prev: no where
+// (2026-07-13) Add increment import for atomic telemetry; was manual setDoc
 import {
   collection,
   doc,
@@ -11,6 +11,7 @@ import {
   where,
   addDoc,
   onSnapshot,
+  increment,
 } from "firebase/firestore";
 import { firestore } from "./firebase";
 // (2026-07-13) Import recompressDataUrl for 1MB Firestore limit. Prev: none
@@ -1183,30 +1184,66 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
     return { ok: true };
   }
 
-  // (2026-07-13) Update real views & shares in cache and Firestore; was silent
+  // (2026-07-13) Track real views, clicks, impressions & telemetry; was view/share
   const postViewMatch = url.match(/^\/api\/posts\/([^/]+)\/view$/);
   if (postViewMatch && method === "POST") {
-    const pId = postViewMatch[1];
+    const pId = decodeURIComponent(postViewMatch[1]).toLowerCase();
     const posts = await getFirestorePosts();
-    const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
+    const target = posts.find(
+      (p) => String(p.id).toLowerCase() === pId || (p.slug && p.slug.toLowerCase() === pId)
+    );
     if (target) {
       target.views = (target.views || 0) + 1;
-      await setDoc(doc(firestore, "posts", String(target.id)), { views: target.views }, { merge: true });
+      await setDoc(doc(firestore, "posts", String(target.id)), { views: increment(1) }, { merge: true });
       saveStoredPosts(posts, true);
+    }
+    recordSiteTelemetry("view", 1).catch(() => {});
+    return { ok: true };
+  }
+
+  const postClickMatch = url.match(/^\/api\/posts\/([^/]+)\/click$/);
+  if (postClickMatch && method === "POST") {
+    const pId = decodeURIComponent(postClickMatch[1]).toLowerCase();
+    const posts = await getFirestorePosts();
+    const target = posts.find(
+      (p) => String(p.id).toLowerCase() === pId || (p.slug && p.slug.toLowerCase() === pId)
+    );
+    if (target) {
+      target.clicks = (target.clicks || 0) + 1;
+      await setDoc(doc(firestore, "posts", String(target.id)), { clicks: increment(1) }, { merge: true });
+      saveStoredPosts(posts, true);
+    }
+    recordSiteTelemetry("click", 1).catch(() => {});
+    return { ok: true };
+  }
+
+  if (url === "/api/posts/impressions" && method === "POST") {
+    const ids: string[] = Array.isArray(body.postIds) ? body.postIds.map((x: unknown) => String(x)) : [];
+    if (ids.length > 0) {
+      const uniqueIds = Array.from(new Set(ids)).slice(0, 12);
+      await Promise.all(
+        uniqueIds.map((pid) =>
+          setDoc(doc(firestore, "posts", pid), { impressions: increment(1) }, { merge: true }).catch(() => {})
+        )
+      );
+      recordSiteTelemetry("impression", uniqueIds.length).catch(() => {});
     }
     return { ok: true };
   }
 
   const postShareMatch = url.match(/^\/api\/posts\/([^/]+)\/share$/);
   if (postShareMatch && method === "POST") {
-    const pId = postShareMatch[1];
+    const pId = decodeURIComponent(postShareMatch[1]).toLowerCase();
     const posts = await getFirestorePosts();
-    const target = posts.find((p) => String(p.id) === pId || p.slug === pId);
+    const target = posts.find(
+      (p) => String(p.id).toLowerCase() === pId || (p.slug && p.slug.toLowerCase() === pId)
+    );
     if (target) {
       target.shares = (target.shares || 0) + 1;
-      await setDoc(doc(firestore, "posts", String(target.id)), { shares: target.shares }, { merge: true });
+      await setDoc(doc(firestore, "posts", String(target.id)), { shares: increment(1) }, { merge: true });
       saveStoredPosts(posts, true);
     }
+    recordSiteTelemetry("share", 1).catch(() => {});
     return { ok: true };
   }
 
@@ -1224,7 +1261,8 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
       const patchData: Record<string, unknown> = { comments: nextComments };
       if (body.incrementEngagement) {
         target.shares = (target.shares || 0) + 1;
-        patchData.shares = target.shares;
+        patchData.shares = increment(1);
+        recordSiteTelemetry("share", 1).catch(() => {});
       }
       await setDoc(doc(firestore, "posts", String(target.id)), patchData, { merge: true });
       saveStoredPosts(posts, true);
@@ -1233,6 +1271,148 @@ async function handleStaticApi(path: string, init: RequestInit): Promise<unknown
   }
 
   return {};
+}
+
+// (2026-07-13) Real Firestore site telemetry tracking & subscription; was none
+export type DailyTelemetry = {
+  views: number;
+  clicks: number;
+  impressions: number;
+  shares: number;
+};
+
+export type SiteTelemetry = {
+  daily: Record<string, DailyTelemetry>;
+  channels: { google: number; direct: number; social: number };
+  devices: { mobile: number; desktop: number; tablet: number };
+  updated_at?: string;
+};
+
+export const emptyTelemetry: SiteTelemetry = {
+  daily: {},
+  channels: { google: 0, direct: 0, social: 0 },
+  devices: { mobile: 0, desktop: 0, tablet: 0 },
+};
+
+function normalizeTelemetry(raw: any): SiteTelemetry {
+  const daily: Record<string, DailyTelemetry> = {};
+  if (raw?.daily && typeof raw.daily === "object") {
+    for (const [k, v] of Object.entries(raw.daily)) {
+      const item = v as any;
+      daily[k] = {
+        views: Number(item?.views) || 0,
+        clicks: Number(item?.clicks) || 0,
+        impressions: Number(item?.impressions) || 0,
+        shares: Number(item?.shares) || 0,
+      };
+    }
+  }
+  return {
+    daily,
+    channels: {
+      google: Number(raw?.channels?.google) || 0,
+      direct: Number(raw?.channels?.direct) || 0,
+      social: Number(raw?.channels?.social) || 0,
+    },
+    devices: {
+      mobile: Number(raw?.devices?.mobile) || 0,
+      desktop: Number(raw?.devices?.desktop) || 0,
+      tablet: Number(raw?.devices?.tablet) || 0,
+    },
+    updated_at: raw?.updated_at,
+  };
+}
+
+export function getCachedTelemetry(): SiteTelemetry {
+  try {
+    const raw = localStorage.getItem("bainest_site_telemetry");
+    if (raw) return normalizeTelemetry(JSON.parse(raw));
+  } catch {}
+  return emptyTelemetry;
+}
+
+export async function getFirestoreTelemetry(): Promise<SiteTelemetry> {
+  try {
+    const snap = await getDoc(doc(firestore, "analytics", "site_telemetry"));
+    if (snap.exists()) {
+      const norm = normalizeTelemetry(snap.data());
+      try {
+        localStorage.setItem("bainest_site_telemetry", JSON.stringify(norm));
+      } catch {}
+      return norm;
+    }
+  } catch {}
+  return getCachedTelemetry();
+}
+
+export function subscribeToTelemetry(callback: (t: SiteTelemetry) => void): () => void {
+  callback(getCachedTelemetry());
+  try {
+    const ref = doc(firestore, "analytics", "site_telemetry");
+    return onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          const norm = normalizeTelemetry(snap.data());
+          try {
+            localStorage.setItem("bainest_site_telemetry", JSON.stringify(norm));
+          } catch {}
+          callback(norm);
+        }
+      },
+      () => callback(getCachedTelemetry())
+    );
+  } catch {
+    return () => {};
+  }
+}
+
+function getTodayDateKey(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export async function recordSiteTelemetry(
+  event: "view" | "click" | "impression" | "share",
+  amount = 1
+): Promise<void> {
+  try {
+    const dateKey = getTodayDateKey();
+    const fieldMap: Record<typeof event, keyof DailyTelemetry> = {
+      view: "views",
+      click: "clicks",
+      impression: "impressions",
+      share: "shares",
+    };
+    const metricKey = fieldMap[event];
+    const payload: Record<string, any> = {
+      daily: {
+        [dateKey]: {
+          [metricKey]: increment(amount),
+        },
+      },
+      updated_at: new Date().toISOString(),
+    };
+    if (event === "view" && typeof window !== "undefined") {
+      const ref = (document.referrer || "").toLowerCase();
+      let channel: "google" | "direct" | "social" = "direct";
+      if (/google\.|bing\.|yahoo\.|duckduckgo\.|search\./.test(ref)) channel = "google";
+      else if (/facebook\.|fb\.|instagram\.|twitter\.|x\.com|t\.co|linkedin\.|tiktok\.|youtube\./.test(ref)) channel = "social";
+
+      const ua = navigator.userAgent || "";
+      const w = window.innerWidth || 1200;
+      let device: "mobile" | "desktop" | "tablet" = "desktop";
+      if (/iPad|Tablet/i.test(ua) || (w >= 768 && w <= 1024 && "ontouchstart" in window)) device = "tablet";
+      else if (/Mobi|Android|iPhone|iPod/i.test(ua) || w < 768) device = "mobile";
+
+      payload.channels = { [channel]: increment(1) };
+      payload.devices = { [device]: increment(1) };
+    }
+    await setDoc(doc(firestore, "analytics", "site_telemetry"), payload, { merge: true });
+  } catch {}
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {

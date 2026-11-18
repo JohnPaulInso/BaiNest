@@ -80,6 +80,11 @@ import {
   getPostPlacement,
   // (2026-07-13) Import resolveCaseStudyDefaults to prefill Admin; was none
   resolveCaseStudyDefaults,
+  // (2026-07-13) Import real site telemetry helpers; was hardcoded mock stats
+  subscribeToTelemetry,
+  getFirestoreTelemetry,
+  getCachedTelemetry,
+  type SiteTelemetry,
   type AdminState,
   type Block,
   type Post,
@@ -626,7 +631,7 @@ function AdminNav({ user, onLogout }: { user: string; onLogout: () => void }) {
     </aside>
   );
 }
-// (2026-07-13) Use real post view & engagement counts; was fake hash formula
+// (2026-07-13) Return real 0 for untracked clicks/impressions; was views copy
 export function getPostViews(p: Post): number {
   return typeof p.views === "number" && Number.isFinite(p.views) && p.views >= 0 ? Math.floor(p.views) : 0;
 }
@@ -634,10 +639,10 @@ export function getPostShares(p: Post): number {
   return typeof p.shares === "number" && Number.isFinite(p.shares) && p.shares >= 0 ? Math.floor(p.shares) : 0;
 }
 export function getPostClicks(p: Post): number {
-  return typeof p.clicks === "number" && Number.isFinite(p.clicks) && p.clicks >= 0 ? Math.floor(p.clicks) : getPostViews(p);
+  return typeof p.clicks === "number" && Number.isFinite(p.clicks) && p.clicks >= 0 ? Math.floor(p.clicks) : 0;
 }
 export function getPostImpressions(p: Post): number {
-  return typeof p.impressions === "number" && Number.isFinite(p.impressions) && p.impressions >= 0 ? Math.floor(p.impressions) : getPostViews(p);
+  return typeof p.impressions === "number" && Number.isFinite(p.impressions) && p.impressions >= 0 ? Math.floor(p.impressions) : 0;
 }
 
 // (2026-07-13) Show slice numbers next to pct in pie. Prev: pct only
@@ -744,6 +749,13 @@ function Overview({ posts }: { posts: Post[] }) {
   const [hoveredBarIdx, setHoveredBarIdx] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
+  // (2026-07-13) Subscribe to live Firestore telemetry; was hardcoded curves
+  const [telemetry, setTelemetry] = useState<SiteTelemetry>(() => getCachedTelemetry());
+
+  useEffect(() => {
+    const unsubTelemetry = subscribeToTelemetry(setTelemetry);
+    return () => unsubTelemetry();
+  }, []);
 
   useEffect(() => {
     setCounts((c) => ({
@@ -768,25 +780,34 @@ function Overview({ posts }: { posts: Post[] }) {
     return () => unsub();
   }, [posts]);
 
-  const handleSync = () => {
+  const handleSync = async () => {
     setIsRefreshing(true);
     setSyncNotice(null);
-    setTimeout(() => {
+    try {
+      const fresh = await getFirestoreTelemetry();
+      setTelemetry(fresh);
+      setSyncNotice("Live Firestore telemetry synchronized successfully.");
+    } catch {
+      setSyncNotice("Unable to refresh telemetry right now.");
+    } finally {
       setIsRefreshing(false);
-      setSyncNotice("Search Console performance data synchronized successfully.");
       setTimeout(() => setSyncNotice(null), 4000);
-    }, 1100);
+    }
   };
 
-  const timeMultiplier = timeframe === "7d" ? 0.35 : timeframe === "28d" ? 1 : timeframe === "3m" ? 3.1 : 11.5;
+  // (2026-07-13) Compute real totals, CTR & engagement rate; was fake fallback
+  const publishedCount = useMemo(() => posts.filter((p) => p.status === "published").length, [posts]);
 
-  // (2026-07-13) Sum real post views & shares directly; was fake 1840/215
   const totalViews = useMemo(() => {
     return posts.reduce((sum, p) => sum + getPostViews(p), 0);
   }, [posts]);
 
   const totalShares = useMemo(() => {
     return posts.reduce((sum, p) => sum + getPostShares(p), 0);
+  }, [posts]);
+
+  const totalComments = useMemo(() => {
+    return posts.reduce((sum, p) => sum + (Array.isArray(p.comments) ? p.comments.length : 0), 0);
   }, [posts]);
 
   const totalClicks = useMemo(() => {
@@ -797,40 +818,69 @@ function Overview({ posts }: { posts: Post[] }) {
     return posts.reduce((sum, p) => sum + getPostImpressions(p), 0);
   }, [posts]);
 
-  const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) + "%" : "8.7%";
-  const avgPosition = timeframe === "7d" ? "3.2" : timeframe === "28d" ? "3.6" : timeframe === "3m" ? "4.1" : "4.8";
+  const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) + "%" : "0.0%";
+  const engagementRate = totalViews > 0 ? ((totalShares / totalViews) * 100).toFixed(1) + "%" : "0.0%";
+  const avgViewsPerStory = publishedCount > 0 ? Math.round(totalViews / publishedCount) : 0;
 
-  {/* (2026-07-13) Dates, scales and accurate coordinates. Prev: generic 12 pts */}
+  // (2026-07-13) Merge live daily telemetry & historical post dates; was zero
   const chartPoints = useMemo(() => {
-    const baseVal = activeMetric === "views" ? totalViews : activeMetric === "clicks" ? totalClicks : totalImpressions;
-    const count = 14;
-    const curveMultipliers = [0.65, 0.72, 0.68, 0.85, 0.92, 0.82, 0.96, 1.12, 1.05, 1.25, 1.18, 1.35, 1.30, 1.42];
+    const count = timeframe === "7d" ? 7 : 14;
     const totalDays = timeframe === "7d" ? 7 : timeframe === "28d" ? 28 : timeframe === "3m" ? 90 : 365;
-    const now = new Date(2026, 10, 11);
+    const bucketSpan = Math.max(1, Math.round(totalDays / count));
+    const now = new Date();
+    const toKey = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-    return curveMultipliers.map((m, idx) => {
-      const daysAgo = Math.round(((count - 1 - idx) / (count - 1)) * totalDays);
-      const pointDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    // (2026-07-13) Group historical post views by published_at; was updated_at
+    const historicalByDate: Record<string, { views: number; clicks: number; impressions: number; shares: number }> = {};
+    posts.forEach((p) => {
+      const rawDate = p.published_at || p.created_at || p.updated_at;
+      if (!rawDate) return;
+      const d = new Date(rawDate);
+      if (isNaN(d.getTime())) return;
+      const k = toKey(d);
+      if (!historicalByDate[k]) historicalByDate[k] = { views: 0, clicks: 0, impressions: 0, shares: 0 };
+      historicalByDate[k].views += getPostViews(p);
+      historicalByDate[k].clicks += getPostClicks(p);
+      historicalByDate[k].impressions += getPostImpressions(p);
+      historicalByDate[k].shares += getPostShares(p);
+    });
+
+    return Array.from({ length: count }).map((_, idx) => {
+      const endDaysAgo = Math.round(((count - 1 - idx) / Math.max(1, count - 1)) * (totalDays - 1));
+      const pointDate = new Date(now.getTime() - endDaysAgo * 24 * 60 * 60 * 1000);
       const shortDate = pointDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       const fullDate = pointDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-      const ptVal = Math.round((baseVal / count) * m);
-      const ptClicks = Math.round(ptVal * (activeMetric === "clicks" ? 1 : 0.42));
-      const ptImpressions = Math.round(ptVal * (activeMetric === "impressions" ? 1 : 4.8));
-      const ptCtr = ptImpressions > 0 ? ((ptClicks / ptImpressions) * 100).toFixed(1) + "%" : "8.7%";
+
+      let sumViews = 0;
+      let sumClicks = 0;
+      let sumImp = 0;
+      for (let step = 0; step < bucketSpan; step++) {
+        const d = new Date(pointDate.getTime() - step * 24 * 60 * 60 * 1000);
+        const key = toKey(d);
+        const bucket = telemetry.daily[key];
+        const hist = historicalByDate[key];
+        sumViews += bucket?.views ? bucket.views : hist?.views || 0;
+        sumClicks += bucket?.clicks ? bucket.clicks : hist?.clicks || 0;
+        sumImp += bucket?.impressions ? bucket.impressions : hist?.impressions || 0;
+      }
+
+      const ptVal = activeMetric === "views" ? sumViews : activeMetric === "clicks" ? sumClicks : sumImp;
+      const ptCtr = sumImp > 0 ? ((sumClicks / sumImp) * 100).toFixed(1) + "%" : "0.0%";
 
       return {
         idx,
         val: ptVal,
         shortDate,
         fullDate,
-        clicks: ptClicks,
-        impressions: ptImpressions,
+        clicks: sumClicks,
+        impressions: sumImp,
         ctr: ptCtr,
       };
     });
-  }, [activeMetric, totalViews, totalClicks, totalImpressions, timeframe]);
+  }, [activeMetric, timeframe, telemetry.daily, posts]);
 
-  const maxVal = Math.max(...chartPoints.map((p) => p.val), 1);
+  const maxVal = Math.max(...chartPoints.map((p) => p.val), 4);
   const chartWidth = 960;
   const chartHeight = 260;
   const paddingLeft = 58;
@@ -873,13 +923,26 @@ function Overview({ posts }: { posts: Post[] }) {
     return `${smoothCurvePath} L ${last.x.toFixed(1)},${bY} L ${first.x.toFixed(1)},${bY} Z`;
   }, [smoothCurvePath, mappedPoints, chartHeight, paddingBottom]);
 
-  const topQueries = [
-    { query: "bainest digital marketing agency", clicks: Math.round(totalClicks * 0.36), impressions: Math.round(totalImpressions * 0.34), ctr: "9.4%", pos: "2.6" },
-    { query: "aton & aton law office bogo city", clicks: Math.round(totalClicks * 0.24), impressions: Math.round(totalImpressions * 0.23), ctr: "9.1%", pos: "3.2" },
-    { query: "web development services bogo cebu", clicks: Math.round(totalClicks * 0.18), impressions: Math.round(totalImpressions * 0.19), ctr: "8.6%", pos: "4.0" },
-    { query: "digital marketing studio cebu", clicks: Math.round(totalClicks * 0.13), impressions: Math.round(totalImpressions * 0.15), ctr: "7.9%", pos: "5.1" },
-    { query: "bainest creative branding & portfolio", clicks: Math.round(totalClicks * 0.09), impressions: Math.round(totalImpressions * 0.09), ctr: "9.8%", pos: "3.0" },
-  ];
+  // (2026-07-13) Rank top stories by real views & shares; was fake queries
+  const topQueries = useMemo(() => {
+    return [...posts]
+      .filter((p) => p.status === "published")
+      .sort((a, b) => (getPostViews(b) + getPostShares(b)) - (getPostViews(a) + getPostShares(a)))
+      .slice(0, 5)
+      .map((p, idx) => {
+        const clicks = getPostClicks(p);
+        const impressions = getPostImpressions(p);
+        const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) + "%" : "0.0%";
+        return {
+          query: p.title || p.slug || "Untitled",
+          clicks,
+          impressions,
+          views: getPostViews(p),
+          ctr,
+          pos: String(idx + 1),
+        };
+      });
+  }, [posts]);
 
   return (
     <>
@@ -963,7 +1026,7 @@ function Overview({ posts }: { posts: Post[] }) {
         </div>
       </div>
 
-      {/* 6 Core Analytics Metric Cards */}
+      {/* (2026-07-13) Display real live telemetry in 6 KPI cards; was hardcoded % */}
       <div className="stat-grid analytics-grid-6">
         <article className={`stat-card-clickable ${activeMetric === "impressions" ? "active-stat" : ""}`} onClick={() => setActiveMetric("impressions")}>
           <span className="stat-icon search-console-icon">
@@ -971,8 +1034,8 @@ function Overview({ posts }: { posts: Post[] }) {
           </span>
           <span className="stat-label">Total Impressions</span>
           <b>{totalImpressions.toLocaleString()}</b>
-          <small className="stat-trend positive">
-            <TrendingUp size={12} /> +18.4% vs prev period
+          <small className="stat-trend">
+            Across {publishedCount} published stories
           </small>
         </article>
 
@@ -980,10 +1043,10 @@ function Overview({ posts }: { posts: Post[] }) {
           <span className="stat-icon search-clicks-icon">
             <MousePointer size={18} />
           </span>
-          <span className="stat-label">Search Clicks</span>
+          <span className="stat-label">Story Clicks</span>
           <b>{totalClicks.toLocaleString()}</b>
-          <small className="stat-trend positive">
-            <TrendingUp size={12} /> +14.2% organic growth
+          <small className="stat-trend">
+            {totalClicks > 0 ? "Tracked card & story clicks" : "Awaiting live clicks"}
           </small>
         </article>
 
@@ -993,8 +1056,8 @@ function Overview({ posts }: { posts: Post[] }) {
           </span>
           <span className="stat-label">Total Page Views</span>
           <b>{totalViews.toLocaleString()}</b>
-          <small className="stat-trend positive">
-            <TrendingUp size={12} /> +22.7% readers
+          <small className="stat-trend">
+            Avg {avgViewsPerStory.toLocaleString()} views / story
           </small>
         </article>
 
@@ -1004,8 +1067,8 @@ function Overview({ posts }: { posts: Post[] }) {
           </span>
           <span className="stat-label">Average CTR</span>
           <b>{avgCtr}</b>
-          <small className="stat-trend positive">
-            <TrendingUp size={12} /> Top 10% benchmark
+          <small className="stat-trend">
+            {totalImpressions > 0 ? "Clicks ÷ Impressions" : "Awaiting impressions"}
           </small>
         </article>
 
@@ -1013,9 +1076,11 @@ function Overview({ posts }: { posts: Post[] }) {
           <span className="stat-icon position-icon">
             <Award size={18} />
           </span>
-          <span className="stat-label">Average Position</span>
-          <b>{avgPosition}</b>
-          <small className="stat-trend positive">Page 1 Google rank</small>
+          <span className="stat-label">Engagement Rate</span>
+          <b>{engagementRate}</b>
+          <small className="stat-trend">
+            {totalComments} comments · {totalShares} actions
+          </small>
         </article>
 
         <article>
@@ -1024,7 +1089,7 @@ function Overview({ posts }: { posts: Post[] }) {
           </span>
           <span className="stat-label">Total Shares & Engagement</span>
           <b>{totalShares.toLocaleString()}</b>
-          <small className="stat-trend positive">Viral social referrals</small>
+          <small className="stat-trend">Live shares & comments</small>
         </article>
       </div>
 
@@ -1345,24 +1410,29 @@ function Overview({ posts }: { posts: Post[] }) {
             <b>Telemetry:</b> {timeframe === "7d" ? "7 Days" : timeframe === "28d" ? "28 Days" : timeframe === "3m" ? "3 Months" : "12 Months"} organic tracking
           </span>
           <span>
-            <b>Peak:</b> {Math.max(...chartPoints.map((p) => p.val)).toLocaleString()} {activeMetric} ({chartPoints[chartPoints.length - 1]?.shortDate})
+            {/* (2026-07-13) Show actual peak point date in footer; was last date */}
+            <b>Peak:</b>{" "}
+            {(() => {
+              const best = chartPoints.reduce((a, b) => (b.val > a.val ? b : a), chartPoints[0]);
+              return `${(best?.val || 0).toLocaleString()} ${activeMetric} (${best?.shortDate || ""})`;
+            })()}
           </span>
         </div>
       </section>
 
-      {/* (2026-07-13) Unified content table & fixed bar chart headroom. Prev: clipped */}
+      {/* (2026-07-13) Plot real weekly views & engagement/clicks; was 0/0 */}
       <section className="admin-panel analytics-chart-card">
         <div className="panel-head" style={{ flexWrap: "wrap", gap: "12px" }}>
           <div>
-            <h2>Weekly Search Velocity (Dual Bar Chart)</h2>
-            <p>Comparing Search Clicks and scaled Impressions across active days of the week.</p>
+            <h2>Weekly Readership & Activity (Dual Bar Chart)</h2>
+            <p>Comparing live and historical Views alongside Clicks & Engagement across days of the week.</p>
           </div>
           <div className="chart-legend-badge-row">
             <span className="legend-indicator-pill clicks-legend">
-              <span className="dot" style={{ background: "linear-gradient(135deg, #10b981, #006654)" }} /> Clicks
+              <span className="dot" style={{ background: "linear-gradient(135deg, #10b981, #006654)" }} /> Views
             </span>
             <span className="legend-indicator-pill impressions-legend">
-              <span className="dot" style={{ background: "linear-gradient(135deg, #38bdf8, #0284c7)" }} /> Impressions (÷10)
+              <span className="dot" style={{ background: "linear-gradient(135deg, #38bdf8, #0284c7)" }} /> Clicks & Engagement
             </span>
           </div>
         </div>
@@ -1394,15 +1464,47 @@ function Overview({ posts }: { posts: Post[] }) {
               const bUsableW = bWidth - bPadLeft - bPadRight;
               const bUsableH = bHeight - bPadTop - bPadBottom;
 
-              const days = [
-                { day: "Mon", clicks: Math.round(totalClicks * 0.12), imp: Math.round((totalImpressions * 0.11) / 10) },
-                { day: "Tue", clicks: Math.round(totalClicks * 0.16), imp: Math.round((totalImpressions * 0.15) / 10) },
-                { day: "Wed", clicks: Math.round(totalClicks * 0.20), imp: Math.round((totalImpressions * 0.19) / 10) },
-                { day: "Thu", clicks: Math.round(totalClicks * 0.24), imp: Math.round((totalImpressions * 0.22) / 10) },
-                { day: "Fri", clicks: Math.round(totalClicks * 0.18), imp: Math.round((totalImpressions * 0.17) / 10) },
-                { day: "Sat", clicks: Math.round(totalClicks * 0.06), imp: Math.round((totalImpressions * 0.09) / 10) },
-                { day: "Sun", clicks: Math.round(totalClicks * 0.04), imp: Math.round((totalImpressions * 0.07) / 10) },
-              ];
+              // (2026-07-13) Aggregate real weekday views & engagement; was empty 0s
+              const weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+              const weekdayBuckets: Record<string, { clicks: number; imp: number }> = {
+                Mon: { clicks: 0, imp: 0 },
+                Tue: { clicks: 0, imp: 0 },
+                Wed: { clicks: 0, imp: 0 },
+                Thu: { clicks: 0, imp: 0 },
+                Fri: { clicks: 0, imp: 0 },
+                Sat: { clicks: 0, imp: 0 },
+                Sun: { clicks: 0, imp: 0 },
+              };
+              const liveKeys = Object.keys(telemetry.daily);
+              if (liveKeys.length > 0) {
+                liveKeys.forEach((k) => {
+                  const d = new Date(`${k}T00:00:00`);
+                  if (isNaN(d.getTime())) return;
+                  const wd = d.toLocaleDateString("en-US", { weekday: "short" });
+                  if (weekdayBuckets[wd]) {
+                    weekdayBuckets[wd].clicks += telemetry.daily[k]?.views || 0;
+                    weekdayBuckets[wd].imp += (telemetry.daily[k]?.clicks || 0) + (telemetry.daily[k]?.shares || 0);
+                  }
+                });
+              }
+              posts.forEach((p) => {
+                const rawDate = p.published_at || p.created_at || p.updated_at;
+                if (!rawDate) return;
+                const d = new Date(rawDate);
+                if (isNaN(d.getTime())) return;
+                const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                if (telemetry.daily[k]?.views) return;
+                const wd = d.toLocaleDateString("en-US", { weekday: "short" });
+                if (weekdayBuckets[wd]) {
+                  weekdayBuckets[wd].clicks += getPostViews(p);
+                  weekdayBuckets[wd].imp += getPostClicks(p) + getPostShares(p);
+                }
+              });
+              const days = weekdayNames.map((day) => ({
+                day,
+                clicks: weekdayBuckets[day].clicks,
+                imp: weekdayBuckets[day].imp,
+              }));
 
               const peak = Math.max(...days.map((d) => Math.max(d.clicks, d.imp)), 1);
               let maxWeekly = 10;
@@ -1543,36 +1645,35 @@ function Overview({ posts }: { posts: Post[] }) {
 
       {/* Two-Column Breakdown: Top Queries & Pie Charts */}
       <div className="analytics-two-col">
-        {/* Top Google Search Console Queries */}
-        {/* Search queries ranking performance table */}
+        {/* (2026-07-13) Show real top performing stories; was fake search queries */}
         <section className="admin-panel">
           <div className="panel-head">
             <div>
-              <h2>Top Search Queries</h2>
-              <p>Top keywords driving Google Search traffic to your site.</p>
+              <h2>Top Performing Stories</h2>
+              <p>Highest-traffic stories ranked by live views and engagement.</p>
             </div>
-            <span className="gsc-source-tag">Search Console API</span>
+            <span className="gsc-source-tag">Live Firestore</span>
           </div>
           <div className="gsc-table-wrapper">
             <table className="analytics-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left" }}>Top Search Query</th>
+                  <th style={{ textAlign: "left" }}>Story Title</th>
+                  <th>Views</th>
                   <th>Clicks</th>
-                  <th>Impressions</th>
                   <th>CTR</th>
-                  <th>Position</th>
+                  <th>Rank</th>
                 </tr>
               </thead>
               <tbody>
                 {topQueries.map((q, idx) => (
                   <tr key={idx}>
                     <td className="query-col">
-                      <Search size={12} className="query-icon" />
+                      <Eye size={12} className="query-icon" />
                       <span>{q.query}</span>
                     </td>
-                    <td className="num-col"><b>{q.clicks.toLocaleString()}</b></td>
-                    <td className="num-col">{q.impressions.toLocaleString()}</td>
+                    <td className="num-col"><b>{q.views.toLocaleString()}</b></td>
+                    <td className="num-col">{q.clicks.toLocaleString()}</td>
                     <td className="num-col"><span className="ctr-chip">{q.ctr}</span></td>
                     <td className="num-col"><span className="pos-chip">#{q.pos}</span></td>
                   </tr>
@@ -1582,45 +1683,94 @@ function Overview({ posts }: { posts: Post[] }) {
           </div>
         </section>
 
-        {/* Traffic Channels & Devices with Donut / Pie Charts */}
-        {/* Audience and acquisition pie charts */}
+        {/* (2026-07-13) Fallback empty channels/devices to real post views; was 0% */}
         <section className="admin-panel">
           <div className="panel-head">
             <div>
               {/* (2026-07-13) Remove (Pie Charts) from heading. Prev: (Pie Charts) */}
-              <h2>Audience & Channels</h2>
-              <p>Visualizing acquisition channels and device breakdown.</p>
+              <h2>Audience & Readership Breakdown</h2>
+              <p>Live referrer channels, devices, and real readership distribution.</p>
             </div>
-            <span className="gsc-source-tag"><PieChart size={12} /> Donut</span>
+            <span className="gsc-source-tag"><PieChart size={12} /> Live</span>
           </div>
-          <div className="pie-charts-container">
-            {/* (2026-07-13) Pass view counts next to pie percentages. Prev: pct only */}
-            <div className="pie-section-block">
-              <span className="dist-title">Traffic Channels</span>
-              <SvgPieChart
-                slices={[
-                  { label: "Google Search", pct: 68.4, color: "#006654", count: Math.round(totalViews * 0.684) },
-                  { label: "Direct Navigation", pct: 18.2, color: "#0284c7", count: Math.round(totalViews * 0.182) },
-                  { label: "Social Referrals", pct: 13.4, color: "#f59e0b", count: Math.max(0, totalViews - Math.round(totalViews * 0.684) - Math.round(totalViews * 0.182)) },
-                ]}
-                centerLabel="68%"
-                centerSub="Google"
-              />
-            </div>
+          {(() => {
+            const pct = (v: number, tot: number) => (tot > 0 ? Number(((v / tot) * 100).toFixed(1)) : 0);
+            const chTotal = telemetry.channels.google + telemetry.channels.direct + telemetry.channels.social;
+            const devTotal = telemetry.devices.mobile + telemetry.devices.desktop + telemetry.devices.tablet;
 
-            <div className="pie-section-block" style={{ marginTop: "22px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-              <span className="dist-title">Device Breakdown</span>
-              <SvgPieChart
-                slices={[
-                  { label: "Mobile Handheld", pct: 64.2, color: "#10b981", count: Math.round(totalViews * 0.642) },
-                  { label: "Desktop & Laptop", pct: 31.8, color: "#6366f1", count: Math.round(totalViews * 0.318) },
-                  { label: "Tablet Devices", pct: 4.0, color: "#94a3b8", count: Math.max(0, totalViews - Math.round(totalViews * 0.642) - Math.round(totalViews * 0.318)) },
-                ]}
-                centerLabel="64%"
-                centerSub="Mobile"
-              />
-            </div>
-          </div>
+            // Real views by placement (used when live channel tracking has 0 visits yet)
+            let bothViews = 0;
+            let blogOnlyViews = 0;
+            let portOnlyViews = 0;
+            const catMap: Record<string, number> = {};
+            posts.forEach((p) => {
+              const v = getPostViews(p);
+              const pl = getPostPlacement(p);
+              if (pl === "Both") bothViews += v;
+              else if (pl === "Portfolio") portOnlyViews += v;
+              else blogOnlyViews += v;
+              const catName = (p.category || "Insights").trim();
+              catMap[catName] = (catMap[catName] || 0) + v;
+            });
+            const plTotal = bothViews + blogOnlyViews + portOnlyViews;
+
+            const topCats = Object.entries(catMap)
+              .sort((a, b) => b[1] - a[1]);
+            const cat1 = topCats[0] || ["Work", 0];
+            const cat2 = topCats[1] || ["Creative", 0];
+            const catRest = topCats.slice(2).reduce((sum, [, v]) => sum + v, 0);
+            const catTotal = cat1[1] + cat2[1] + catRest;
+
+            const chSlices =
+              chTotal > 0
+                ? [
+                    { label: "Search Referrals", pct: pct(telemetry.channels.google, chTotal), color: "#006654", count: telemetry.channels.google },
+                    { label: "Direct Navigation", pct: pct(telemetry.channels.direct, chTotal), color: "#0284c7", count: telemetry.channels.direct },
+                    { label: "Social Referrals", pct: pct(telemetry.channels.social, chTotal), color: "#f59e0b", count: telemetry.channels.social },
+                  ]
+                : [
+                    { label: "Blog & Portfolio", pct: pct(bothViews, plTotal), color: "#006654", count: bothViews },
+                    { label: "Blog Stories", pct: pct(blogOnlyViews, plTotal), color: "#0284c7", count: blogOnlyViews },
+                    { label: "Portfolio Only", pct: pct(portOnlyViews, plTotal), color: "#f59e0b", count: portOnlyViews },
+                  ];
+            const topChSlice = chSlices.reduce((a, b) => (b.count > a.count ? b : a), chSlices[0]);
+
+            const devSlices =
+              devTotal > 0
+                ? [
+                    { label: "Mobile Handheld", pct: pct(telemetry.devices.mobile, devTotal), color: "#10b981", count: telemetry.devices.mobile },
+                    { label: "Desktop & Laptop", pct: pct(telemetry.devices.desktop, devTotal), color: "#6366f1", count: telemetry.devices.desktop },
+                    { label: "Tablet Devices", pct: pct(telemetry.devices.tablet, devTotal), color: "#94a3b8", count: telemetry.devices.tablet },
+                  ]
+                : [
+                    { label: cat1[0], pct: pct(cat1[1], catTotal), color: "#10b981", count: cat1[1] },
+                    { label: cat2[0], pct: pct(cat2[1], catTotal), color: "#6366f1", count: cat2[1] },
+                    { label: "Other Categories", pct: pct(catRest, catTotal), color: "#94a3b8", count: catRest },
+                  ];
+            const topDevSlice = devSlices.reduce((a, b) => (b.count > a.count ? b : a), devSlices[0]);
+
+            return (
+              <div className="pie-charts-container">
+                <div className="pie-section-block">
+                  <span className="dist-title">{chTotal > 0 ? "Traffic Channels" : "Views by Placement"}</span>
+                  <SvgPieChart
+                    slices={chSlices}
+                    centerLabel={`${Math.round(topChSlice.pct)}%`}
+                    centerSub={topChSlice.label.split(" ")[0]}
+                  />
+                </div>
+
+                <div className="pie-section-block" style={{ marginTop: "22px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
+                  <span className="dist-title">{devTotal > 0 ? "Device Breakdown" : "Views by Category"}</span>
+                  <SvgPieChart
+                    slices={devSlices}
+                    centerLabel={`${Math.round(topDevSlice.pct)}%`}
+                    centerSub={topDevSlice.label.split(" ")[0]}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </section>
       </div>
 

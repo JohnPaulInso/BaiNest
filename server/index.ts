@@ -134,8 +134,10 @@ app.put('/api/admin/settings', requireAdmin, requireCsrf, (req, res) => {
   tx(req.body || {});
   res.json({ ok: true, ...(req.body || {}) });
 });
-// (2026-07-13) Add post view, share & comments endpoints; was 404
+// (2026-07-13) Add post view, click, impression, share & comments; was 404
+app.post('/api/posts/impressions', (_req, res) => res.json({ ok: true }));
 app.post('/api/posts/:id/view', (_req, res) => res.json({ ok: true }));
+app.post('/api/posts/:id/click', (_req, res) => res.json({ ok: true }));
 app.post('/api/posts/:id/share', (_req, res) => res.json({ ok: true }));
 app.put('/api/posts/:id/comments', (req, res) => res.json({ ok: true, comments: req.body?.comments || [] }));
 
